@@ -100,7 +100,7 @@ SubTitle:
   An additional smaller title
 
 SubSubTitle:
-  An additional even smaller title
+  An extra even smaller title
 
 # Footnotes are placed at the bottom of the chart.
 Footnote:
@@ -134,7 +134,7 @@ Axis.Y.Range: -5 25 -999
 Axis.X.Tick: 10.0 5
 Axis.Y.Tick: 1.0 0
 
-# Turn grid lines on/off for major and minor ticks.
+# Turn grid lines on/off for major and minor ticks; may be On or Off.
 Axis.X.Grid: On On
 Axis.Y.Grid: On Off
 
@@ -175,13 +175,14 @@ Series.Data:
 # EOF
 )EOF";
   } else {
-    std::cout << R"EOF(Title: Title
+    std::cout << R"EOF(# Simple template
+Title       : Chart Title
 Axis.X.Label: X-Axis
 Axis.Y.Label: Y-Axis
-Axis.X.Unit: X-unit
-Axis.Y.Unit: Y-unit
-Series.New: Name of series
-Series.Data:
+Axis.X.Unit : missing unit
+Axis.Y.Unit : missing unit
+Series.New  : Name of series
+Series.Data :
         0       23.7
         7.0     2.3
         23      -2e-1
@@ -258,7 +259,7 @@ bool at_ws( void )
   return !at_eol() && is_ws( cur_line->line[ cur_col ] );
 }
 
-void skip_ws( bool multi_line )
+void skip_ws( bool multi_line = false )
 {
   while ( !at_eof() ) {
     while ( !at_eol() ) {
@@ -302,13 +303,14 @@ char get_char( bool adv = true )
   return c;
 }
 
-std::string get_identifier( void )
+std::string get_identifier( bool all_non_ws = false )
 {
   id_col = cur_col;
   std::string id = "";
   while ( !at_eol() ) {
     char c = cur_line->line[ cur_col ];
     if (
+      (all_non_ws && !is_ws( c ) ) ||
       (c >= 'a' && c <= 'z') ||
       (c >= 'A' && c <= 'Z') ||
       (c >= '0' && c <= '9') ||
@@ -369,7 +371,7 @@ bool get_key( std::string& key )
   if ( at_eof() ) return false;
   if ( cur_col > 0 ) parse_err( "KEY must be unindented" );
   key = get_identifier();
-  skip_ws( false );
+  skip_ws();
   if ( key == "" ) parse_err( "KEY expected" );
   if ( get_char( false ) != ':' ) parse_err( "':' expected" );
   get_char();
@@ -379,7 +381,7 @@ bool get_key( std::string& key )
 void get_text( std::string& txt, bool multi_line )
 {
   txt = "";
-  skip_ws( false );
+  skip_ws();
   while ( !at_eol() ) txt.push_back( get_char() );
   trunc_ws( txt );
   if ( txt != "" || !multi_line ) return;
@@ -414,17 +416,17 @@ void get_text( std::string& txt, bool multi_line )
 
 void expect_eol( void )
 {
-  skip_ws( false );
+  skip_ws();
   if ( !at_eol() ) parse_err( "garbage at EOL" );
 }
 
-void expect_ws( void )
+void expect_ws( const std::string err_msg_if_eol = "" )
 {
   auto old_col = cur_col;
-  skip_ws( false );
-  if ( !(old_col < cur_col) && !at_eol() ) {
-    parse_err( "whitespace expected" );
-  }
+  skip_ws();
+  if ( cur_col > old_col && !at_eol() ) return;
+  if ( at_eol() && err_msg_if_eol != "" ) parse_err( err_msg_if_eol );
+  if ( !(old_col < cur_col) ) parse_err( "whitespace expected" );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -433,7 +435,7 @@ void do_Pos(
   Chart::Pos& pos
 )
 {
-  std::string id = get_identifier();
+  std::string id = get_identifier( true );
   if ( id == "Auto"   ) pos = Chart::Auto  ; else
   if ( id == "Center" ) pos = Chart::Center; else
   if ( id == "Left"   ) pos = Chart::Left  ; else
@@ -453,13 +455,12 @@ void do_ChartArea( void )
   int64_t w;
   int64_t h;
 
-  skip_ws( false );
+  skip_ws();
   if ( at_eol() ) parse_err( "width expected" );
   if ( !get_int64( w ) ) parse_err( "malformed width" );
   if ( w < 100 || w > 10000 ) parse_err( "width out of range", true );
 
-  expect_ws();
-  if ( at_eol() ) parse_err( "height expected" );
+  expect_ws( "height expected" );
   if ( !get_int64( h ) ) parse_err( "malformed height" );
   if ( h < 100 || h > 10000 ) parse_err( "height out of range", true );
 
@@ -470,7 +471,7 @@ void do_ChartArea( void )
 void do_Margin( void )
 {
   int64_t m;
-  skip_ws( false );
+  skip_ws();
   if ( at_eol() ) parse_err( "margin expected" );
   if ( !get_int64( m ) ) parse_err( "malformed margin" );
   if ( m < 0 || m > 1000 ) parse_err( "margin out of range", true );
@@ -543,7 +544,7 @@ void do_Axis_Y_Unit( void )
 void do_Axis_X_UnitPos( void )
 {
   Chart::Pos pos;
-  skip_ws( false );
+  skip_ws();
   do_Pos( pos );
   expect_eol();
   chart.AxisX()->SetUnitPos( pos );
@@ -552,7 +553,7 @@ void do_Axis_X_UnitPos( void )
 void do_Axis_Y_UnitPos( void )
 {
   Chart::Pos pos;
-  skip_ws( false );
+  skip_ws();
   do_Pos( pos );
   expect_eol();
   chart.AxisY()->SetUnitPos( pos );
@@ -566,17 +567,15 @@ void do_Axis_Range(
   double& cross
 )
 {
-  skip_ws( false );
+  skip_ws();
   if ( at_eol() ) parse_err( "min expected" );
   if ( !get_double( min ) ) parse_err( "malformed min" );
 
-  expect_ws();
-  if ( at_eol() ) parse_err( "max expected" );
+  expect_ws( "max expected" );
   if ( !get_double( max ) ) parse_err( "malformed max" );
   if ( !(max > min) ) parse_err( "max must be greater than min", true );
 
-  expect_ws();
-  if ( at_eol() ) parse_err( "orthogonal axis cross expected" );
+  expect_ws( "orthogonal axis cross expected" );
   if ( !get_double( cross ) ) parse_err( "malformed orthogonal axis cross" );
 
   expect_eol();
@@ -607,13 +606,12 @@ void do_Axis_Tick(
   int64_t& minor
 )
 {
-  skip_ws( false );
+  skip_ws();
   if ( at_eol() ) parse_err( "major tick expected" );
   if ( !get_double( major ) ) parse_err( "malformed major tick" );
   if ( !(major > 0) ) parse_err( "major tick must be positive", true );
 
-  expect_ws();
-  if ( at_eol() ) parse_err( "minor tick expected" );
+  expect_ws( "minor tick expected" );
   if ( !get_int64( minor ) ) parse_err( "malformed minor tick" );
   if ( minor < 0 || minor > 100 ) parse_err( "minor tick out of range", true );
 
@@ -645,18 +643,17 @@ void do_Axis_Grid(
 {
   std::string id;
 
-  skip_ws( false );
-  id = get_identifier();
+  skip_ws();
+  if ( at_eol() ) parse_err( "major grid expected" );
+  id = get_identifier( true );
   if ( id == "On"  ) major = true ; else
   if ( id == "Off" ) major = false; else
-  if ( id == "" ) parse_err( "major grid expected" ); else
   parse_err( "malformed major grid '" + id + "'", true );
 
-  expect_ws();
-  id = get_identifier();
+  expect_ws( "minor grid expected" );
+  id = get_identifier( true );
   if ( id == "On"  ) minor = true ; else
   if ( id == "Off" ) minor = false; else
-  if ( id == "" ) parse_err( "minor grid expected" ); else
   parse_err( "malformed minor grid '" + id + "'", true );
 
   expect_eol();
@@ -683,7 +680,7 @@ void do_Axis_Y_Grid( void )
 void do_Axis_X_NumberPos( void )
 {
   Chart::Pos pos;
-  skip_ws( false );
+  skip_ws();
   do_Pos( pos );
   expect_eol();
   chart.AxisX()->SetNumberPos( pos );
@@ -692,7 +689,7 @@ void do_Axis_X_NumberPos( void )
 void do_Axis_Y_NumberPos( void )
 {
   Chart::Pos pos;
-  skip_ws( false );
+  skip_ws();
   do_Pos( pos );
   expect_eol();
   chart.AxisY()->SetNumberPos( pos );
@@ -703,7 +700,7 @@ void do_Axis_Y_NumberPos( void )
 void do_LegendPos( void )
 {
   Chart::Pos pos;
-  skip_ws( false );
+  skip_ws();
   do_Pos( pos );
   expect_eol();
   chart.SetLegendPos( pos );
@@ -722,7 +719,7 @@ void do_Series_Style( void )
 {
   if ( series == NULL ) series = chart.AddSeries( "" );
   int64_t style;
-  skip_ws( false );
+  skip_ws();
   if ( at_eol() ) parse_err( "style expected" );
   if ( !get_int64( style ) ) parse_err( "malformed style" );
   if ( style < 0 || style > 63 ) parse_err( "style out of range", true );
@@ -741,11 +738,9 @@ void do_Series_Data( void )
     if ( !at_ws() ) break;
     double x;
     double y;
-    expect_ws();
-    if ( at_eol() ) parse_err( "x-value expected" );
+    expect_ws( "x-value expected" );
     if ( !get_double( x ) ) parse_err( "malformed x-value" );
-    expect_ws();
-    if ( at_eol() ) parse_err( "y-value expected" );
+    expect_ws( "y-value expected" );
     if ( !get_double( y ) ) parse_err( "malformed y-value" );
     expect_eol();
     series->Add( x, y );
