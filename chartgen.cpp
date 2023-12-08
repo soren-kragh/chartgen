@@ -41,7 +41,7 @@ Generate a chart in SVG format from FILE(s) to standard output.
 
 With no FILE, or when FILE is -, read standard input.
 
-  -t            Output a simple template file.
+  -t            Output a simple template file; a good starting point.
   -T            Output a full template and documentation file.
   -h, --help    Display this help and exit.
 
@@ -123,10 +123,10 @@ Axis.Y.Unit:
 Axis.X.UnitPos: Auto
 Axis.Y.UnitPos: Auto
 
-# Min, max, and where the other orthogonal axis crosses this. Auto ranging is
-# applied if no Range specifier is given (recommended).
-Axis.X.Range: 0 100 0
-Axis.Y.Range: -5 25 -999
+# Min, max, and optionally where the other orthogonal axis crosses this axis.
+# Auto ranging is applied if no Range specifier is given (recommended).
+Axis.X.Range: 0 100 90
+Axis.Y.Range: -5 25
 
 # First number is the major tick interval and the second number is an integer
 # specifying the number of minor sub-intervals per major tick. Tick intervals
@@ -575,8 +575,12 @@ void do_Axis_Range(
   if ( !get_double( max ) ) parse_err( "malformed max" );
   if ( !(max > min) ) parse_err( "max must be greater than min", true );
 
-  expect_ws( "orthogonal axis cross expected" );
-  if ( !get_double( cross ) ) parse_err( "malformed orthogonal axis cross" );
+  cross = min;
+  if ( at_eol() ) return;
+  expect_ws();
+  if ( !at_eol() ) {
+    if ( !get_double( cross ) ) parse_err( "malformed orthogonal axis cross" );
+  }
 
   expect_eol();
 }
