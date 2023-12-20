@@ -60,7 +60,10 @@ void gen_template( bool full )
 {
   if ( full ) {
     std::cout << R"EOF(#
-# This is a template file to be used as input for the chartgen program.
+# This file documents the input format for the chartgen program. This file is
+# not intended to be used directly; use the simple template as a starting point
+# and pick relevant specifies from this file as needed. It is strongly
+# recommended to let chartgen determine things automatically when possible.
 #
 # The file consists of a number of specifiers; any line starting with a '#' at
 # column 0 is ignored; empty lines are also ignored.
@@ -123,20 +126,42 @@ Axis.Y.Unit:
 Axis.X.UnitPos: Auto
 Axis.Y.UnitPos: Auto
 
+# Turn logarithmic scale on/off; may be On or Off.
+Axis.X.LogScale: Off
+Axis.Y.LogScale: Off
+
 # Min, max, and optionally where the other orthogonal axis crosses this axis.
 # Auto ranging is applied if no Range specifier is given (recommended).
 Axis.X.Range: 0 100 90
 Axis.Y.Range: -5 25
 
-# First number is the major tick interval and the second number is an integer
-# specifying the number of minor sub-intervals per major tick. Tick intervals
-# are determined automatically if no Tick specifier is given (recommended).
-Axis.X.Tick: 10.0 5
+# Linear scale:
+#   First number is the major tick interval and the second number is an integer
+#   specifying the number of minor sub-intervals per major tick.
+# Logarithmic scale:
+#   First number is the base, normally 10, and second is an integer specifying
+#   the number of minor sub-intervals per division, also usually 10. The base
+#   can only be a power of 10, while the minor sub-intervals can only be
+#   factors of 100.
+# Tick intervals are determined automatically if no Tick specifier is given
+# (recommended).
+Axis.X.Tick: 10.0 4
 Axis.Y.Tick: 1.0 0
 
 # Turn grid lines on/off for major and minor ticks; may be On or Off.
 Axis.X.Grid: On On
 Axis.Y.Grid: On Off
+
+# Number format may be Fixed, Scientific, or Magnitude. Default is Fixed for
+# linear scale and Magnitude for logarithmic scale. Magnitude means showing
+# e.g. "1k" instead of "1000" etc.
+Axis.X.NumberFormat: Fixed
+Axis.Y.NumberFormat: Fixed
+
+# Determine if numbers are shown for minor ticks, default for linear scale is
+# Off, while default for logarithmic scale is On; may be On or Off.
+Axis.X.MinorNumber: On
+Axis.Y.MinorNumber: Off
 
 # Position of axis numbers; may be Auto, Left, Right, Top/Above, or
 # Bottom/Below. Not all may apply; default is Auto. Very large or very small
@@ -448,6 +473,29 @@ void do_Pos(
   parse_err( "unknown position '" + id + "'", true );
 }
 
+void do_Switch(
+  bool& flag
+)
+{
+  std::string id = get_identifier( true );
+  if ( id == "On"  ) flag = true ; else
+  if ( id == "Off" ) flag = false; else
+  if ( id == "" ) parse_err( "On/Off expected" ); else
+  parse_err( "On/Off expected, saw '" + id + "'", true );
+}
+
+void do_NumberFormat(
+  Chart::NumberFormat& number_format
+)
+{
+  std::string id = get_identifier( true );
+  if ( id == "Fixed"      ) number_format = Chart::Fixed     ; else
+  if ( id == "Scientific" ) number_format = Chart::Scientific; else
+  if ( id == "Magnitude"  ) number_format = Chart::Magnitude ; else
+  if ( id == "" ) parse_err( "number format expected" ); else
+  parse_err( "unknown number format '" + id + "'", true );
+}
+
 //-----------------------------------------------------------------------------
 
 void do_ChartArea( void )
@@ -561,6 +609,26 @@ void do_Axis_Y_UnitPos( void )
 
 //-----------------------------------------------------------------------------
 
+void do_Axis_X_LogScale( void )
+{
+  bool log_scale;
+  skip_ws();
+  do_Switch( log_scale );
+  expect_eol();
+  chart.AxisX()->SetLogScale( log_scale );
+}
+
+void do_Axis_Y_LogScale( void )
+{
+  bool log_scale;
+  skip_ws();
+  do_Switch( log_scale );
+  expect_eol();
+  chart.AxisY()->SetLogScale( log_scale );
+}
+
+//-----------------------------------------------------------------------------
+
 void do_Axis_Range(
   double& min,
   double& max,
@@ -645,20 +713,12 @@ void do_Axis_Grid(
   bool& minor
 )
 {
-  std::string id;
-
   skip_ws();
   if ( at_eol() ) parse_err( "major grid expected" );
-  id = get_identifier( true );
-  if ( id == "On"  ) major = true ; else
-  if ( id == "Off" ) major = false; else
-  parse_err( "malformed major grid '" + id + "'", true );
+  do_Switch( major );
 
   expect_ws( "minor grid expected" );
-  id = get_identifier( true );
-  if ( id == "On"  ) minor = true ; else
-  if ( id == "Off" ) minor = false; else
-  parse_err( "malformed minor grid '" + id + "'", true );
+  do_Switch( minor );
 
   expect_eol();
 }
@@ -677,6 +737,46 @@ void do_Axis_Y_Grid( void )
   bool minor;
   do_Axis_Grid( major, minor );
   chart.AxisY()->SetGrid( major, minor );
+}
+
+//-----------------------------------------------------------------------------
+
+void do_Axis_X_NumberFormat( void )
+{
+  Chart::NumberFormat number_format;
+  skip_ws();
+  do_NumberFormat( number_format );
+  expect_eol();
+  chart.AxisX()->SetNumberFormat( number_format );
+}
+
+void do_Axis_Y_NumberFormat( void )
+{
+  Chart::NumberFormat number_format;
+  skip_ws();
+  do_NumberFormat( number_format );
+  expect_eol();
+  chart.AxisY()->SetNumberFormat( number_format );
+}
+
+//-----------------------------------------------------------------------------
+
+void do_Axis_X_MinorNumber( void )
+{
+  bool minor_num;
+  skip_ws();
+  do_Switch( minor_num );
+  expect_eol();
+  chart.AxisX()->ShowMinorNumbers( minor_num );
+}
+
+void do_Axis_Y_MinorNumber( void )
+{
+  bool minor_num;
+  skip_ws();
+  do_Switch( minor_num );
+  expect_eol();
+  chart.AxisY()->ShowMinorNumbers( minor_num );
 }
 
 //-----------------------------------------------------------------------------
@@ -757,30 +857,36 @@ void do_Series_Data( void )
 using ParseAction = std::function<void()>;
 
 std::unordered_map< std::string, ParseAction > actions = {
-  { "ChartArea"       , do_ChartArea        },
-  { "Margin"          , do_Margin           },
-  { "Title"           , do_Title            },
-  { "SubTitle"        , do_SubTitle         },
-  { "SubSubTitle"     , do_SubSubTitle      },
-  { "Footnote"        , do_Footnote         },
-  { "Axis.X.Label"    , do_Axis_X_Label     },
-  { "Axis.Y.Label"    , do_Axis_Y_Label     },
-  { "Axis.X.Unit"     , do_Axis_X_Unit      },
-  { "Axis.Y.Unit"     , do_Axis_Y_Unit      },
-  { "Axis.X.UnitPos"  , do_Axis_X_UnitPos   },
-  { "Axis.Y.UnitPos"  , do_Axis_Y_UnitPos   },
-  { "Axis.X.Range"    , do_Axis_X_Range     },
-  { "Axis.Y.Range"    , do_Axis_Y_Range     },
-  { "Axis.X.Tick"     , do_Axis_X_Tick      },
-  { "Axis.Y.Tick"     , do_Axis_Y_Tick      },
-  { "Axis.X.Grid"     , do_Axis_X_Grid      },
-  { "Axis.Y.Grid"     , do_Axis_Y_Grid      },
-  { "Axis.X.NumberPos", do_Axis_X_NumberPos },
-  { "Axis.Y.NumberPos", do_Axis_Y_NumberPos },
-  { "LegendPos"       , do_LegendPos        },
-  { "Series.New"      , do_Series_New       },
-  { "Series.Style"    , do_Series_Style     },
-  { "Series.Data"     , do_Series_Data      },
+  { "ChartArea"          , do_ChartArea           },
+  { "Margin"             , do_Margin              },
+  { "Title"              , do_Title               },
+  { "SubTitle"           , do_SubTitle            },
+  { "SubSubTitle"        , do_SubSubTitle         },
+  { "Footnote"           , do_Footnote            },
+  { "Axis.X.Label"       , do_Axis_X_Label        },
+  { "Axis.Y.Label"       , do_Axis_Y_Label        },
+  { "Axis.X.Unit"        , do_Axis_X_Unit         },
+  { "Axis.Y.Unit"        , do_Axis_Y_Unit         },
+  { "Axis.X.UnitPos"     , do_Axis_X_UnitPos      },
+  { "Axis.Y.UnitPos"     , do_Axis_Y_UnitPos      },
+  { "Axis.X.LogScale"    , do_Axis_X_LogScale     },
+  { "Axis.Y.LogScale"    , do_Axis_Y_LogScale     },
+  { "Axis.X.Range"       , do_Axis_X_Range        },
+  { "Axis.Y.Range"       , do_Axis_Y_Range        },
+  { "Axis.X.Tick"        , do_Axis_X_Tick         },
+  { "Axis.Y.Tick"        , do_Axis_Y_Tick         },
+  { "Axis.X.Grid"        , do_Axis_X_Grid         },
+  { "Axis.Y.Grid"        , do_Axis_Y_Grid         },
+  { "Axis.X.NumberFormat", do_Axis_X_NumberFormat },
+  { "Axis.Y.NumberFormat", do_Axis_Y_NumberFormat },
+  { "Axis.X.MinorNumber" , do_Axis_X_MinorNumber  },
+  { "Axis.Y.MinorNumber" , do_Axis_Y_MinorNumber  },
+  { "Axis.X.NumberPos"   , do_Axis_X_NumberPos    },
+  { "Axis.Y.NumberPos"   , do_Axis_Y_NumberPos    },
+  { "LegendPos"          , do_LegendPos           },
+  { "Series.New"         , do_Series_New          },
+  { "Series.Style"       , do_Series_Style        },
+  { "Series.Data"        , do_Series_Data         },
 };
 
 bool parse_spec( void )
