@@ -188,7 +188,8 @@ Series.New: Name of series
 # 32 to 63: Same as 0 to 31, but with thinner line
 Series.Style: 4
 
-# These are the X/Y values for the series
+# These are the X/Y values for the series. If no new series was created
+# beforehand, an anonymous one will be automatically created.
 Series.Data:
         0       23.7
         7.0     2.3
@@ -196,6 +197,17 @@ Series.Data:
         47      10.0
         71      -4.3
         97      14
+
+# Several series sharing the same X-values can be specified in one go. If not
+# enough new series were created beforehand, anonymous ones will be
+# automatically created as needed.
+Series.New: Series 1
+Series.New: Series 2
+Series.Data:
+#       X-value         Series 1        Series 2
+        8               22              5
+        30              3               18
+        80              14              -2
 
 # EOF
 )EOF";
@@ -243,7 +255,8 @@ void trunc_nl( std::string& s )
 ///////////////////////////////////////////////////////////////////////////////
 
 Chart::Main chart;
-Chart::Series* series = NULL;
+
+std::vector< Chart::Series* > series_list;
 
 struct LineRec {
   std::string line;
@@ -816,40 +829,76 @@ void do_Series_New( void )
 {
   std::string txt;
   get_text( txt, true );
-  series = chart.AddSeries( txt );
+  series_list.push_back( chart.AddSeries( txt ) );
 }
 
 void do_Series_Style( void )
 {
-  if ( series == NULL ) series = chart.AddSeries( "" );
+  if ( series_list.size() == 0 ) {
+    series_list.push_back( chart.AddSeries( "" ) );
+  }
   int64_t style;
   skip_ws();
   if ( at_eol() ) parse_err( "style expected" );
   if ( !get_int64( style ) ) parse_err( "malformed style" );
   if ( style < 0 || style > 63 ) parse_err( "style out of range", true );
   expect_eol();
-  series->SetStyle( style );
+  series_list.back()->SetStyle( style );
 }
 
 void do_Series_Data( void )
 {
-  if ( series == NULL ) series = chart.AddSeries( "" );
   expect_eol();
   next_line();
+  bool first = true;
+  uint32_t y_values = 0;
   while ( !at_eof() ) {
     skip_ws( true );
     cur_col = 0;
     if ( !at_ws() ) break;
-    double x;
-    double y;
     expect_ws( "x-value expected" );
+    double x;
     if ( !get_double( x ) ) parse_err( "malformed x-value" );
-    expect_ws( "y-value expected" );
-    if ( !get_double( y ) ) parse_err( "malformed y-value" );
+    uint32_t n = 0;
+    auto fst_y_col = cur_col;
+    while ( true ) {
+      expect_ws( "y-value expected" );
+      auto old_col = cur_col;
+      double y;
+      if ( !get_double( y ) ) parse_err( "malformed y-value" );
+      if ( !at_ws() && !at_eol() ) parse_err( "syntax error" );
+      if ( !first ) {
+        if ( n >= y_values ) {
+          cur_col = old_col;
+          parse_err( "too many y-values" );
+        }
+        series_list[ series_list.size() - y_values + n ]->Add( x, y );
+      }
+      n++;
+      old_col = cur_col;
+      skip_ws();
+      if ( at_eol() ) {
+        if ( first ) {
+          first = false;
+          y_values = n;
+          n = 0;
+          cur_col = fst_y_col;
+          for ( uint32_t i = 0; i < y_values; i++ ) {
+            if (
+              series_list.size() == i ||
+              series_list[ series_list.size() - i - 1 ]->Size() > 0
+            )
+              series_list.push_back( chart.AddSeries( "" ) );
+          }
+          continue;
+        }
+        break;
+      }
+      cur_col = old_col;
+    }
     expect_eol();
-    series->Add( x, y );
+    if ( n < y_values ) parse_err( "another y-value expected" );
   }
-  series = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
