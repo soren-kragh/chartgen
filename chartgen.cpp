@@ -65,8 +65,9 @@ void gen_template( bool full )
 # and pick relevant specifies from this file as needed. It is strongly
 # recommended to let chartgen determine things automatically when possible.
 #
-# The file consists of a number of specifiers; any line starting with a '#' at
-# column 0 is ignored; empty lines are also ignored.
+# The input file consists of a number of specifiers; any line starting with a
+# '#' at column 0 is ignored; empty lines are also ignored. The simplest input
+# file consists only of the Series.Data specifier.
 #
 # A specifier takes the form:
 # KEY: VALUE(s)
@@ -84,6 +85,8 @@ void gen_template( bool full )
 # they must be uniformly indented.
 #
 # In the following all supported specifiers will be documented with examples.
+# Many of the specifies you should normally not include, at least not until you
+# have judged the initial defaults, have been commented out below.
 #
 
 # Specifies the dimensions of the core chart area where the data is graphed.
@@ -91,10 +94,10 @@ void gen_template( bool full )
 # scalable these dimensions primarily determine the relative size of text
 # annotations and line thicknesses; texts will appear relatively larger if the
 # core chart area is small and vice versa.
-ChartArea: 1200 800
+#ChartArea: 1200 800
 
 # Margin around chart in points; default is 5.
-Margin: 5
+#Margin: 5
 
 # Titles are placed at the top of the chart.
 Title: This is the title of the chart
@@ -114,27 +117,29 @@ Footnote:
 Axis.X.Label: X-Axis
 Axis.Y.Label: Y-Axis
 
-# Units should be selected and data scaled accordingly to avoid very small or
-# very large numbers in the graph.
+# Especially for linear scale, it is often a good idea to select units and
+# scale the data accordingly to avoid very small or very large numbers in the
+# graph. It is a cardinal sin to not have units on your axes.
 Axis.X.Unit: Mb/s
 Axis.Y.Unit:
   micro
   seconds
 
 # Position of unit text; may be Auto, Left, Right, Top/Above, or
-# Bottom/Below. Not all may apply; default is Auto.
-Axis.X.UnitPos: Auto
-Axis.Y.UnitPos: Auto
+# Bottom/Below. Not all may apply; default is Auto (recommended).
+#Axis.X.UnitPos: Auto
+#Axis.Y.UnitPos: Auto
 
 # Turn logarithmic scale on/off; may be On or Off.
-Axis.X.LogScale: Off
-Axis.Y.LogScale: Off
+#Axis.X.LogScale: Off
+#Axis.Y.LogScale: Off
 
 # Min, max, and optionally where the other orthogonal axis crosses this axis.
 # Auto ranging is applied if no Range specifier is given (recommended).
-Axis.X.Range: 0 100 90
-Axis.Y.Range: -5 25
+#Axis.X.Range: 0 100 90
+#Axis.Y.Range: -5 25
 
+# Define axis ticks.
 # Linear scale:
 #   First number is the major tick interval and the second number is an integer
 #   specifying the number of minor sub-intervals per major tick.
@@ -145,48 +150,51 @@ Axis.Y.Range: -5 25
 #   factors of 100.
 # Tick intervals are determined automatically if no Tick specifier is given
 # (recommended).
-Axis.X.Tick: 10.0 4
-Axis.Y.Tick: 1.0 0
+#Axis.X.Tick: 10.0 4
+#Axis.Y.Tick: 1.0 0
 
 # Turn grid lines on/off for major and minor ticks; may be On or Off.
-Axis.X.Grid: On On
-Axis.Y.Grid: On Off
+#Axis.X.Grid: On On
+#Axis.Y.Grid: On Off
 
 # Number format may be Fixed, Scientific, or Magnitude. Default is Fixed for
 # linear scale and Magnitude for logarithmic scale. Magnitude means showing
-# e.g. "1k" instead of "1000" etc.
-Axis.X.NumberFormat: Fixed
-Axis.Y.NumberFormat: Fixed
+# e.g. "10k" instead of "10000" etc.
+#Axis.X.NumberFormat: Fixed
+#Axis.Y.NumberFormat: Fixed
 
-# Determine if numbers are shown for minor ticks, default for linear scale is
+# Specify if numbers are shown for minor ticks, default for linear scale is
 # Off, while default for logarithmic scale is On; may be On or Off.
-Axis.X.MinorNumber: On
-Axis.Y.MinorNumber: Off
+#Axis.X.MinorNumber: On
+#Axis.Y.MinorNumber: Off
 
 # Position of axis numbers; may be Auto, Left, Right, Top/Above, or
-# Bottom/Below. Not all may apply; default is Auto. Very large or very small
-# numbers will be hard to read, so it is a very good idea to scale the data and
-# use suitable units.
-Axis.X.NumberPos: Auto
-Axis.Y.NumberPos: Auto
+# Bottom/Below. Not all may apply; default is Auto (recommended). Very large or
+# very small numbers will be hard to read, so it is a very good idea to scale
+# the data and use suitable units.
+#Axis.X.NumberPos: Auto
+#Axis.Y.NumberPos: Auto
 
-# May be Auto, Left, Right, or Below. Legends for the series are normally
-# (Auto) placed somewhere inside the core chart area, but if this gets too
-# cluttered you may place the series legends outside the core chart area.
-LegendPos: Auto
+# Legend position may be Auto, Left, Right, or Below. Legends for the series
+# are normally (Auto) placed somewhere inside the core chart area, but if this
+# gets too cluttered you may place the series legends outside the core chart
+# area.
+#LegendPos: Auto
 
-# Each new series must start with this specifier giving the name of the series
-# (may be multi-line). The following Series specifiers associate to this.
+# Each new series should start with this specifier giving the name of the
+# series (may be multi-line). The following Series specifiers associate to
+# this.
 Series.New: Name of series
 
 # The style of the X/Y line graph. The style is a number in the range from 0 to
-# 63; if no Style specifier is given it is assigned an incrementing number.
+# 63; if no Style specifier is given (recommended) it is assigned an
+# incrementing number.
 #  0 to  7: Solid line using 8 different colors
 #  8 to 15: Same as 0 to 7 but with short dashed line
 # 16 to 23: Same as 0 to 7 but with medium dashed line
 # 24 to 31: Same as 0 to 7 but with long dashed line
 # 32 to 63: Same as 0 to 31, but with thinner line
-Series.Style: 4
+#Series.Style: 4
 
 # These are the X/Y values for the series. If no new series was created
 # beforehand, an anonymous one will be automatically created.
