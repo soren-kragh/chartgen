@@ -26,3 +26,4 @@ files:
 clean:
 	rm -f ${EXE}
 	rm -f *.svg
+	rm -f test.*
