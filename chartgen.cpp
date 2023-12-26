@@ -93,8 +93,8 @@ void gen_template( bool full )
 # core chart area is small and vice versa.
 ChartArea: 1200 800
 
-# Margin around chart in points; default is 2.
-Margin: 2
+# Margin around chart in points; default is 5.
+Margin: 5
 
 # Titles are placed at the top of the chart.
 Title: This is the title of the chart
