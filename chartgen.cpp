@@ -186,6 +186,12 @@ Axis.Y.Unit:
 # this.
 Series.New: Name of series
 
+# Set size of point markers; default is zero (no point markers). The size
+# indicates by how much the point marker extends beyond the width of the graph
+# line. This attribute applies to the current series and all subsequent series,
+# or until it is redefined.
+#Series.PointSize: 0
+
 # The style of the X/Y line graph. The style is a number in the range from 0 to
 # 63; if no Style specifier is given (recommended) it is assigned an
 # incrementing number.
@@ -527,11 +533,11 @@ void do_ChartArea( void )
   skip_ws();
   if ( at_eol() ) parse_err( "width expected" );
   if ( !get_int64( w ) ) parse_err( "malformed width" );
-  if ( w < 100 || w > 10000 ) parse_err( "width out of range", true );
+  if ( w < 100 || w > 100000 ) parse_err( "width out of range", true );
 
   expect_ws( "height expected" );
   if ( !get_int64( h ) ) parse_err( "malformed height" );
-  if ( h < 100 || h > 10000 ) parse_err( "height out of range", true );
+  if ( h < 100 || h > 100000 ) parse_err( "height out of range", true );
 
   expect_eol();
   chart.SetChartArea( w, h );
@@ -833,18 +839,38 @@ void do_LegendPos( void )
 
 //-----------------------------------------------------------------------------
 
+int64_t point_size = 0;
+
+void AddSeries( std::string name = "" )
+{
+  series_list.push_back( chart.AddSeries( name ) );
+  if ( point_size > 0 ) {
+    series_list.back()->SetPointSize( point_size );
+  }
+}
+
 void do_Series_New( void )
 {
   std::string txt;
   get_text( txt, true );
-  series_list.push_back( chart.AddSeries( txt ) );
+  AddSeries( txt );
+}
+
+void do_Series_PointSize( void )
+{
+  skip_ws();
+  if ( at_eol() ) parse_err( "point size expected" );
+  if ( !get_int64( point_size ) ) parse_err( "malformed point size" );
+  if ( point_size < 0 || point_size > 100 ) parse_err( "point size out of range", true );
+  expect_eol();
+  if ( series_list.size() > 0 ) {
+    series_list.back()->SetPointSize( point_size );
+  }
 }
 
 void do_Series_Style( void )
 {
-  if ( series_list.size() == 0 ) {
-    series_list.push_back( chart.AddSeries( "" ) );
-  }
+  if ( series_list.size() == 0 ) AddSeries();
   int64_t style;
   skip_ws();
   if ( at_eol() ) parse_err( "style expected" );
@@ -896,7 +922,7 @@ void do_Series_Data( void )
               series_list.size() == i ||
               series_list[ series_list.size() - i - 1 ]->Size() > 0
             )
-              series_list.push_back( chart.AddSeries( "" ) );
+              AddSeries();
           }
           continue;
         }
@@ -942,6 +968,7 @@ std::unordered_map< std::string, ParseAction > actions = {
   { "Axis.Y.NumberPos"   , do_Axis_Y_NumberPos    },
   { "LegendPos"          , do_LegendPos           },
   { "Series.New"         , do_Series_New          },
+  { "Series.PointSize"   , do_Series_PointSize    },
   { "Series.Style"       , do_Series_Style        },
   { "Series.Data"        , do_Series_Data         },
 };
