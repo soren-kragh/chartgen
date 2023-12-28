@@ -187,9 +187,9 @@ Axis.Y.Unit:
 Series.New: Name of series
 
 # Set size of point markers; default is zero (no point markers). The size
-# indicates by how much the point marker extends beyond the width of the graph
-# line. This attribute applies to the current series and all subsequent series,
-# or until it is redefined.
+# indicates by how much the point marker width is larger than the width of the
+# graph line. This attribute applies to the current series and all subsequent
+# series, or until it is redefined.
 #Series.PointSize: 0
 
 # The style of the X/Y line graph. The style is a number in the range from 0 to
