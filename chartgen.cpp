@@ -42,7 +42,7 @@ Generate a chart in SVG format from FILE(s) to standard output.
 With no FILE, or when FILE is -, read standard input.
 
   -t            Output a simple template file; a good starting point.
-  -T            Output a full template and documentation file.
+  -T            Output a full documentation file.
   -h, --help    Display this help and exit.
 
 Examples:
@@ -131,8 +131,8 @@ Axis.Y.Unit:
 #Axis.Y.UnitPos: Auto
 
 # Turn logarithmic scale on/off; may be On or Off.
-#Axis.X.LogScale: Off
-#Axis.Y.LogScale: Off
+#Axis.X.LogScale: On
+#Axis.Y.LogScale: On
 
 # Min, max, and optionally where the other orthogonal axis crosses this axis.
 # Auto ranging is applied if no Range specifier is given (recommended).
@@ -179,7 +179,7 @@ Axis.Y.Unit:
 # are normally (Auto) placed somewhere inside the core chart area, but if this
 # gets too cluttered you may place the series legends outside the core chart
 # area.
-#LegendPos: Auto
+#LegendPos: Below
 
 # Each new series should start with this specifier giving the name of the
 # series (may be multi-line). The following Series specifiers associate to
@@ -194,7 +194,7 @@ Series.New: Name of series
 
 # The style of the X/Y line graph. The style is a number in the range from 0 to
 # 63; if no Style specifier is given (recommended) it is assigned an
-# incrementing number.
+# incrementing number based on the last given Series.Style.
 #  0 to  7: Solid line using 8 different colors
 #  8 to 15: Same as 0 to 7 but with short dashed line
 # 16 to 23: Same as 0 to 7 but with medium dashed line
@@ -203,7 +203,9 @@ Series.New: Name of series
 #Series.Style: 4
 
 # These are the X/Y values for the series. If no new series was created
-# beforehand, an anonymous one will be automatically created.
+# beforehand, an anonymous one will be automatically created. Series.Data is
+# the last specifier for a given series; any Series specifies after the
+# Series.Data specifier apply to the next series.
 Series.Data:
         0       23.7
         7.0     2.3
@@ -214,7 +216,9 @@ Series.Data:
 
 # Several series sharing the same X-values can be specified in one go. If not
 # enough new series were created beforehand, anonymous ones will be
-# automatically created as needed.
+# automatically created as needed.Series.Data is the last specifier for a given
+# series; any Series specifies after the Series.Data specifier apply to the
+# next series.
 Series.New: Series 1
 Series.New: Series 2
 Series.Data:
@@ -228,8 +232,6 @@ Series.Data:
   } else {
     std::cout << R"EOF(# Simple template
 Title       : Chart Title
-Axis.X.Label: X-Axis
-Axis.Y.Label: Y-Axis
 Axis.X.Unit : missing unit
 Axis.Y.Unit : missing unit
 Series.New  : Name of series
@@ -240,6 +242,40 @@ Series.Data :
         47      10.0
         71      -4.3
         97      14
+
+# Summary of all available specifiers (see -T template for help):
+# ChartArea: 1200 800
+# Margin: 5
+# Title:
+# SubTitle:
+# SubSubTitle:
+# Footnote:
+# Axis.X.Label:
+# Axis.Y.Label:
+# Axis.X.Unit:
+# Axis.Y.Unit:
+# Axis.X.UnitPos: Above
+# Axis.Y.UnitPos: Right
+# Axis.X.LogScale: On
+# Axis.Y.LogScale: On
+# Axis.X.Range: 0 100 90
+# Axis.Y.Range: -5 25
+# Axis.X.Tick: 10.0 4
+# Axis.Y.Tick: 1.0 0
+# Axis.X.Grid: Off On
+# Axis.Y.Grid: On Off
+# Axis.X.NumberFormat: Fixed
+# Axis.Y.NumberFormat: Fixed
+# Axis.X.MinorNumber: On
+# Axis.Y.MinorNumber: Off
+# Axis.X.NumberPos: Auto
+# Axis.Y.NumberPos: Auto
+# LegendPos: Below
+# Series.New: Name of series
+# Series.PointSize: 8
+# Series.Style: 32
+# Series.Data:
+
 )EOF";
   }
 }
@@ -839,7 +875,9 @@ void do_LegendPos( void )
 
 //-----------------------------------------------------------------------------
 
+bool defining_series = false;
 int64_t point_size = 0;
+int64_t style = 0;
 
 void AddSeries( std::string name = "" )
 {
@@ -847,6 +885,9 @@ void AddSeries( std::string name = "" )
   if ( point_size > 0 ) {
     series_list.back()->SetPointSize( point_size );
   }
+  series_list.back()->SetStyle( style );
+  style++;
+  defining_series = true;
 }
 
 void do_Series_New( void )
@@ -863,21 +904,21 @@ void do_Series_PointSize( void )
   if ( !get_int64( point_size ) ) parse_err( "malformed point size" );
   if ( point_size < 0 || point_size > 100 ) parse_err( "point size out of range", true );
   expect_eol();
-  if ( series_list.size() > 0 ) {
+  if ( defining_series ) {
     series_list.back()->SetPointSize( point_size );
   }
 }
 
 void do_Series_Style( void )
 {
-  if ( series_list.size() == 0 ) AddSeries();
-  int64_t style;
   skip_ws();
   if ( at_eol() ) parse_err( "style expected" );
   if ( !get_int64( style ) ) parse_err( "malformed style" );
   if ( style < 0 || style > 63 ) parse_err( "style out of range", true );
   expect_eol();
-  series_list.back()->SetStyle( style );
+  if ( defining_series ) {
+    series_list.back()->SetStyle( style++ );
+  }
 }
 
 void do_Series_Data( void )
@@ -933,6 +974,7 @@ void do_Series_Data( void )
     expect_eol();
     if ( n < y_values ) parse_err( "another y-value expected" );
   }
+  defining_series = false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
