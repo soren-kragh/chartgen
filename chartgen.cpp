@@ -14,13 +14,13 @@
 //  <http://www.gnu.org/licenses/>.
 //
 
-#include <chart_main.h>
+#include <csignal>
+#include <csetjmp>
 #include <cfenv>
 #include <fstream>
-#include <stdexcept>
-#include <limits>
 #include <unordered_map>
 #include <functional>
+#include <chart_main.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1065,8 +1065,32 @@ void process_files( const std::vector< std::string >& file_list )
 
 ///////////////////////////////////////////////////////////////////////////////
 
+std::jmp_buf sigfpe_jmp;
+
+void sigfpe_handler( int signum )
+{
+  longjmp( sigfpe_jmp, 1 );
+}
+
 int main( int argc, char* argv[] )
 {
+  if ( setjmp( sigfpe_jmp ) ) {
+    SVG::Canvas* canvas = new SVG::Canvas();
+    SVG::Group* g = canvas->TopGroup();
+    g->Add( new SVG::Text( 0, 0, "Floating point exception" ) );
+    g->Last()->Attr()->TextFont()->SetSize( 48 )->SetBold();
+    SVG::BoundaryBox bb = g->Last()->GetBB();
+    g->Add(
+      new SVG::Rect(
+        bb.min.x - 20, bb.min.y - 20, bb.max.x + 20, bb.max.y + 20, 20
+      )
+    );
+    g->FrontToBack();
+    g->Last()->Attr()->SetLineWidth( 10 )->FillColor()->Set( SVG::Red, 0.25 );
+    std::cout << canvas->GenSVG( 10 );
+    ERR( "Floating point exception" );
+  }
+  signal( SIGFPE, sigfpe_handler );
   feenableexcept( FE_DIVBYZERO | FE_INVALID );
 
   std::vector< std::string > file_list;
@@ -1104,9 +1128,11 @@ int main( int argc, char* argv[] )
 
   process_files( file_list );
 
+  std::ostringstream oss;
   SVG::Canvas* canvas = chart.Build();
-  std::cout << canvas->GenSVG();
+  oss << canvas->GenSVG();
   delete canvas;
+  std::cout << oss.str();
 
   return 0;
 }
