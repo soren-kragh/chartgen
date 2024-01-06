@@ -1,6 +1,6 @@
 EXE := chartgen
 
-DIRS := . ../SVG ../chart
+DIRS := . ../svg ../chart
 
 DEPS := \
 	$(wildcard $(addsuffix /*.h,${DIRS}) $(addsuffix /*.cpp,${DIRS})) \
