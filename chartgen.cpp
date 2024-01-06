@@ -33,24 +33,34 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void show_version( void )
+{
+  std::cout << R"EOF(chartgen 1.00
+This is free software: you are free to change and redistribute it.
+
+Written by S. Kragh
+)EOF";
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 void show_help( void )
 {
-  std::cout << R"EOF(
-Usage: chartgen [OPTION]... [FILE]...
+  std::cout << R"EOF(Usage: chartgen [OPTION]... [FILE]...
 Generate a chart in SVG format from FILE(s) to standard output.
 
 With no FILE, or when FILE is -, read standard input.
 
-  -t            Output a simple template file; a good starting point.
-  -T            Output a full documentation file.
-  -h, --help    Display this help and exit.
+  -t                Output a simple template file; a good starting point.
+  -T                Output a full documentation file.
+  -h, --help        Display this help and exit.
+  -v, --version     Display version.
 
 Examples:
   chartgen f - g    Process f's contents, then standard input, then g's
                     contents; output the resulting SVG to standard output.
   chartgen          Process standard input and output the resulting SVG
                     to standard output.
-
 )EOF";
 }
 
@@ -192,9 +202,9 @@ Series.New: Name of series
 # series, or until it is redefined.
 #Series.PointSize: 0
 
-# The style of the X/Y line graph. The style is a number in the range from 0 to
-# 63; if no Style specifier is given (recommended) it is assigned an
-# incrementing number based on the last given Series.Style.
+# The style of the X/Y graph. The style is a number in the range from 0 to 63;
+# if no Style specifier is given (recommended) it is assigned an incrementing
+# number based on the last given Series.Style.
 #  0 to  7: Solid line using 8 different colors
 #  8 to 15: Same as 0 to 7 but with short dashed line
 # 16 to 23: Same as 0 to 7 but with medium dashed line
@@ -202,10 +212,11 @@ Series.New: Name of series
 # 32 to 63: Same as 0 to 31, but with thinner line
 #Series.Style: 4
 
-# These are the X/Y values for the series. If no new series was created
-# beforehand, an anonymous one will be automatically created. Series.Data is
-# the last specifier for a given series; any Series specifies after the
-# Series.Data specifier apply to the next series.
+# These are the X/Y values for the series; only X/Y chart type is supported for
+# now. If no new series was created beforehand, an anonymous one will be
+# automatically created. Series.Data is the last specifier for a given series;
+# any Series specifies after the Series.Data specifier apply to the next
+# series.
 Series.Data:
         0       23.7
         7.0     2.3
@@ -216,9 +227,9 @@ Series.Data:
 
 # Several series sharing the same X-values can be specified in one go. If not
 # enough new series were created beforehand, anonymous ones will be
-# automatically created as needed.Series.Data is the last specifier for a given
-# series; any Series specifies after the Series.Data specifier apply to the
-# next series.
+# automatically created as needed. Series.Data is the last specifier for a
+# given series; any Series specifies after the Series.Data specifier apply to
+# the next series.
 Series.New: Series 1
 Series.New: Series 2
 Series.Data:
@@ -1103,6 +1114,10 @@ int main( int argc, char* argv[] )
       continue;
     }
     if ( !out_of_options ) {
+      if ( a == "-v" || a == "--version" ) {
+        show_version();
+        return 0;
+      }
       if ( a == "-h" || a == "--help" ) {
         show_help();
         return 0;
