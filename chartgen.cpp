@@ -220,9 +220,9 @@ Series.New: Name of series
 Series.Data:
         0       23.7
         7.0     2.3
-        23      -2e-1
+        23      7e-2
         47      10.0
-        71      -4.3
+        71      4.3
         97      14
 
 # Several series sharing the same X-values can be specified in one go. If not
@@ -236,7 +236,7 @@ Series.Data:
 #       X-value         Series 1        Series 2
         8               22              5
         30              3               18
-        80              14              -2
+        80              14              2
 
 # EOF
 )EOF";
@@ -249,9 +249,9 @@ Series.New  : Name of series
 Series.Data :
         0       23.7
         7.0     2.3
-        23      -2e-1
+        40      20
         47      10.0
-        71      -4.3
+        71      4.3
         97      14
 
 # Summary of all available specifiers (see -T template for help):
