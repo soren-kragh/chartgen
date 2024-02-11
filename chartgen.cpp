@@ -170,6 +170,12 @@ Axis.Y.Unit:
 #Axis.X.NumberFormat: Fixed
 #Axis.Y.NumberFormat: Fixed
 
+# A number unit at a short unit indication placed after each axis number. This
+# can be an alternative to the Unit specifier above. Leading _ is replaced by
+# space.
+#Axis.X.NumberUnit: s
+#Axis.Y.NumberUnit: _Volts
+
 # Specify if numbers are shown for minor ticks, default for linear scale is
 # Off, while default for logarithmic scale is On; may be On or Off.
 #Axis.X.MinorNumber: On
@@ -274,6 +280,8 @@ Series.Data :
 # Axis.Y.Grid: On Off
 # Axis.X.NumberFormat: Fixed
 # Axis.Y.NumberFormat: Fixed
+# Axis.X.NumberUnit: s
+# Axis.Y.NumberUnit: _Volts
 # Axis.X.MinorNumber: On
 # Axis.Y.MinorNumber: Off
 # Axis.X.NumberPos: Auto
@@ -832,6 +840,30 @@ void do_Axis_Y_NumberFormat( void )
 
 //-----------------------------------------------------------------------------
 
+void do_Axis_X_NumberUnit( void )
+{
+  std::string txt;
+  get_text( txt, false );
+  for ( char& c : txt ) {
+    if ( c != '_' ) break;
+    c = ' ';
+  }
+  chart.AxisX()->SetNumberUnit( txt );
+}
+
+void do_Axis_Y_NumberUnit( void )
+{
+  std::string txt;
+  get_text( txt, false );
+  for ( char& c : txt ) {
+    if ( c != '_' ) break;
+    c = ' ';
+  }
+  chart.AxisY()->SetNumberUnit( txt );
+}
+
+//-----------------------------------------------------------------------------
+
 void do_Axis_X_MinorNumber( void )
 {
   bool minor_num;
@@ -1012,6 +1044,8 @@ std::unordered_map< std::string, ParseAction > actions = {
   { "Axis.Y.Grid"        , do_Axis_Y_Grid         },
   { "Axis.X.NumberFormat", do_Axis_X_NumberFormat },
   { "Axis.Y.NumberFormat", do_Axis_Y_NumberFormat },
+  { "Axis.X.NumberUnit"  , do_Axis_X_NumberUnit   },
+  { "Axis.Y.NumberUnit"  , do_Axis_Y_NumberUnit   },
   { "Axis.X.MinorNumber" , do_Axis_X_MinorNumber  },
   { "Axis.Y.MinorNumber" , do_Axis_Y_MinorNumber  },
   { "Axis.X.NumberPos"   , do_Axis_X_NumberPos    },
