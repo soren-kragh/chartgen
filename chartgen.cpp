@@ -540,14 +540,14 @@ void do_Pos(
 )
 {
   std::string id = get_identifier( true );
-  if ( id == "Auto"   ) pos = Chart::Auto  ; else
-  if ( id == "Center" ) pos = Chart::Center; else
-  if ( id == "Left"   ) pos = Chart::Left  ; else
-  if ( id == "Right"  ) pos = Chart::Right ; else
-  if ( id == "Top"    ) pos = Chart::Top   ; else
-  if ( id == "Bottom" ) pos = Chart::Bottom; else
-  if ( id == "Above"  ) pos = Chart::Above ; else
-  if ( id == "Below"  ) pos = Chart::Below ; else
+  if ( id == "Auto"   ) pos = Chart::Pos::Auto  ; else
+  if ( id == "Center" ) pos = Chart::Pos::Center; else
+  if ( id == "Left"   ) pos = Chart::Pos::Left  ; else
+  if ( id == "Right"  ) pos = Chart::Pos::Right ; else
+  if ( id == "Top"    ) pos = Chart::Pos::Top   ; else
+  if ( id == "Bottom" ) pos = Chart::Pos::Bottom; else
+  if ( id == "Above"  ) pos = Chart::Pos::Above ; else
+  if ( id == "Below"  ) pos = Chart::Pos::Below ; else
   if ( id == "" ) parse_err( "position expected" ); else
   parse_err( "unknown position '" + id + "'", true );
 }
@@ -568,9 +568,9 @@ void do_NumberFormat(
 )
 {
   std::string id = get_identifier( true );
-  if ( id == "Fixed"      ) number_format = Chart::Fixed     ; else
-  if ( id == "Scientific" ) number_format = Chart::Scientific; else
-  if ( id == "Magnitude"  ) number_format = Chart::Magnitude ; else
+  if ( id == "Fixed"      ) number_format = Chart::NumberFormat::Fixed     ; else
+  if ( id == "Scientific" ) number_format = Chart::NumberFormat::Scientific; else
+  if ( id == "Magnitude"  ) number_format = Chart::NumberFormat::Magnitude ; else
   if ( id == "" ) parse_err( "number format expected" ); else
   parse_err( "unknown number format '" + id + "'", true );
 }
@@ -1128,7 +1128,7 @@ int main( int argc, char* argv[] )
       )
     );
     g->FrontToBack();
-    g->Last()->Attr()->SetLineWidth( 10 )->FillColor()->Set( SVG::Red, 0.25 );
+    g->Last()->Attr()->SetLineWidth( 10 )->FillColor()->Set( SVG::ColorName::Red, 0.25 );
     std::cout << canvas->GenSVG( 10 );
     ERR( "Floating point exception" );
   }
