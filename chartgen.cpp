@@ -121,6 +121,11 @@ Footnote:
   2) Second footnote;
      with an extra line.
 
+# May be Auto, None, Arrow, or Edge. If Edge is selected, then the NumberPos
+# determines at which chart edge the axis is placed.
+Axis.X.Style: Auto
+Axis.Y.Style: Auto
+
 Axis.X.Label: X-Axis
 Axis.Y.Label: Y-Axis
 
@@ -141,8 +146,9 @@ Axis.Y.Unit:
 #Axis.X.LogScale: On
 #Axis.Y.LogScale: On
 
-# Min, max, and optionally where the other orthogonal axis crosses this axis.
-# Auto ranging is applied if no Range specifier is given (recommended).
+# Min, max, and optionally where the other orthogonal axis crosses this axis
+# (ignored if axis style is Edge). Auto ranging is applied if no Range specifier
+# is given (recommended).
 #Axis.X.Range: 0 100 90
 #Axis.Y.Range: -5 25
 
@@ -264,6 +270,8 @@ Series.Data :
 # SubTitle:
 # SubSubTitle:
 # Footnote:
+# Axis.X.Style: Auto
+# Axis.Y.Style: Auto
 # Axis.X.Label:
 # Axis.Y.Label:
 # Axis.X.Unit:
@@ -535,6 +543,19 @@ void expect_ws( const std::string err_msg_if_eol = "" )
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void do_AxisStyle(
+  Chart::AxisStyle& style
+)
+{
+  std::string id = get_identifier( true );
+  if ( id == "Auto"   ) style = Chart::AxisStyle::Auto ; else
+  if ( id == "None"   ) style = Chart::AxisStyle::None ; else
+  if ( id == "Arrow"  ) style = Chart::AxisStyle::Arrow; else
+  if ( id == "Edge"   ) style = Chart::AxisStyle::Edge ; else
+  if ( id == "" ) parse_err( "axis style expected" ); else
+  parse_err( "unknown axis style '" + id + "'", true );
+}
+
 void do_Pos(
   Chart::Pos& pos
 )
@@ -632,6 +653,26 @@ void do_Footnote( void )
   std::string txt;
   get_text( txt, true );
   chart.SetFootnote( txt );
+}
+
+//-----------------------------------------------------------------------------
+
+void do_Axis_X_Style( void )
+{
+  Chart::AxisStyle style;
+  skip_ws();
+  do_AxisStyle( style );
+  expect_eol();
+  chart.AxisX()->SetStyle( style );
+}
+
+void do_Axis_Y_Style( void )
+{
+  Chart::AxisStyle style;
+  skip_ws();
+  do_AxisStyle( style );
+  expect_eol();
+  chart.AxisY()->SetStyle( style );
 }
 
 //-----------------------------------------------------------------------------
@@ -1028,6 +1069,8 @@ std::unordered_map< std::string, ParseAction > actions = {
   { "SubTitle"           , do_SubTitle            },
   { "SubSubTitle"        , do_SubSubTitle         },
   { "Footnote"           , do_Footnote            },
+  { "Axis.X.Style"       , do_Axis_X_Style        },
+  { "Axis.Y.Style"       , do_Axis_Y_Style        },
   { "Axis.X.Label"       , do_Axis_X_Label        },
   { "Axis.Y.Label"       , do_Axis_Y_Label        },
   { "Axis.X.Unit"        , do_Axis_X_Unit         },
