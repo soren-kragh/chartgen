@@ -170,8 +170,8 @@ Axis.Y.Unit:
 #Axis.X.Grid: On On
 #Axis.Y.Grid: On Off
 
-# Number format may be Fixed, Scientific, or Magnitude. Default is Fixed for
-# linear scale and Magnitude for logarithmic scale. Magnitude means showing
+# Number format may be None, Fixed, Scientific, or Magnitude. Default is Fixed
+# for linear scale and Magnitude for logarithmic scale. Magnitude means showing
 # e.g. "10k" instead of "10000" etc.
 #Axis.X.NumberFormat: Fixed
 #Axis.Y.NumberFormat: Fixed
@@ -286,8 +286,8 @@ Series.Data :
 # Axis.Y.Tick: 1.0 0
 # Axis.X.Grid: Off On
 # Axis.Y.Grid: On Off
-# Axis.X.NumberFormat: Fixed
-# Axis.Y.NumberFormat: Fixed
+# Axis.X.NumberFormat: Auto
+# Axis.Y.NumberFormat: Auto
 # Axis.X.NumberUnit: s
 # Axis.Y.NumberUnit: _Volts
 # Axis.X.MinorNumber: On
@@ -589,6 +589,8 @@ void do_NumberFormat(
 )
 {
   std::string id = get_identifier( true );
+  if ( id == "Auto"       ) number_format = Chart::NumberFormat::Auto      ; else
+  if ( id == "None"       ) number_format = Chart::NumberFormat::None      ; else
   if ( id == "Fixed"      ) number_format = Chart::NumberFormat::Fixed     ; else
   if ( id == "Scientific" ) number_format = Chart::NumberFormat::Scientific; else
   if ( id == "Magnitude"  ) number_format = Chart::NumberFormat::Magnitude ; else
