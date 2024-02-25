@@ -1,0 +1,61 @@
+#!/bin/bash -e
+
+if [[ $# == 0 || $1 == "-h" || $1 == "--help" ]]; then
+  echo "Usage: svg2png FILE.svg [FILE.svg...] [WIDTH]"
+  echo "       svg2png FILE.svg FILE.png [WIDTH]"
+  exit 0
+fi
+
+SVG=()
+PNG=
+WIDTH=
+
+while [ $# != 0 ]; do
+  if [[ $1 == *.svg ]]; then
+    if [[ $PNG != "" ]]; then
+      >&2 echo "*** ERROR: An svg file cannot be given after the png file"
+      exit 1
+    fi
+    SVG+=("$1")
+  elif [[ $1 == *.png ]]; then
+    if [[ ${#SVG[@]} != 1 ]]; then
+      >&2 echo "*** ERROR: Exactly one svg file must be given before the png file"
+      exit 1
+    fi
+    if [[ $PNG != "" ]]; then
+      >&2 echo "*** ERROR: Only one png file can be given"
+      exit 1
+    fi
+    PNG=$1
+  elif [[ $1 =~ ^[1-9][0-9]*$ ]]; then
+    if [[ $WIDTH != "" ]]; then
+      >&2 echo "*** ERROR: Only one width can be given"
+      exit 1
+    fi
+    WIDTH=$1
+  else
+    >&2 echo "*** ERROR: Invalid argument(s)"
+    exit 1
+  fi
+  shift
+done
+
+if [[ ${#SVG[@]} == 0 ]]; then
+  >&2 echo "*** ERROR: At least one svg file must be given"
+  exit 1
+fi
+
+for SF in "${SVG[@]}"; do
+  DF=${PNG}
+  if [[ $DF == "" ]]; then
+    DF=${SF/%.svg/.png}
+  fi
+  echo ${DF}
+  CMD='inkscape -o "${DF}"'
+  if [[ $WIDTH != "" ]]; then
+    CMD+=" --export-width=${WIDTH}"
+  fi
+  CMD+=' "${SF}"'
+  # Cannot trust error code or stderr behavior from inkscape.
+  eval ${CMD} 2> >(grep -vP '^(Background|Area) ' >&2) || :
+done
