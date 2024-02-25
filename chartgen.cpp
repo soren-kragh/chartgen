@@ -32,10 +32,10 @@
 
 void show_version( void )
 {
-  std::cout << R"EOF(chartgen 1.00
+  std::cout << R"EOF(chartgen v0.5.0
 This is free software: you are free to change and redistribute it.
 
-Written by S. Kragh
+Written by Soren Kragh
 )EOF";
 }
 
