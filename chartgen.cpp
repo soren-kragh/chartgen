@@ -211,7 +211,7 @@ Series.New: Name of series
 # series, or until it is redefined.
 #Series.PointSize: 0
 
-# The style of the X/Y graph. The style is a number in the range from 0 to 63;
+# The style of the X/Y graph. The style is a number in the range from 0 to 71;
 # if no Style specifier is given (recommended) it is assigned an incrementing
 # number based on the last given Series.Style.
 #  0 to  7: Solid line using 8 different colors
@@ -219,6 +219,7 @@ Series.New: Name of series
 # 16 to 23: Same as 0 to 7 but with medium dashed line
 # 24 to 31: Same as 0 to 7 but with long dashed line
 # 32 to 63: Same as 0 to 31, but with thinner line
+# 64 to 71: Black styles.
 #Series.Style: 4
 
 # These are the X/Y values for the series; only X/Y chart type is supported for
@@ -962,6 +963,15 @@ bool defining_series = false;
 int64_t point_size = 0;
 int64_t style = 0;
 
+void NextSeriesStyle( void )
+{
+  if ( style < 64 ) {
+    style = (style + 1) % 64;
+  } else {
+    style = 64 + ((style + 1) % 8);
+  }
+}
+
 void AddSeries( std::string name = "" )
 {
   series_list.push_back( chart.AddSeries( name ) );
@@ -969,7 +979,7 @@ void AddSeries( std::string name = "" )
     series_list.back()->SetPointSize( point_size );
   }
   series_list.back()->SetStyle( style );
-  style++;
+  NextSeriesStyle();
   defining_series = true;
 }
 
@@ -997,10 +1007,11 @@ void do_Series_Style( void )
   skip_ws();
   if ( at_eol() ) parse_err( "style expected" );
   if ( !get_int64( style ) ) parse_err( "malformed style" );
-  if ( style < 0 || style > 63 ) parse_err( "style out of range", true );
+  if ( style < 0 || style > 71 ) parse_err( "style out of range", true );
   expect_eol();
   if ( defining_series ) {
-    series_list.back()->SetStyle( style++ );
+    series_list.back()->SetStyle( style );
+    NextSeriesStyle();
   }
 }
 
