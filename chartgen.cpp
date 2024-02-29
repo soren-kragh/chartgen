@@ -121,17 +121,23 @@ Footnote:
   2) Second footnote;
      with an extra line.
 
-# May be Auto, None, Arrow, or Edge. If Edge is selected, then the NumberPos
-# determines at which chart edge the axis is placed.
+# In the following Axis.Y is an alias for the primary Y-axis, which is also
+# identified as Axis.PriY. A secondary Y-axis is also possible and is identified
+# as Axis.SecY. All specifies for the primary Y-axis also apply to the secondary
+# Y-axis.
+
+# May be Auto, None, Arrow, or Edge.
 Axis.X.Style: Auto
 Axis.Y.Style: Auto
 
 Axis.X.Label: X-Axis
 Axis.Y.Label: Y-Axis
 
-# Especially for linear scale, it is often a good idea to select units and
-# scale the data accordingly to avoid very small or very large numbers in the
-# graph. It is a cardinal sin to not have units on your axes.
+# Especially for linear scale, it is often a good idea to select units and scale
+# the data accordingly to avoid very small or very large numbers in the graph.
+# It is a cardinal sin to not have units on your axes, but the Axis Label or
+# Axis NumberUnit can also serve that purpose (especially if the Axis Style is
+# not Arrow).
 Axis.X.Unit: Mb/s
 Axis.Y.Unit:
   micro
@@ -146,9 +152,12 @@ Axis.Y.Unit:
 #Axis.X.LogScale: On
 #Axis.Y.LogScale: On
 
-# Min, max, and optionally where the other orthogonal axis crosses this axis
-# (ignored if axis style is Edge). Auto ranging is applied if no Range specifier
-# is given (recommended).
+# Min, max, and optionally where the other orthogonal axis crosses this axis.
+# Auto ranging is applied if no Range specifier is given (recommended). If the
+# Axis Style is Edge, then the orthogonal axis crossing determines at which edge
+# the axis is placed. If both a primary and a seconds Y-axis is used, then the
+# primary Y-axis is always to the left, and the secondary Y-axis is always to
+# the right.
 #Axis.X.Range: 0 100 90
 #Axis.Y.Range: -5 25
 
@@ -205,6 +214,11 @@ Axis.Y.Unit:
 # this.
 Series.New: Name of series
 
+# Associated Y-axis may be Primary or Secondary; the default is Primary. This
+# attribute applies to the current series and all subsequent series, or until it
+# is redefined.
+Series.AxisY: Primary
+
 # Set size of point markers; default is zero (no point markers). The size
 # indicates by how much the point marker width is larger than the width of the
 # graph line. This attribute applies to the current series and all subsequent
@@ -240,13 +254,15 @@ Series.Data:
 # automatically created as needed. Series.Data is the last specifier for a
 # given series; any Series specifies after the Series.Data specifier apply to
 # the next series.
-Series.New: Series 1
-Series.New: Series 2
+Series.New  : Series 1
+Series.AxisY: Primary
+Series.New  : Series 2
+Series.AxisY: Secondary
 Series.Data:
 #       X-value         Series 1        Series 2
-        8               22              5
-        30              3               18
-        80              14              2
+        8               22              5e3
+        30              3               18e3
+        80              14              2e3
 
 # EOF
 )EOF";
@@ -544,19 +560,6 @@ void expect_ws( const std::string err_msg_if_eol = "" )
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void do_AxisStyle(
-  Chart::AxisStyle& style
-)
-{
-  std::string id = get_identifier( true );
-  if ( id == "Auto"   ) style = Chart::AxisStyle::Auto ; else
-  if ( id == "None"   ) style = Chart::AxisStyle::None ; else
-  if ( id == "Arrow"  ) style = Chart::AxisStyle::Arrow; else
-  if ( id == "Edge"   ) style = Chart::AxisStyle::Edge ; else
-  if ( id == "" ) parse_err( "axis style expected" ); else
-  parse_err( "unknown axis style '" + id + "'", true );
-}
-
 void do_Pos(
   Chart::Pos& pos
 )
@@ -583,20 +586,6 @@ void do_Switch(
   if ( id == "Off" ) flag = false; else
   if ( id == "" ) parse_err( "On/Off expected" ); else
   parse_err( "On/Off expected, saw '" + id + "'", true );
-}
-
-void do_NumberFormat(
-  Chart::NumberFormat& number_format
-)
-{
-  std::string id = get_identifier( true );
-  if ( id == "Auto"       ) number_format = Chart::NumberFormat::Auto      ; else
-  if ( id == "None"       ) number_format = Chart::NumberFormat::None      ; else
-  if ( id == "Fixed"      ) number_format = Chart::NumberFormat::Fixed     ; else
-  if ( id == "Scientific" ) number_format = Chart::NumberFormat::Scientific; else
-  if ( id == "Magnitude"  ) number_format = Chart::NumberFormat::Magnitude ; else
-  if ( id == "" ) parse_err( "number format expected" ); else
-  parse_err( "unknown number format '" + id + "'", true );
 }
 
 //-----------------------------------------------------------------------------
@@ -660,104 +649,71 @@ void do_Footnote( void )
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_X_Style( void )
+void do_Axis_Style( Chart::Axis* axis )
 {
   Chart::AxisStyle style;
   skip_ws();
-  do_AxisStyle( style );
+
+  std::string id = get_identifier( true );
+  if ( id == "Auto"   ) style = Chart::AxisStyle::Auto ; else
+  if ( id == "None"   ) style = Chart::AxisStyle::None ; else
+  if ( id == "Arrow"  ) style = Chart::AxisStyle::Arrow; else
+  if ( id == "Edge"   ) style = Chart::AxisStyle::Edge ; else
+  if ( id == "" ) parse_err( "axis style expected" ); else
+  parse_err( "unknown axis style '" + id + "'", true );
+
   expect_eol();
-  chart.AxisX()->SetStyle( style );
-}
-
-void do_Axis_Y_Style( void )
-{
-  Chart::AxisStyle style;
-  skip_ws();
-  do_AxisStyle( style );
-  expect_eol();
-  chart.AxisY()->SetStyle( style );
+  axis->SetStyle( style );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_X_Label( void )
+void do_Axis_Label( Chart::Axis* axis )
 {
   std::string txt;
   get_text( txt, true );
-  chart.AxisX()->SetLabel( txt );
-}
-
-void do_Axis_Y_Label( void )
-{
-  std::string txt;
-  get_text( txt, true );
-  chart.AxisY()->SetLabel( txt );
+  axis->SetLabel( txt );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_X_Unit( void )
+void do_Axis_Unit( Chart::Axis* axis )
 {
   std::string txt;
   get_text( txt, true );
-  chart.AxisX()->SetUnit( txt );
-}
-
-void do_Axis_Y_Unit( void )
-{
-  std::string txt;
-  get_text( txt, true );
-  chart.AxisY()->SetUnit( txt );
+  axis->SetUnit( txt );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_X_UnitPos( void )
+void do_Axis_UnitPos( Chart::Axis* axis )
 {
   Chart::Pos pos;
   skip_ws();
   do_Pos( pos );
   expect_eol();
-  chart.AxisX()->SetUnitPos( pos );
-}
-
-void do_Axis_Y_UnitPos( void )
-{
-  Chart::Pos pos;
-  skip_ws();
-  do_Pos( pos );
-  expect_eol();
-  chart.AxisY()->SetUnitPos( pos );
+  axis->SetUnitPos( pos );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_X_LogScale( void )
+void do_Axis_LogScale( Chart::Axis* axis )
 {
   bool log_scale;
   skip_ws();
   do_Switch( log_scale );
   expect_eol();
-  chart.AxisX()->SetLogScale( log_scale );
-}
-
-void do_Axis_Y_LogScale( void )
-{
-  bool log_scale;
-  skip_ws();
-  do_Switch( log_scale );
-  expect_eol();
-  chart.AxisY()->SetLogScale( log_scale );
+  axis->SetLogScale( log_scale );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_Range(
-  double& min,
-  double& max,
-  double& cross
-)
+void do_Axis_Range( Chart::Axis* axis )
 {
+  double min;
+  double max;
+  double cross;
+
   skip_ws();
   if ( at_eol() ) parse_err( "min expected" );
   if ( !get_double( min ) ) parse_err( "malformed min" );
@@ -774,33 +730,17 @@ void do_Axis_Range(
   }
 
   expect_eol();
-}
 
-void do_Axis_X_Range( void )
-{
-  double min;
-  double max;
-  double cross;
-  do_Axis_Range( min, max, cross );
-  chart.AxisX()->SetRange( min, max, cross );
-}
-
-void do_Axis_Y_Range( void )
-{
-  double min;
-  double max;
-  double cross;
-  do_Axis_Range( min, max, cross );
-  chart.AxisY()->SetRange( min, max, cross );
+  axis->SetRange( min, max, cross );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_Tick(
-  double& major,
-  int64_t& minor
-)
+void do_Axis_Tick( Chart::Axis* axis )
 {
+  double major;
+  int64_t minor;
+
   skip_ws();
   if ( at_eol() ) parse_err( "major tick expected" );
   if ( !get_double( major ) ) parse_err( "malformed major tick" );
@@ -811,31 +751,17 @@ void do_Axis_Tick(
   if ( minor < 0 || minor > 100 ) parse_err( "minor tick out of range", true );
 
   expect_eol();
-}
 
-void do_Axis_X_Tick( void )
-{
-  double major;
-  int64_t minor;
-  do_Axis_Tick( major, minor );
-  chart.AxisX()->SetTick( major, minor );
-}
-
-void do_Axis_Y_Tick( void )
-{
-  double major;
-  int64_t minor;
-  do_Axis_Tick( major, minor );
-  chart.AxisY()->SetTick( major, minor );
+  axis->SetTick( major, minor );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_Grid(
-  bool& major,
-  bool& minor
-)
+void do_Axis_Grid( Chart::Axis* axis )
 {
+  bool major;
+  bool minor;
+
   skip_ws();
   if ( at_eol() ) parse_err( "major grid expected" );
   do_Switch( major );
@@ -844,47 +770,33 @@ void do_Axis_Grid(
   do_Switch( minor );
 
   expect_eol();
-}
 
-void do_Axis_X_Grid( void )
-{
-  bool major;
-  bool minor;
-  do_Axis_Grid( major, minor );
-  chart.AxisX()->SetGrid( major, minor );
-}
-
-void do_Axis_Y_Grid( void )
-{
-  bool major;
-  bool minor;
-  do_Axis_Grid( major, minor );
-  chart.AxisY()->SetGrid( major, minor );
+  axis->SetGrid( major, minor );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_X_NumberFormat( void )
+void do_Axis_NumberFormat( Chart::Axis* axis )
 {
   Chart::NumberFormat number_format;
   skip_ws();
-  do_NumberFormat( number_format );
-  expect_eol();
-  chart.AxisX()->SetNumberFormat( number_format );
-}
 
-void do_Axis_Y_NumberFormat( void )
-{
-  Chart::NumberFormat number_format;
-  skip_ws();
-  do_NumberFormat( number_format );
+  std::string id = get_identifier( true );
+  if ( id == "Auto"       ) number_format = Chart::NumberFormat::Auto      ; else
+  if ( id == "None"       ) number_format = Chart::NumberFormat::None      ; else
+  if ( id == "Fixed"      ) number_format = Chart::NumberFormat::Fixed     ; else
+  if ( id == "Scientific" ) number_format = Chart::NumberFormat::Scientific; else
+  if ( id == "Magnitude"  ) number_format = Chart::NumberFormat::Magnitude ; else
+  if ( id == "" ) parse_err( "number format expected" ); else
+  parse_err( "unknown number format '" + id + "'", true );
+
   expect_eol();
-  chart.AxisY()->SetNumberFormat( number_format );
+  axis->SetNumberFormat( number_format );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_X_NumberUnit( void )
+void do_Axis_NumberUnit( Chart::Axis* axis )
 {
   std::string txt;
   get_text( txt, false );
@@ -892,58 +804,29 @@ void do_Axis_X_NumberUnit( void )
     if ( c != '_' ) break;
     c = ' ';
   }
-  chart.AxisX()->SetNumberUnit( txt );
-}
-
-void do_Axis_Y_NumberUnit( void )
-{
-  std::string txt;
-  get_text( txt, false );
-  for ( char& c : txt ) {
-    if ( c != '_' ) break;
-    c = ' ';
-  }
-  chart.AxisY()->SetNumberUnit( txt );
+  axis->SetNumberUnit( txt );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_X_MinorNumber( void )
+void do_Axis_MinorNumber( Chart::Axis* axis )
 {
   bool minor_num;
   skip_ws();
   do_Switch( minor_num );
   expect_eol();
-  chart.AxisX()->ShowMinorNumbers( minor_num );
-}
-
-void do_Axis_Y_MinorNumber( void )
-{
-  bool minor_num;
-  skip_ws();
-  do_Switch( minor_num );
-  expect_eol();
-  chart.AxisY()->ShowMinorNumbers( minor_num );
+  axis->ShowMinorNumbers( minor_num );
 }
 
 //-----------------------------------------------------------------------------
 
-void do_Axis_X_NumberPos( void )
+void do_Axis_NumberPos( Chart::Axis* axis )
 {
   Chart::Pos pos;
   skip_ws();
   do_Pos( pos );
   expect_eol();
-  chart.AxisX()->SetNumberPos( pos );
-}
-
-void do_Axis_Y_NumberPos( void )
-{
-  Chart::Pos pos;
-  skip_ws();
-  do_Pos( pos );
-  expect_eol();
-  chart.AxisY()->SetNumberPos( pos );
+  axis->SetNumberPos( pos );
 }
 
 //-----------------------------------------------------------------------------
@@ -960,6 +843,7 @@ void do_LegendPos( void )
 //-----------------------------------------------------------------------------
 
 bool defining_series = false;
+int axis_y_n = 0;
 int64_t point_size = 0;
 int64_t style = 0;
 
@@ -975,6 +859,7 @@ void NextSeriesStyle( void )
 void AddSeries( std::string name = "" )
 {
   series_list.push_back( chart.AddSeries( name ) );
+  series_list.back()->SetAxisY( axis_y_n );
   if ( point_size > 0 ) {
     series_list.back()->SetPointSize( point_size );
   }
@@ -988,6 +873,20 @@ void do_Series_New( void )
   std::string txt;
   get_text( txt, true );
   AddSeries( txt );
+}
+
+void do_Series_AxisY( void )
+{
+  skip_ws();
+  std::string id = get_identifier( true );
+  if ( id == "Primary"   ) axis_y_n = 0; else
+  if ( id == "Secondary" ) axis_y_n = 1; else
+  if ( id == "" ) parse_err( "Primary or Secondary expected" ); else
+  parse_err( "unknown axis '" + id + "'", true );
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetAxisY( axis_y_n );
+  }
 }
 
 void do_Series_PointSize( void )
@@ -1073,53 +972,72 @@ void do_Series_Data( void )
 
 ///////////////////////////////////////////////////////////////////////////////
 
-using ParseAction = std::function<void()>;
+using ChartAction = std::function< void() >;
 
-std::unordered_map< std::string, ParseAction > actions = {
-  { "ChartArea"          , do_ChartArea           },
-  { "Margin"             , do_Margin              },
-  { "Title"              , do_Title               },
-  { "SubTitle"           , do_SubTitle            },
-  { "SubSubTitle"        , do_SubSubTitle         },
-  { "Footnote"           , do_Footnote            },
-  { "Axis.X.Style"       , do_Axis_X_Style        },
-  { "Axis.Y.Style"       , do_Axis_Y_Style        },
-  { "Axis.X.Label"       , do_Axis_X_Label        },
-  { "Axis.Y.Label"       , do_Axis_Y_Label        },
-  { "Axis.X.Unit"        , do_Axis_X_Unit         },
-  { "Axis.Y.Unit"        , do_Axis_Y_Unit         },
-  { "Axis.X.UnitPos"     , do_Axis_X_UnitPos      },
-  { "Axis.Y.UnitPos"     , do_Axis_Y_UnitPos      },
-  { "Axis.X.LogScale"    , do_Axis_X_LogScale     },
-  { "Axis.Y.LogScale"    , do_Axis_Y_LogScale     },
-  { "Axis.X.Range"       , do_Axis_X_Range        },
-  { "Axis.Y.Range"       , do_Axis_Y_Range        },
-  { "Axis.X.Tick"        , do_Axis_X_Tick         },
-  { "Axis.Y.Tick"        , do_Axis_Y_Tick         },
-  { "Axis.X.Grid"        , do_Axis_X_Grid         },
-  { "Axis.Y.Grid"        , do_Axis_Y_Grid         },
-  { "Axis.X.NumberFormat", do_Axis_X_NumberFormat },
-  { "Axis.Y.NumberFormat", do_Axis_Y_NumberFormat },
-  { "Axis.X.NumberUnit"  , do_Axis_X_NumberUnit   },
-  { "Axis.Y.NumberUnit"  , do_Axis_Y_NumberUnit   },
-  { "Axis.X.MinorNumber" , do_Axis_X_MinorNumber  },
-  { "Axis.Y.MinorNumber" , do_Axis_Y_MinorNumber  },
-  { "Axis.X.NumberPos"   , do_Axis_X_NumberPos    },
-  { "Axis.Y.NumberPos"   , do_Axis_Y_NumberPos    },
-  { "LegendPos"          , do_LegendPos           },
-  { "Series.New"         , do_Series_New          },
-  { "Series.PointSize"   , do_Series_PointSize    },
-  { "Series.Style"       , do_Series_Style        },
-  { "Series.Data"        , do_Series_Data         },
+std::unordered_map< std::string, ChartAction > chart_actions = {
+  { "ChartArea"       , do_ChartArea        },
+  { "Margin"          , do_Margin           },
+  { "Title"           , do_Title            },
+  { "SubTitle"        , do_SubTitle         },
+  { "SubSubTitle"     , do_SubSubTitle      },
+  { "Footnote"        , do_Footnote         },
+  { "LegendPos"       , do_LegendPos        },
+  { "Series.New"      , do_Series_New       },
+  { "Series.AxisY"    , do_Series_AxisY     },
+  { "Series.PointSize", do_Series_PointSize },
+  { "Series.Style"    , do_Series_Style     },
+  { "Series.Data"     , do_Series_Data      },
+};
+
+using AxisAction = std::function< void( Chart::Axis* ) >;
+
+std::unordered_map< std::string, AxisAction > axis_actions = {
+  { "Style"       , do_Axis_Style        },
+  { "Label"       , do_Axis_Label        },
+  { "Unit"        , do_Axis_Unit         },
+  { "UnitPos"     , do_Axis_UnitPos      },
+  { "LogScale"    , do_Axis_LogScale     },
+  { "Range"       , do_Axis_Range        },
+  { "Tick"        , do_Axis_Tick         },
+  { "Grid"        , do_Axis_Grid         },
+  { "NumberFormat", do_Axis_NumberFormat },
+  { "NumberUnit"  , do_Axis_NumberUnit   },
+  { "MinorNumber" , do_Axis_MinorNumber  },
+  { "NumberPos"   , do_Axis_NumberPos    },
 };
 
 bool parse_spec( void )
 {
   std::string key;
   if ( !get_key( key ) ) return false;
-  auto it = actions.find( key );
-  if ( it == actions.end() ) parse_err( "Unknown KEY '" + key + "'", true );
-  it->second();
+
+  bool ok = false;
+
+  do {
+    if ( key.substr( 0, 5 ) == "Axis." ) {
+      size_t i = key.find( '.', 5 );
+      if ( i == std::string::npos ) break;
+      std::string axis_id = key.substr( 5, i - 5 );
+      Chart::Axis* axis = nullptr;
+      if ( axis_id == "X"    ) axis = chart.AxisX(   ); else
+      if ( axis_id == "Y"    ) axis = chart.AxisY(   ); else
+      if ( axis_id == "PriY" ) axis = chart.AxisY( 0 ); else
+      if ( axis_id == "SecY" ) axis = chart.AxisY( 1 ); else
+      break;
+      auto it = axis_actions.find( key.substr( i + 1 ) );
+      if ( it == axis_actions.end() ) break;
+      it->second( axis );
+      ok = true;
+    } else {
+      auto it = chart_actions.find( key );
+      if ( it == chart_actions.end() ) break;
+      it->second();
+      ok = true;
+    }
+  } while ( false );
+
+  if ( !ok ) parse_err( "Unknown KEY '" + key + "'", true );
+
   return true;
 }
 
