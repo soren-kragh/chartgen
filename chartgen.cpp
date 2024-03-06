@@ -133,6 +133,9 @@ Axis.Y.Style: Auto
 Axis.X.Label: X-Axis
 Axis.Y.Label: Y-Axis
 
+Axis.X.SubLabel: smaller label
+Axis.Y.SubLabel: smaller label
+
 # Especially for linear scale, it is often a good idea to select units and scale
 # the data accordingly to avoid very small or very large numbers in the graph.
 # It is a cardinal sin to not have units on your axes, but the Axis Label or
@@ -291,6 +294,8 @@ Series.Data :
 # Axis.Y.Style: Auto
 # Axis.X.Label:
 # Axis.Y.Label:
+# Axis.X.SubLabel:
+# Axis.Y.SubLabel:
 # Axis.X.Unit:
 # Axis.Y.Unit:
 # Axis.X.UnitPos: Above
@@ -677,6 +682,15 @@ void do_Axis_Label( Chart::Axis* axis )
 
 //-----------------------------------------------------------------------------
 
+void do_Axis_SubLabel( Chart::Axis* axis )
+{
+  std::string txt;
+  get_text( txt, true );
+  axis->SetSubLabel( txt );
+}
+
+//-----------------------------------------------------------------------------
+
 void do_Axis_Unit( Chart::Axis* axis )
 {
   std::string txt;
@@ -994,6 +1008,7 @@ using AxisAction = std::function< void( Chart::Axis* ) >;
 std::unordered_map< std::string, AxisAction > axis_actions = {
   { "Style"       , do_Axis_Style        },
   { "Label"       , do_Axis_Label        },
+  { "SubLabel"    , do_Axis_SubLabel     },
   { "Unit"        , do_Axis_Unit         },
   { "UnitPos"     , do_Axis_UnitPos      },
   { "LogScale"    , do_Axis_LogScale     },
