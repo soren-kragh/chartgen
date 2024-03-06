@@ -178,15 +178,24 @@ Axis.Y.Unit:
 #Axis.X.Tick: 10.0 4
 #Axis.Y.Tick: 1.0 0
 
-# Turn grid lines on/off for major and minor ticks; may be On or Off.
+# Turn grid lines on/off for major and minor ticks; may be On or Off. Unless
+# explicitly enabled for both Y-axes, only the grid for one of the Y-axes will
+# be shown, typically the primary Y-axis. Enabling the grid for both Y-axes is
+# probably a bad idea in most cases; a better approach is to adjust the Range
+# for the two Y-axes such the the primary grid aligns with the secondary Y-axis.
 #Axis.X.Grid: On On
 #Axis.Y.Grid: On Off
+
+# Grid style may be Auto, Dash, or Solid; default is Auto.
+#Axis.X.GridStyle: Auto
+#Axis.Y.GridStyle: Auto
 
 # Number format may be None, Fixed, Scientific, or Magnitude. Default is Fixed
 # for linear scale and Magnitude for logarithmic scale. Magnitude means showing
 # e.g. "10k" instead of "10000" etc.
 #Axis.X.NumberFormat: Fixed
 #Axis.Y.NumberFormat: Fixed
+Axis.SecY.NumberFormat: Magnitude
 
 # A number unit at a short unit indication placed after each axis number. This
 # can be an alternative to the Unit specifier above. Leading _ is replaced by
@@ -236,7 +245,8 @@ Series.AxisY: Primary
 # 16 to 23: Same as 0 to 7 but with medium dashed line
 # 24 to 31: Same as 0 to 7 but with long dashed line
 # 32 to 63: Same as 0 to 31, but with thinner line
-# 64 to 71: Black styles.
+# 64 to 67: Black styles (solid, short/medium/long dash)
+# 68 to 71: Same as 64 to 67, but with thinner line
 #Series.Style: 4
 
 # These are the X/Y values for the series; only X/Y chart type is supported for
@@ -261,6 +271,8 @@ Series.New  : Series 1
 Series.AxisY: Primary
 Series.New  : Series 2
 Series.AxisY: Secondary
+Series.Style: 70
+Series.PointSize: 10
 Series.Data:
 #       X-value         Series 1        Series 2
         8               22              5e3
@@ -308,6 +320,8 @@ Series.Data :
 # Axis.Y.Tick: 1.0 0
 # Axis.X.Grid: Off On
 # Axis.Y.Grid: On Off
+# Axis.X.GridStyle: Auto
+# Axis.Y.GridStyle: Auto
 # Axis.X.NumberFormat: Auto
 # Axis.Y.NumberFormat: Auto
 # Axis.X.NumberUnit: s
@@ -790,6 +804,22 @@ void do_Axis_Grid( Chart::Axis* axis )
 
 //-----------------------------------------------------------------------------
 
+void do_Axis_GridStyle( Chart::Axis* axis )
+{
+  Chart::GridStyle style;
+  skip_ws();
+  std::string id = get_identifier( true );
+  if ( id == "Auto"  ) style = Chart::GridStyle::Auto ; else
+  if ( id == "Dash"  ) style = Chart::GridStyle::Dash ; else
+  if ( id == "Solid" ) style = Chart::GridStyle::Solid; else
+  if ( id == "" ) parse_err( "grid style expected" ); else
+  parse_err( "unknown grid style '" + id + "'", true );
+  expect_eol();
+  axis->SetGridStyle( style );
+}
+
+//-----------------------------------------------------------------------------
+
 void do_Axis_NumberFormat( Chart::Axis* axis )
 {
   Chart::NumberFormat number_format;
@@ -1015,6 +1045,7 @@ std::unordered_map< std::string, AxisAction > axis_actions = {
   { "Range"       , do_Axis_Range        },
   { "Tick"        , do_Axis_Tick         },
   { "Grid"        , do_Axis_Grid         },
+  { "GridStyle"   , do_Axis_GridStyle    },
   { "NumberFormat", do_Axis_NumberFormat },
   { "NumberUnit"  , do_Axis_NumberUnit   },
   { "MinorNumber" , do_Axis_MinorNumber  },
