@@ -284,8 +284,8 @@ Series.Data:
   } else {
     std::cout << R"EOF(# Simple template
 Title       : Chart Title
-Axis.X.Unit : missing unit
-Axis.Y.Unit : missing unit
+Axis.X.Label: X-Axis Label
+Axis.Y.Label: Y-Axis Label
 Series.New  : Name of series
 Series.Data :
         0       23.7
