@@ -117,9 +117,10 @@ SubSubTitle:
 
 # Footnotes are placed at the bottom of the chart.
 Footnote:
-  1) First footnote.
-  2) Second footnote;
-     with an extra line.
+  https://github.com/soren-kragh/chartgen
+
+# May be Left, Right, or center; default is Left.
+FootnotePos: Right
 
 # In the following Axis.Y is an alias for the primary Y-axis, which is also
 # identified as Axis.PriY. A secondary Y-axis is also possible and is identified
@@ -132,6 +133,7 @@ Axis.Y.Style: Auto
 
 Axis.X.Label: X-Axis
 Axis.Y.Label: Y-Axis
+Axis.SecY.Label: Secondary Y-Axis
 
 Axis.X.SubLabel: smaller label
 Axis.Y.SubLabel: smaller label
@@ -154,6 +156,7 @@ Axis.Y.Unit:
 # Turn logarithmic scale on/off; may be On or Off.
 #Axis.X.LogScale: On
 #Axis.Y.LogScale: On
+Axis.SecY.LogScale: On
 
 # Min, max, and optionally where the other orthogonal axis crosses this axis.
 # Auto ranging is applied if no Range specifier is given (recommended). If the
@@ -302,6 +305,7 @@ Series.Data :
 # SubTitle:
 # SubSubTitle:
 # Footnote:
+# FootnotePos: Auto
 # Axis.X.Style: Auto
 # Axis.Y.Style: Auto
 # Axis.X.Label:
@@ -666,6 +670,15 @@ void do_Footnote( void )
   chart.SetFootnote( txt );
 }
 
+void do_FootnotePos( void )
+{
+  Chart::Pos pos;
+  skip_ws();
+  do_Pos( pos );
+  expect_eol();
+  chart.SetFootnotePos( pos );
+}
+
 //-----------------------------------------------------------------------------
 
 void do_Axis_Style( Chart::Axis* axis )
@@ -1025,6 +1038,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "SubTitle"        , do_SubTitle         },
   { "SubSubTitle"     , do_SubSubTitle      },
   { "Footnote"        , do_Footnote         },
+  { "FootnotePos"     , do_FootnotePos      },
   { "LegendPos"       , do_LegendPos        },
   { "Series.New"      , do_Series_New       },
   { "Series.AxisY"    , do_Series_AxisY     },
