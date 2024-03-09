@@ -161,11 +161,18 @@ Axis.SecY.LogScale: On
 # Min, max, and optionally where the other orthogonal axis crosses this axis.
 # Auto ranging is applied if no Range specifier is given (recommended). If the
 # Axis Style is Edge, then the orthogonal axis crossing determines at which edge
-# the axis is placed. If both a primary and a seconds Y-axis is used, then the
+# the axis is placed. If both a primary and a secondary Y-axis is used, then the
 # primary Y-axis is always to the left, and the secondary Y-axis is always to
 # the right.
 #Axis.X.Range: 0 100 90
 #Axis.Y.Range: -5 25
+
+# May be Auto/Top/Bottom for the X-axis, and Auto/Left/Right for the Y-axis;
+# default is Auto. Overrides any orthogonal axis cross defined by the Range
+# specifier. If both a primary and a secondary Y-axis is used, then the primary
+# Y-axis is always to the left, and the secondary Y-axis is always to the right.
+#Axis.X.Pos: Top
+#Axis.Y.Pos: Right
 
 # Define axis ticks.
 # Linear scale:
@@ -320,6 +327,8 @@ Series.Data :
 # Axis.Y.LogScale: On
 # Axis.X.Range: 0 100 90
 # Axis.Y.Range: -5 25
+# Axis.X.Pos: Top
+# Axis.Y.Pos: Right
 # Axis.X.Tick: 10.0 4
 # Axis.Y.Tick: 1.0 0
 # Axis.X.Grid: Off On
@@ -777,6 +786,17 @@ void do_Axis_Range( Chart::Axis* axis )
 
 //-----------------------------------------------------------------------------
 
+void do_Axis_Pos( Chart::Axis* axis )
+{
+  Chart::Pos pos;
+  skip_ws();
+  do_Pos( pos );
+  expect_eol();
+  axis->SetPos( pos );
+}
+
+//-----------------------------------------------------------------------------
+
 void do_Axis_Tick( Chart::Axis* axis )
 {
   double major;
@@ -1057,6 +1077,7 @@ std::unordered_map< std::string, AxisAction > axis_actions = {
   { "UnitPos"     , do_Axis_UnitPos      },
   { "LogScale"    , do_Axis_LogScale     },
   { "Range"       , do_Axis_Range        },
+  { "Pos"         , do_Axis_Pos          },
   { "Tick"        , do_Axis_Tick         },
   { "Grid"        , do_Axis_Grid         },
   { "GridStyle"   , do_Axis_GridStyle    },
