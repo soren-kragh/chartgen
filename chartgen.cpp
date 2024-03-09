@@ -772,14 +772,14 @@ void do_Axis_Range( Chart::Axis* axis )
   if ( !get_double( max ) ) parse_err( "malformed max" );
   if ( !(max > min) ) parse_err( "max must be greater than min", true );
 
-  cross = min;
-  if ( at_eol() ) return;
-  expect_ws();
+  cross = 0;
   if ( !at_eol() ) {
-    if ( !get_double( cross ) ) parse_err( "malformed orthogonal axis cross" );
+    expect_ws();
+    if ( !at_eol() ) {
+      if ( !get_double( cross ) ) parse_err( "malformed orthogonal axis cross" );
+    }
+    expect_eol();
   }
-
-  expect_eol();
 
   axis->SetRange( min, max, cross );
 }
