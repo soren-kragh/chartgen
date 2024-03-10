@@ -345,6 +345,7 @@ Series.Data :
 # Axis.Y.NumberPos: Auto
 # LegendPos: Below
 # Series.New: Name of series
+# Series.AxisY: Secondary
 # Series.PointSize: 8
 # Series.Style: 32
 # Series.Data:
