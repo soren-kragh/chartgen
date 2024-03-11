@@ -1,2 +1,15 @@
-v0.5.0
+chartgen-v0.5.0
         Initial public version.
+
+chartgen-v0.6.0
+        Added support for dual Y-axis.
+        Added the following specifiers:
+                Axis.PriY.*
+                Axis.SecY.*
+                Axis.*.Style
+                Axis.*.Pos
+                Axis.*.SubLabel
+                Axis.*.GridStyle
+                Series.AxisY
+                FootnotePos
+        Added black series styles 64 to 71.
