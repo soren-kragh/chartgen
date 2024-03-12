@@ -2,10 +2,10 @@
 How to build
 ========================================
 
-Download the follow repositories side by
-side and checkout the relevant version
-tag (see CHANGELOG.txt), which is set
-across all repositories.
+Download the following repositories side
+by side and checkout the relevant
+version tag (see CHANGELOG.txt), which
+is set across all repositories.
 
 https://github.com/soren-kragh/svg.git
 https://github.com/soren-kragh/chart.git
