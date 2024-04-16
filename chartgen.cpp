@@ -19,7 +19,7 @@
 #include <functional>
 #include <chart_main.h>
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 #define ERR( MSG_ ) \
   do \
@@ -28,18 +28,18 @@
     exit( 1 ); \
   } while ( 0 )
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 void show_version( void )
 {
-  std::cout << R"EOF(chartgen v0.6.0
+  std::cout << R"EOF(chartgen v0.7.0
 This is free software: you are free to change and redistribute it.
 
 Written by Soren Kragh
 )EOF";
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 void show_help( void )
 {
@@ -61,7 +61,7 @@ Examples:
 )EOF";
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 void gen_template( bool full )
 {
@@ -236,18 +236,34 @@ Axis.SecY.NumberFormat: Magnitude
 # this.
 Series.New: Name of series
 
+# Series type may be:
+#   XY          X/Y plot (default). Regard X values as numbers and draw lines
+#               between data points, possibly with point markers.
+#   Scatter     Scatter plot. Same as XY but with no lines and always with
+#               point markers.
+# Since the X values are true numbers for XY and Scatter types, these types
+# cannot be shown on the same chart as any other types, where the X value is
+# interpreted as a text string. This attribute applies to the current series and
+# all subsequent series, or until it is redefined.
+Series.Type: XY
+
 # Associated Y-axis may be Primary or Secondary; the default is Primary. This
 # attribute applies to the current series and all subsequent series, or until it
 # is redefined.
 Series.AxisY: Primary
 
-# Set size of point markers; default is zero (no point markers). The size
-# indicates by how much the point marker width is larger than the width of the
-# graph line. This attribute applies to the current series and all subsequent
-# series, or until it is redefined.
+# Set size of point markers; for XY plot the default is zero (no point markers).
+# The size indicates by how much the point marker width is larger than the width
+# of the graph line. This attribute applies to the current series and all
+# subsequent series, or until it is redefined.
 #Series.PointSize: 0
 
-# The style of the X/Y graph. The style is a number in the range from 0 to 71;
+# The point marker shape may be Circle, Square, Triangle, or Diamond; default is
+# Circle. This attribute applies to the current series and all subsequent
+# series, or until it is redefined.
+#Series.PointShape: Circle
+
+# The style of the graph. The style is a number in the range from 0 to 71;
 # if no Style specifier is given (recommended) it is assigned an incrementing
 # number based on the last given Series.Style.
 #  0 to  7: Solid line using 8 different colors
@@ -259,11 +275,12 @@ Series.AxisY: Primary
 # 68 to 71: Same as 64 to 67, but with thinner line
 #Series.Style: 4
 
-# These are the X/Y values for the series; only X/Y chart type is supported for
-# now. If no new series was created beforehand, an anonymous one will be
-# automatically created. Series.Data is the last specifier for a given series;
-# any Series specifies after the Series.Data specifier apply to the next
-# series.
+# These are the X and Y values for the series. If no new series was created
+# beforehand, an anonymous one will be automatically created. For XY and Scatter
+# type plots the X value is a number, otherwise the X value is regarded as a
+# text string, which must be single quoted if it contains spaces. Series.Data is
+# the last specifier for a given series; any Series specifies after the
+# Series.Data specifier apply to the next series.
 Series.Data:
         0       23.7
         7.0     2.3
@@ -274,9 +291,7 @@ Series.Data:
 
 # Several series sharing the same X-values can be specified in one go. If not
 # enough new series were created beforehand, anonymous ones will be
-# automatically created as needed. Series.Data is the last specifier for a
-# given series; any Series specifies after the Series.Data specifier apply to
-# the next series.
+# automatically created as needed.
 Series.New  : Series 1
 Series.AxisY: Primary
 Series.New  : Series 2
@@ -345,8 +360,10 @@ Series.Data :
 # Axis.Y.NumberPos: Auto
 # LegendPos: Below
 # Series.New: Name of series
+# Series.Type: XY
 # Series.AxisY: Secondary
 # Series.PointSize: 8
+# Series.PointShape: Circle
 # Series.Style: 32
 # Series.Data:
 
@@ -354,7 +371,7 @@ Series.Data :
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 bool is_ws( char c )
 {
@@ -376,7 +393,7 @@ void trunc_nl( std::string& s )
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 Chart::Main chart;
 
@@ -401,7 +418,7 @@ void next_line( void )
 // Start column of last parsed identifier.
 size_t id_col;
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 bool at_eof( void )
 {
@@ -455,7 +472,7 @@ void parse_err( const std::string msg, bool revert_col = false )
   exit( 1 );
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 char get_char( bool adv = true )
 {
@@ -524,7 +541,7 @@ bool get_double( double& d )
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 bool get_key( std::string& key )
 {
@@ -574,7 +591,7 @@ void get_text( std::string& txt, bool multi_line )
   trunc_ws( txt );
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 void expect_eol( void )
 {
@@ -591,7 +608,7 @@ void expect_ws( const std::string err_msg_if_eol = "" )
   if ( !(old_col < cur_col) ) parse_err( "whitespace expected" );
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 void do_Pos(
   Chart::Pos& pos
@@ -921,8 +938,10 @@ void do_LegendPos( void )
 //-----------------------------------------------------------------------------
 
 bool defining_series = false;
+Chart::SeriesType series_type = Chart::SeriesType::XY;
 int axis_y_n = 0;
 int64_t point_size = 0;
+Chart::PointShape point_shape = Chart::PointShape::Circle;
 int64_t style = 0;
 
 void NextSeriesStyle( void )
@@ -937,10 +956,12 @@ void NextSeriesStyle( void )
 void AddSeries( std::string name = "" )
 {
   series_list.push_back( chart.AddSeries( name ) );
+  series_list.back()->SetType( series_type );
   series_list.back()->SetAxisY( axis_y_n );
   if ( point_size > 0 ) {
     series_list.back()->SetPointSize( point_size );
   }
+  series_list.back()->SetPointShape( point_shape );
   series_list.back()->SetStyle( style );
   NextSeriesStyle();
   defining_series = true;
@@ -951,6 +972,20 @@ void do_Series_New( void )
   std::string txt;
   get_text( txt, true );
   AddSeries( txt );
+}
+
+void do_Series_Type( void )
+{
+  skip_ws();
+  std::string id = get_identifier( true );
+  if ( id == "XY"      ) series_type = Chart::SeriesType::XY     ; else
+  if ( id == "Scatter" ) series_type = Chart::SeriesType::Scatter; else
+  if ( id == "" ) parse_err( "series type expected" ); else
+  parse_err( "unknown series type '" + id + "'", true );
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetType( series_type );
+  }
 }
 
 void do_Series_AxisY( void )
@@ -976,6 +1011,22 @@ void do_Series_PointSize( void )
   expect_eol();
   if ( defining_series ) {
     series_list.back()->SetPointSize( point_size );
+  }
+}
+
+void do_Series_PointShape( void )
+{
+  skip_ws();
+  std::string id = get_identifier( true );
+  if ( id == "Circle"   ) point_shape = Chart::PointShape::Circle  ; else
+  if ( id == "Square"   ) point_shape = Chart::PointShape::Square  ; else
+  if ( id == "Triangle" ) point_shape = Chart::PointShape::Triangle; else
+  if ( id == "Diamond"  ) point_shape = Chart::PointShape::Diamond ; else
+  if ( id == "" ) parse_err( "point shape expected" ); else
+  parse_err( "unknown point shape '" + id + "'", true );
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetPointShape( point_shape );
   }
 }
 
@@ -1048,24 +1099,26 @@ void do_Series_Data( void )
   defining_series = false;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 using ChartAction = std::function< void() >;
 
 std::unordered_map< std::string, ChartAction > chart_actions = {
-  { "ChartArea"       , do_ChartArea        },
-  { "Margin"          , do_Margin           },
-  { "Title"           , do_Title            },
-  { "SubTitle"        , do_SubTitle         },
-  { "SubSubTitle"     , do_SubSubTitle      },
-  { "Footnote"        , do_Footnote         },
-  { "FootnotePos"     , do_FootnotePos      },
-  { "LegendPos"       , do_LegendPos        },
-  { "Series.New"      , do_Series_New       },
-  { "Series.AxisY"    , do_Series_AxisY     },
-  { "Series.PointSize", do_Series_PointSize },
-  { "Series.Style"    , do_Series_Style     },
-  { "Series.Data"     , do_Series_Data      },
+  { "ChartArea"        , do_ChartArea         },
+  { "Margin"           , do_Margin            },
+  { "Title"            , do_Title             },
+  { "SubTitle"         , do_SubTitle          },
+  { "SubSubTitle"      , do_SubSubTitle       },
+  { "Footnote"         , do_Footnote          },
+  { "FootnotePos"      , do_FootnotePos       },
+  { "LegendPos"        , do_LegendPos         },
+  { "Series.New"       , do_Series_New        },
+  { "Series.Type"      , do_Series_Type       },
+  { "Series.AxisY"     , do_Series_AxisY      },
+  { "Series.PointSize" , do_Series_PointSize  },
+  { "Series.PointShape", do_Series_PointShape },
+  { "Series.Style"     , do_Series_Style      },
+  { "Series.Data"      , do_Series_Data       },
 };
 
 using AxisAction = std::function< void( Chart::Axis* ) >;
@@ -1123,7 +1176,7 @@ bool parse_spec( void )
   return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 void parse_lines( void )
 {
@@ -1132,7 +1185,7 @@ void parse_lines( void )
   while ( parse_spec() ) {}
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 void process_files( const std::vector< std::string >& file_list )
 {
@@ -1161,7 +1214,7 @@ void process_files( const std::vector< std::string >& file_list )
   parse_lines();
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 std::jmp_buf sigfpe_jmp;
 
@@ -1239,4 +1292,4 @@ int main( int argc, char* argv[] )
   return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////

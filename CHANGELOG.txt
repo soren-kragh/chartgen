@@ -13,3 +13,9 @@ chartgen-v0.6.0
                 Series.AxisY
                 FootnotePos
         Added black series styles 64 to 71.
+
+chartgen-v0.7.0
+        Added support for scatter plot.
+        Added the following specifiers:
+                Series.Type
+                Series.PointShape
