@@ -256,12 +256,12 @@ Series.AxisY: Primary
 # The size indicates by how much the point marker width is larger than the width
 # of the graph line. This attribute applies to the current series and all
 # subsequent series, or until it is redefined.
-#Series.PointSize: 0
+#Series.MarkerSize: 0
 
 # The point marker shape may be Circle, Square, Triangle, or Diamond; default is
 # Circle. This attribute applies to the current series and all subsequent
 # series, or until it is redefined.
-#Series.PointShape: Circle
+#Series.MarkerShape: Circle
 
 # The style of the graph. The style is a number in the range from 0 to 71;
 # if no Style specifier is given (recommended) it is assigned an incrementing
@@ -297,7 +297,7 @@ Series.AxisY: Primary
 Series.New  : Series 2
 Series.AxisY: Secondary
 Series.Style: 70
-Series.PointSize: 10
+Series.MarkerSize: 10
 Series.Data:
 #       X-value         Series 1        Series 2
         8               22              5e3
@@ -362,8 +362,8 @@ Series.Data :
 # Series.New: Name of series
 # Series.Type: XY
 # Series.AxisY: Secondary
-# Series.PointSize: 8
-# Series.PointShape: Circle
+# Series.MarkerSize: 8
+# Series.MarkerShape: Circle
 # Series.Style: 32
 # Series.Data:
 
@@ -940,8 +940,8 @@ void do_LegendPos( void )
 bool defining_series = false;
 Chart::SeriesType series_type = Chart::SeriesType::XY;
 int axis_y_n = 0;
-int64_t point_size = 0;
-Chart::PointShape point_shape = Chart::PointShape::Circle;
+int64_t marker_size = 0;
+Chart::MarkerShape marker_shape = Chart::MarkerShape::Circle;
 int64_t style = 0;
 
 void NextSeriesStyle( void )
@@ -958,10 +958,10 @@ void AddSeries( std::string name = "" )
   series_list.push_back( chart.AddSeries( name ) );
   series_list.back()->SetType( series_type );
   series_list.back()->SetAxisY( axis_y_n );
-  if ( point_size > 0 ) {
-    series_list.back()->SetPointSize( point_size );
+  if ( marker_size > 0 ) {
+    series_list.back()->SetMarkerSize( marker_size );
   }
-  series_list.back()->SetPointShape( point_shape );
+  series_list.back()->SetMarkerShape( marker_shape );
   series_list.back()->SetStyle( style );
   NextSeriesStyle();
   defining_series = true;
@@ -1002,31 +1002,31 @@ void do_Series_AxisY( void )
   }
 }
 
-void do_Series_PointSize( void )
+void do_Series_MarkerSize( void )
 {
   skip_ws();
-  if ( at_eol() ) parse_err( "point size expected" );
-  if ( !get_int64( point_size ) ) parse_err( "malformed point size" );
-  if ( point_size < 0 || point_size > 100 ) parse_err( "point size out of range", true );
+  if ( at_eol() ) parse_err( "marker size expected" );
+  if ( !get_int64( marker_size ) ) parse_err( "malformed marker size" );
+  if ( marker_size < 0 || marker_size > 100 ) parse_err( "marker size out of range", true );
   expect_eol();
   if ( defining_series ) {
-    series_list.back()->SetPointSize( point_size );
+    series_list.back()->SetMarkerSize( marker_size );
   }
 }
 
-void do_Series_PointShape( void )
+void do_Series_MarkerShape( void )
 {
   skip_ws();
   std::string id = get_identifier( true );
-  if ( id == "Circle"   ) point_shape = Chart::PointShape::Circle  ; else
-  if ( id == "Square"   ) point_shape = Chart::PointShape::Square  ; else
-  if ( id == "Triangle" ) point_shape = Chart::PointShape::Triangle; else
-  if ( id == "Diamond"  ) point_shape = Chart::PointShape::Diamond ; else
-  if ( id == "" ) parse_err( "point shape expected" ); else
-  parse_err( "unknown point shape '" + id + "'", true );
+  if ( id == "Circle"   ) marker_shape = Chart::MarkerShape::Circle  ; else
+  if ( id == "Square"   ) marker_shape = Chart::MarkerShape::Square  ; else
+  if ( id == "Triangle" ) marker_shape = Chart::MarkerShape::Triangle; else
+  if ( id == "Diamond"  ) marker_shape = Chart::MarkerShape::Diamond ; else
+  if ( id == "" ) parse_err( "marker shape expected" ); else
+  parse_err( "unknown marker shape '" + id + "'", true );
   expect_eol();
   if ( defining_series ) {
-    series_list.back()->SetPointShape( point_shape );
+    series_list.back()->SetMarkerShape( marker_shape );
   }
 }
 
@@ -1104,21 +1104,21 @@ void do_Series_Data( void )
 using ChartAction = std::function< void() >;
 
 std::unordered_map< std::string, ChartAction > chart_actions = {
-  { "ChartArea"        , do_ChartArea         },
-  { "Margin"           , do_Margin            },
-  { "Title"            , do_Title             },
-  { "SubTitle"         , do_SubTitle          },
-  { "SubSubTitle"      , do_SubSubTitle       },
-  { "Footnote"         , do_Footnote          },
-  { "FootnotePos"      , do_FootnotePos       },
-  { "LegendPos"        , do_LegendPos         },
-  { "Series.New"       , do_Series_New        },
-  { "Series.Type"      , do_Series_Type       },
-  { "Series.AxisY"     , do_Series_AxisY      },
-  { "Series.PointSize" , do_Series_PointSize  },
-  { "Series.PointShape", do_Series_PointShape },
-  { "Series.Style"     , do_Series_Style      },
-  { "Series.Data"      , do_Series_Data       },
+  { "ChartArea"         , do_ChartArea          },
+  { "Margin"            , do_Margin             },
+  { "Title"             , do_Title              },
+  { "SubTitle"          , do_SubTitle           },
+  { "SubSubTitle"       , do_SubSubTitle        },
+  { "Footnote"          , do_Footnote           },
+  { "FootnotePos"       , do_FootnotePos        },
+  { "LegendPos"         , do_LegendPos          },
+  { "Series.New"        , do_Series_New         },
+  { "Series.Type"       , do_Series_Type        },
+  { "Series.AxisY"      , do_Series_AxisY       },
+  { "Series.MarkerSize" , do_Series_MarkerSize  },
+  { "Series.MarkerShape", do_Series_MarkerShape },
+  { "Series.Style"      , do_Series_Style       },
+  { "Series.Data"       , do_Series_Data        },
 };
 
 using AxisAction = std::function< void( Chart::Axis* ) >;
