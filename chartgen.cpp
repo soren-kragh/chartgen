@@ -252,9 +252,8 @@ Series.Type: XY
 # is redefined.
 Series.AxisY: Primary
 
-# Set size of point markers; for XY plot the default is zero (no point markers).
-# The size indicates by how much the point marker width is larger than the width
-# of the graph line. This attribute applies to the current series and all
+# Set size (diameter) of point markers; for XY plot the default is zero (no
+# point markers). This attribute applies to the current series and all
 # subsequent series, or until it is redefined.
 #Series.MarkerSize: 0
 
