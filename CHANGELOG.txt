@@ -1,5 +1,11 @@
-chartgen-v0.5.0
-        Initial public version.
+chartgen-v0.7.0
+        Added support for scatter plot.
+        Added the following specifiers:
+                Series.Type
+                Series.MarkerSize
+                Series.MarkerShape
+        Removed the following specifiers:
+                Series.PointSize
 
 chartgen-v0.6.0
         Added support for dual Y-axis.
@@ -14,11 +20,5 @@ chartgen-v0.6.0
                 FootnotePos
         Added black series styles 64 to 71.
 
-chartgen-v0.7.0
-        Added support for scatter plot.
-        Added the following specifiers:
-                Series.Type
-                Series.MarkerSize
-                Series.MarkerShape
-        Removed the following specifiers:
-                Series.PointSize
+chartgen-v0.5.0
+        Initial public version.
