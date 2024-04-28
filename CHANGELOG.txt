@@ -1,3 +1,7 @@
+chartgen-v0.8.0
+        Added the following specifiers:
+                Axis.X.Orientation
+
 chartgen-v0.7.0
         Added support for scatter plot.
         Added the following specifiers:

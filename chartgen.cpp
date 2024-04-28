@@ -32,7 +32,7 @@
 
 void show_version( void )
 {
-  std::cout << R"EOF(chartgen v0.7.0
+  std::cout << R"EOF(chartgen v0.8.0
 This is free software: you are free to change and redistribute it.
 
 Written by Soren Kragh
@@ -126,6 +126,11 @@ FootnotePos: Right
 # identified as Axis.PriY. A secondary Y-axis is also possible and is identified
 # as Axis.SecY. All specifies for the primary Y-axis also apply to the secondary
 # Y-axis.
+
+# The orientation of the X-axis may be Horizontal or Vertical, the Y-axis
+# orientation cannot be specified directly as it is always orthogonal to the
+# X-axis.
+Axis.X.Orientation: Horizontal
 
 # May be Auto, None, Arrow, or Edge.
 Axis.X.Style: Auto
@@ -327,6 +332,7 @@ Series.Data :
 # SubSubTitle:
 # Footnote:
 # FootnotePos: Auto
+# Axis.X.Orientation: Horizontal
 # Axis.X.Style: Auto
 # Axis.Y.Style: Auto
 # Axis.X.Label:
@@ -620,8 +626,8 @@ void do_Pos(
   if ( id == "Right"  ) pos = Chart::Pos::Right ; else
   if ( id == "Top"    ) pos = Chart::Pos::Top   ; else
   if ( id == "Bottom" ) pos = Chart::Pos::Bottom; else
-  if ( id == "Above"  ) pos = Chart::Pos::Above ; else
-  if ( id == "Below"  ) pos = Chart::Pos::Below ; else
+  if ( id == "Above"  ) pos = Chart::Pos::Top   ; else
+  if ( id == "Below"  ) pos = Chart::Pos::Bottom; else
   if ( id == "" ) parse_err( "position expected" ); else
   parse_err( "unknown position '" + id + "'", true );
 }
@@ -703,6 +709,26 @@ void do_FootnotePos( void )
   do_Pos( pos );
   expect_eol();
   chart.SetFootnotePos( pos );
+}
+
+//-----------------------------------------------------------------------------
+
+void do_Axis_Orientation( Chart::Axis* axis )
+{
+  bool vertical;
+
+  skip_ws();
+  std::string id = get_identifier( true );
+  if ( id == "Horizontal" ) vertical = false; else
+  if ( id == "Vertical"   ) vertical = true ; else
+  if ( id == "" ) parse_err( "axis orientation expected" ); else
+  parse_err( "unknown axis orientation '" + id + "'", true );
+  expect_eol();
+
+  vertical = (axis == chart.AxisX()) ? vertical : !vertical;
+  chart.AxisX(   )->SetAngle( vertical ? 90 :  0 );
+  chart.AxisY( 0 )->SetAngle( vertical ?  0 : 90 );
+  chart.AxisY( 1 )->SetAngle( vertical ?  0 : 90 );
 }
 
 //-----------------------------------------------------------------------------
@@ -1123,6 +1149,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
 using AxisAction = std::function< void( Chart::Axis* ) >;
 
 std::unordered_map< std::string, AxisAction > axis_actions = {
+  { "Orientation" , do_Axis_Orientation  },
   { "Style"       , do_Axis_Style        },
   { "Label"       , do_Axis_Label        },
   { "SubLabel"    , do_Axis_SubLabel     },
