@@ -32,7 +32,7 @@
 
 void show_version( void )
 {
-  std::cout << R"EOF(chartgen v0.8.1
+  std::cout << R"EOF(chartgen v0.9.0
 This is free software: you are free to change and redistribute it.
 
 Written by Soren Kragh
@@ -131,6 +131,10 @@ FootnotePos: Right
 # orientation cannot be specified directly as it is always orthogonal to the
 # X-axis.
 Axis.X.Orientation: Horizontal
+
+# Reverse axis direction; may be On or Off.
+#Axis.X.Reverse: On
+#Axis.Y.Reverse: On
 
 # May be Auto, None, Arrow, or Edge.
 Axis.X.Style: Auto
@@ -333,6 +337,8 @@ Series.Data :
 # Footnote:
 # FootnotePos: Auto
 # Axis.X.Orientation: Horizontal
+# Axis.X.Reverse: Off
+# Axis.Y.Reverse: Off
 # Axis.X.Style: Auto
 # Axis.Y.Style: Auto
 # Axis.X.Label:
@@ -729,6 +735,17 @@ void do_Axis_Orientation( Chart::Axis* axis )
   chart.AxisX(   )->SetAngle( vertical ? 90 :  0 );
   chart.AxisY( 0 )->SetAngle( vertical ?  0 : 90 );
   chart.AxisY( 1 )->SetAngle( vertical ?  0 : 90 );
+}
+
+//-----------------------------------------------------------------------------
+
+void do_Axis_Reverse( Chart::Axis* axis )
+{
+  bool reverse;
+  skip_ws();
+  do_Switch( reverse );
+  expect_eol();
+  axis->SetReverse( reverse );
 }
 
 //-----------------------------------------------------------------------------
@@ -1150,6 +1167,7 @@ using AxisAction = std::function< void( Chart::Axis* ) >;
 
 std::unordered_map< std::string, AxisAction > axis_actions = {
   { "Orientation" , do_Axis_Orientation  },
+  { "Reverse"     , do_Axis_Reverse      },
   { "Style"       , do_Axis_Style        },
   { "Label"       , do_Axis_Label        },
   { "SubLabel"    , do_Axis_SubLabel     },

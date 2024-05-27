@@ -34,13 +34,12 @@ with a wide variety of software. You may
 however also use the svg2png script to
 convert to bitmap (relies on inkscape),
 which is often preferred for e-mails or
-if the data set is very large.
+if the data set, and hence the SVG, is
+very large.
 
 ========================================
 Status
 ========================================
-
-Only X/Y charts are currently supported.
 
 To come:
 * Line charts.

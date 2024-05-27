@@ -1,3 +1,7 @@
+chartgen-v0.9.0
+        Added the following specifiers:
+                Axis.*.Reverse
+
 chartgen-v0.8.1
         Fix legend box placement issue.
 
