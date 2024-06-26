@@ -38,10 +38,3 @@ if the data set, and hence the SVG, is
 very large.
 
 ========================================
-Status
-========================================
-
-To come:
-* Line charts.
-* Bar charts.
-* Stacked bar charts.

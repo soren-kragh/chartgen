@@ -32,7 +32,7 @@
 
 void show_version( void )
 {
-  std::cout << R"EOF(chartgen v0.9.0
+  std::cout << R"EOF(chartgen v0.10.0
 This is free software: you are free to change and redistribute it.
 
 Written by Soren Kragh
@@ -172,7 +172,7 @@ Axis.SecY.LogScale: On
 # Axis Style is Edge, then the orthogonal axis crossing determines at which edge
 # the axis is placed. If both a primary and a secondary Y-axis is used, then the
 # primary Y-axis is always to the left, and the secondary Y-axis is always to
-# the right.
+# the right. The X-axis range is ignored if the chart has text based X-values.
 #Axis.X.Range: 0 100 90
 #Axis.Y.Range: -5 25
 
@@ -246,10 +246,21 @@ Axis.SecY.NumberFormat: Magnitude
 Series.New: Name of series
 
 # Series type may be:
-#   XY          X/Y plot (default). Regard X values as numbers and draw lines
-#               between data points, possibly with point markers.
-#   Scatter     Scatter plot. Same as XY but with no lines and always with
-#               point markers.
+#   Type        X-value     Description
+#-------------------------------------------------------------------------------
+#   XY          Number      X/Y plot (default). Regard X values as numbers and
+#                           draw lines between data points, possibly with point
+#                           markers.
+#   Scatter     Number      Scatter plot. Same as XY but with no lines and
+#                           always with point markers.
+#   Line        Text        Line plot. Regard X values as text and draw lines
+#                           between data points, possibly with point markers.
+#   Lollipop    Text        Lollipop plot. Regard X values as text and draw
+#                           lines from data points to zero; always with point
+#                           markers.
+#   Bar         Text        Bar plot. Regard X values as text and draw bars
+#                           from data points to zero.
+#-------------------------------------------------------------------------------
 # Since the X values are true numbers for XY and Scatter types, these types
 # cannot be shown on the same chart as any other types, where the X value is
 # interpreted as a text string. This attribute applies to the current series and
@@ -297,9 +308,11 @@ Series.Data:
         71      4.3
         97      14
 
-# Several series sharing the same X-values can be specified in one go. If not
-# enough new series were created beforehand, anonymous ones will be
-# automatically created as needed.
+# Several series sharing the same X-values can be specified in one go; series
+# using a text string as the X value (everything but XY and Scatter types)
+# should use this way of specifying the series data. Use double-quotes if the
+# text string contains spaces. If not enough new series were created beforehand,
+# anonymous ones will be automatically created as needed.
 Series.New  : Series 1
 Series.AxisY: Primary
 Series.New  : Series 2
@@ -550,6 +563,38 @@ bool get_double( double& d )
   } catch ( const std::exception& e ) {
     return false;
   }
+}
+
+// Read in a text based X-value which defines a category for the series.
+bool get_category( std::string& t )
+{
+  t = "";
+  auto fst_col = cur_col;
+  bool in_quote = false;
+  while ( !at_eol() ) {
+    char c = cur_line->line[ cur_col ];
+    if ( c == '"' ) {
+      if ( cur_col == fst_col ) {
+        in_quote = true;
+        cur_col++;
+        continue;
+      } else {
+        if ( in_quote ) {
+          in_quote = false;
+          cur_col++;
+        } else {
+          in_quote = true;
+        }
+        break;
+      }
+    }
+    if ( is_ws( c ) ) {
+      if ( !in_quote ) break;
+    }
+    t.push_back( c );
+    cur_col++;
+  }
+  return !in_quote;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -981,6 +1026,8 @@ void do_LegendPos( void )
 
 bool defining_series = false;
 Chart::SeriesType series_type = Chart::SeriesType::XY;
+bool x_is_text = false;
+int32_t category_idx = 0;
 int axis_y_n = 0;
 int64_t marker_size = 0;
 Chart::MarkerShape marker_shape = Chart::MarkerShape::Circle;
@@ -1020,13 +1067,22 @@ void do_Series_Type( void )
 {
   skip_ws();
   std::string id = get_identifier( true );
-  if ( id == "XY"      ) series_type = Chart::SeriesType::XY     ; else
-  if ( id == "Scatter" ) series_type = Chart::SeriesType::Scatter; else
+  if ( id == "XY"       ) series_type = Chart::SeriesType::XY      ; else
+  if ( id == "Scatter"  ) series_type = Chart::SeriesType::Scatter ; else
+  if ( id == "Line"     ) series_type = Chart::SeriesType::Line    ; else
+  if ( id == "Lollipop" ) series_type = Chart::SeriesType::Lollipop; else
+  if ( id == "Bar"      ) series_type = Chart::SeriesType::Bar     ; else
   if ( id == "" ) parse_err( "series type expected" ); else
   parse_err( "unknown series type '" + id + "'", true );
   expect_eol();
   if ( defining_series ) {
     series_list.back()->SetType( series_type );
+  }
+  if (
+    series_type != Chart::SeriesType::XY &&
+    series_type != Chart::SeriesType::Scatter
+  ) {
+    x_is_text = true;
   }
 }
 
@@ -1091,13 +1147,21 @@ void do_Series_Data( void )
   next_line();
   bool first = true;
   uint32_t y_values = 0;
+  std::string category;
   while ( !at_eof() ) {
     skip_ws( true );
     cur_col = 0;
     if ( !at_ws() ) break;
     expect_ws( "x-value expected" );
     double x;
-    if ( !get_double( x ) ) parse_err( "malformed x-value" );
+    if ( x_is_text ) {
+      if ( !get_category( category ) ) parse_err( "malformed x-value" );
+      chart.AddCategory( category );
+      x = category_idx;
+      category_idx++;
+    } else {
+      if ( !get_double( x ) ) parse_err( "malformed x-value" );
+    }
     uint32_t n = 0;
     auto fst_y_col = cur_col;
     while ( true ) {
