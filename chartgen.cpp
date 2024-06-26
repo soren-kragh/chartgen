@@ -246,10 +246,16 @@ Axis.SecY.NumberFormat: Magnitude
 Series.New: Name of series
 
 # Series type may be:
-#   XY          X/Y plot (default). Regard X values as numbers and draw lines
-#               between data points, possibly with point markers.
-#   Scatter     Scatter plot. Same as XY but with no lines and always with
-#               point markers.
+#   Type        X-value     Description
+#-------------------------------------------------------------------------------
+#   XY          Number      X/Y plot (default). Regard X values as numbers and
+#                           draw lines between data points, possibly with point
+#                           markers.
+#   Scatter     Number      Scatter plot. Same as XY but with no lines and
+#                           always with point markers.
+#   Line        Text        Line plot. Regard X values as text and draw lines
+#                           between data points, possibly with point markers.
+#-------------------------------------------------------------------------------
 # Since the X values are true numbers for XY and Scatter types, these types
 # cannot be shown on the same chart as any other types, where the X value is
 # interpreted as a text string. This attribute applies to the current series and
@@ -297,9 +303,11 @@ Series.Data:
         71      4.3
         97      14
 
-# Several series sharing the same X-values can be specified in one go. If not
-# enough new series were created beforehand, anonymous ones will be
-# automatically created as needed.
+# Several series sharing the same X-values can be specified in one go; series
+# using a text string as the X value (everything but XY and Scatter types)
+# should use this way of specifying the series data. If not enough new series
+# were created beforehand, anonymous ones will be automatically created as
+# needed.
 Series.New  : Series 1
 Series.AxisY: Primary
 Series.New  : Series 2
@@ -1022,6 +1030,7 @@ void do_Series_Type( void )
   std::string id = get_identifier( true );
   if ( id == "XY"      ) series_type = Chart::SeriesType::XY     ; else
   if ( id == "Scatter" ) series_type = Chart::SeriesType::Scatter; else
+  if ( id == "Line"    ) series_type = Chart::SeriesType::Line   ; else
   if ( id == "" ) parse_err( "series type expected" ); else
   parse_err( "unknown series type '" + id + "'", true );
   expect_eol();
