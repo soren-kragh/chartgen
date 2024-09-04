@@ -260,6 +260,7 @@ Series.New: Name of series
 #                           markers.
 #   Bar         Text        Bar plot. Regard X values as text and draw bars
 #                           from data points to zero.
+#   StackedBar  Text        Like Bar, but stack on top of previous bar.
 #-------------------------------------------------------------------------------
 # Since the X values are true numbers for XY and Scatter types, these types
 # cannot be shown on the same chart as any other types, where the X value is
@@ -1067,11 +1068,12 @@ void do_Series_Type( void )
 {
   skip_ws();
   std::string id = get_identifier( true );
-  if ( id == "XY"       ) series_type = Chart::SeriesType::XY      ; else
-  if ( id == "Scatter"  ) series_type = Chart::SeriesType::Scatter ; else
-  if ( id == "Line"     ) series_type = Chart::SeriesType::Line    ; else
-  if ( id == "Lollipop" ) series_type = Chart::SeriesType::Lollipop; else
-  if ( id == "Bar"      ) series_type = Chart::SeriesType::Bar     ; else
+  if ( id == "XY"         ) series_type = Chart::SeriesType::XY        ; else
+  if ( id == "Scatter"    ) series_type = Chart::SeriesType::Scatter   ; else
+  if ( id == "Line"       ) series_type = Chart::SeriesType::Line      ; else
+  if ( id == "Lollipop"   ) series_type = Chart::SeriesType::Lollipop  ; else
+  if ( id == "Bar"        ) series_type = Chart::SeriesType::Bar       ; else
+  if ( id == "StackedBar" ) series_type = Chart::SeriesType::StackedBar; else
   if ( id == "" ) parse_err( "series type expected" ); else
   parse_err( "unknown series type '" + id + "'", true );
   expect_eol();
