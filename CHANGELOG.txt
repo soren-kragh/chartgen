@@ -3,6 +3,7 @@ chartgen-v0.10.0
         Added support for Lollipop plot.
         Added support for Bar plot.
         Added support for StackedBar plot.
+        Added support for Area plot.
 
 chartgen-v0.9.0
         Added the following specifiers:

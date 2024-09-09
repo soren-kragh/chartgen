@@ -260,12 +260,23 @@ Series.New: Name of series
 #                           markers.
 #   Bar         Text        Bar plot. Regard X values as text and draw bars
 #                           from data points to zero.
-#   StackedBar  Text        Like Bar, but stack on top of previous bar.
+#   StackedBar  Text        Like Bar, but stack on top of (or below if negative)
+#                           the previous bar.
+#   Area        Text        Area plot; values stack. Note that negative values,
+#                           if any, are stacked separately, so mixing negative
+#                           with positive in the same series will likely look
+#                           weird.
 #-------------------------------------------------------------------------------
+#
 # Since the X values are true numbers for XY and Scatter types, these types
-# cannot be shown on the same chart as any other types, where the X value is
-# interpreted as a text string. This attribute applies to the current series and
-# all subsequent series, or until it is redefined.
+# should not (*) be shown on the same chart as any other types, where the X
+# value is interpreted as a text string. This attribute applies to the current
+# series and all subsequent series, or until it is redefined.
+#
+# (*) If you absolutely must mix, the underlying X value on a text based X-axis
+# is just the position starting from 0, so for a Bar plot with 10 bars the X
+# values will go from 0 to 9. This knowledge can be used to show XY or Scatter
+# plots on top of e.g. Bar plots.
 Series.Type: XY
 
 # Associated Y-axis may be Primary or Secondary; the default is Primary. This
@@ -1074,6 +1085,7 @@ void do_Series_Type( void )
   if ( id == "Lollipop"   ) series_type = Chart::SeriesType::Lollipop  ; else
   if ( id == "Bar"        ) series_type = Chart::SeriesType::Bar       ; else
   if ( id == "StackedBar" ) series_type = Chart::SeriesType::StackedBar; else
+  if ( id == "Area"       ) series_type = Chart::SeriesType::Area      ; else
   if ( id == "" ) parse_err( "series type expected" ); else
   parse_err( "unknown series type '" + id + "'", true );
   expect_eol();
