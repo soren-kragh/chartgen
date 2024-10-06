@@ -240,11 +240,6 @@ Axis.SecY.NumberFormat: Magnitude
 # area.
 #LegendPos: Below
 
-# Each new series should start with this specifier giving the name of the
-# series (may be multi-line). The following Series specifiers associate to
-# this.
-Series.New: Name of series
-
 # Series type may be:
 #   Type        X-value     Description
 #-------------------------------------------------------------------------------
@@ -270,14 +265,19 @@ Series.New: Name of series
 #
 # Since the X values are true numbers for XY and Scatter types, these types
 # should not (*) be shown on the same chart as any other types, where the X
-# value is interpreted as a text string. This attribute applies to the current
-# series and all subsequent series, or until it is redefined.
+# value is interpreted as a text string. This attribute applies to all
+# subsequent series, or until it is redefined.
 #
 # (*) If you absolutely must mix, the underlying X value on a text based X-axis
 # is just the position starting from 0, so for a Bar plot with 10 bars the X
 # values will go from 0 to 9. This knowledge can be used to show XY or Scatter
 # plots on top of e.g. Bar plots.
 Series.Type: XY
+
+# Each new series should start with this specifier giving the name of the
+# series (may be multi-line). The following Series specifiers associate to
+# this.
+Series.New: Name of series
 
 # Associated Y-axis may be Primary or Secondary; the default is Primary. This
 # attribute applies to the current series and all subsequent series, or until it
@@ -395,8 +395,8 @@ Series.Data :
 # Axis.X.NumberPos: Auto
 # Axis.Y.NumberPos: Auto
 # LegendPos: Below
-# Series.New: Name of series
 # Series.Type: XY
+# Series.New: Name of series
 # Series.AxisY: Secondary
 # Series.MarkerSize: 8
 # Series.MarkerShape: Circle
@@ -1056,8 +1056,8 @@ void NextSeriesStyle( void )
 
 void AddSeries( std::string name = "" )
 {
-  series_list.push_back( chart.AddSeries( name ) );
-  series_list.back()->SetType( series_type );
+  series_list.push_back( chart.AddSeries( series_type ) );
+  series_list.back()->SetName( name );
   series_list.back()->SetAxisY( axis_y_n );
   if ( marker_size > 0 ) {
     series_list.back()->SetMarkerSize( marker_size );
@@ -1089,9 +1089,6 @@ void do_Series_Type( void )
   if ( id == "" ) parse_err( "series type expected" ); else
   parse_err( "unknown series type '" + id + "'", true );
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetType( series_type );
-  }
   if (
     series_type != Chart::SeriesType::XY &&
     series_type != Chart::SeriesType::Scatter
