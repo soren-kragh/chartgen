@@ -250,6 +250,7 @@ Axis.SecY.NumberFormat: Magnitude
 #                           always with point markers.
 #   Line        Text        Line plot. Regard X values as text and draw lines
 #                           between data points, possibly with point markers.
+#   Point       Text        Like Scatter, but regard X values as text.
 #   Lollipop    Text        Lollipop plot. Regard X values as text and draw
 #                           lines from data points to zero; always with point
 #                           markers.
@@ -1041,7 +1042,7 @@ Chart::SeriesType series_type = Chart::SeriesType::XY;
 bool x_is_text = false;
 int32_t category_idx = 0;
 int axis_y_n = 0;
-int64_t marker_size = 0;
+int64_t marker_size = -1;
 Chart::MarkerShape marker_shape = Chart::MarkerShape::Circle;
 int64_t style = 0;
 
@@ -1054,17 +1055,31 @@ void NextSeriesStyle( void )
   }
 }
 
+void ApplyMarkerSize( Chart::Series* series )
+{
+  if ( marker_size >= 0 ) {
+    if (
+      marker_size == 0 &&
+      ( series_type == Chart::SeriesType::Scatter ||
+        series_type == Chart::SeriesType::Point
+      )
+    ) {
+      series_list.back()->SetMarkerSize( 12 );
+    } else {
+      series_list.back()->SetMarkerSize( marker_size );
+    }
+  }
+}
+
 void AddSeries( std::string name = "" )
 {
   series_list.push_back( chart.AddSeries( series_type ) );
   series_list.back()->SetName( name );
   series_list.back()->SetAxisY( axis_y_n );
-  if ( marker_size > 0 ) {
-    series_list.back()->SetMarkerSize( marker_size );
-  }
-  series_list.back()->SetMarkerShape( marker_shape );
   series_list.back()->SetStyle( style );
   NextSeriesStyle();
+  ApplyMarkerSize( series_list.back() );
+  series_list.back()->SetMarkerShape( marker_shape );
   defining_series = true;
 }
 
@@ -1082,6 +1097,7 @@ void do_Series_Type( void )
   if ( id == "XY"         ) series_type = Chart::SeriesType::XY        ; else
   if ( id == "Scatter"    ) series_type = Chart::SeriesType::Scatter   ; else
   if ( id == "Line"       ) series_type = Chart::SeriesType::Line      ; else
+  if ( id == "Point"      ) series_type = Chart::SeriesType::Point     ; else
   if ( id == "Lollipop"   ) series_type = Chart::SeriesType::Lollipop  ; else
   if ( id == "Bar"        ) series_type = Chart::SeriesType::Bar       ; else
   if ( id == "StackedBar" ) series_type = Chart::SeriesType::StackedBar; else
@@ -1119,7 +1135,7 @@ void do_Series_MarkerSize( void )
   if ( marker_size < 0 || marker_size > 100 ) parse_err( "marker size out of range", true );
   expect_eol();
   if ( defining_series ) {
-    series_list.back()->SetMarkerSize( marker_size );
+    ApplyMarkerSize( series_list.back() );
   }
 }
 
@@ -1149,6 +1165,7 @@ void do_Series_Style( void )
   if ( defining_series ) {
     series_list.back()->SetStyle( style );
     NextSeriesStyle();
+    ApplyMarkerSize( series_list.back() );
   }
 }
 
