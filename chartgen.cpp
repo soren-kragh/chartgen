@@ -259,9 +259,9 @@ Axis.SecY.NumberFormat: Magnitude
 #   StackedBar  Text        Like Bar, but stack on top of (or below if negative)
 #                           the previous bar.
 #   Area        Text        Area plot; values stack. Note that negative values,
-#                           if any, are stacked separately, so mixing negative
-#                           with positive in the same series will likely look
-#                           weird.
+#                           (relative to Base), are stacked separately, so
+#                           mixing negative with positive in the same series
+#                           will likely look weird.
 #-------------------------------------------------------------------------------
 #
 # Since the X values are true numbers for XY and Scatter types, these types
@@ -284,6 +284,11 @@ Series.New: Name of series
 # attribute applies to the current series and all subsequent series, or until it
 # is redefined.
 Series.AxisY: Primary
+
+# Select the base for bar and area type plots; default is 0. series. This
+# attribute applies to the current series and all subsequent series, or until it
+# is redefined.
+Series.Base: 0
 
 # Set size (diameter) of point markers; for XY plot the default is zero (no
 # point markers). This attribute applies to the current series and all
@@ -399,6 +404,7 @@ Series.Data :
 # Series.Type: XY
 # Series.New: Name of series
 # Series.AxisY: Secondary
+# Series.Base: 0
 # Series.MarkerSize: 8
 # Series.MarkerShape: Circle
 # Series.Style: 32
@@ -406,6 +412,19 @@ Series.Data :
 
 )EOF";
   }
+  return;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void gen_example( int N )
+{
+  switch ( N ) {
+    case 1:
+      #include <dash_e1.h>
+      break;
+  }
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1042,6 +1061,7 @@ Chart::SeriesType series_type = Chart::SeriesType::XY;
 bool x_is_text = false;
 int32_t category_idx = 0;
 int axis_y_n = 0;
+double series_base = 0;
 int64_t marker_size = -1;
 Chart::MarkerShape marker_shape = Chart::MarkerShape::Circle;
 int64_t style = 0;
@@ -1076,6 +1096,7 @@ void AddSeries( std::string name = "" )
   series_list.push_back( chart.AddSeries( series_type ) );
   series_list.back()->SetName( name );
   series_list.back()->SetAxisY( axis_y_n );
+  series_list.back()->SetBase( series_base );
   series_list.back()->SetStyle( style );
   NextSeriesStyle();
   ApplyMarkerSize( series_list.back() );
@@ -1124,6 +1145,17 @@ void do_Series_AxisY( void )
   expect_eol();
   if ( defining_series ) {
     series_list.back()->SetAxisY( axis_y_n );
+  }
+}
+
+void do_Series_Base( void )
+{
+  skip_ws();
+  if ( at_eol() ) parse_err( "base expected" );
+  if ( !get_double( series_base ) ) parse_err( "malformed base" );
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetBase( series_base );
   }
 }
 
@@ -1249,6 +1281,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "Series.New"        , do_Series_New         },
   { "Series.Type"       , do_Series_Type        },
   { "Series.AxisY"      , do_Series_AxisY       },
+  { "Series.Base"       , do_Series_Base        },
   { "Series.MarkerSize" , do_Series_MarkerSize  },
   { "Series.MarkerShape", do_Series_MarkerShape },
   { "Series.Style"      , do_Series_Style       },
@@ -1404,6 +1437,10 @@ int main( int argc, char* argv[] )
       }
       if ( a == "-T" ) {
         gen_template( true );
+        return 0;
+      }
+      if ( a == "-e1" ) {
+        gen_example( 1 );
         return 0;
       }
       if ( a != "-" && a[ 0 ] == '-' ) {
