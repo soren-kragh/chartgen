@@ -4,7 +4,9 @@ chartgen-v0.10.0
         Added support for Bar plot.
         Added support for StackedBar plot.
         Added support for Area plot.
+        Added support for StackedArea plot.
         Added support for Point plot.
+        Added support for Series.Base.
 
 chartgen-v0.9.0
         Added the following specifiers:

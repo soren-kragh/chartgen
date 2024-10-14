@@ -50,6 +50,7 @@ With no FILE, or when FILE is -, read standard input.
 
   -t                Output a simple template file; a good starting point.
   -T                Output a full documentation file.
+  -eN               Output example N; good for inspiration.
   -h, --help        Display this help and exit.
   -v, --version     Display version.
 
@@ -255,13 +256,19 @@ Axis.SecY.NumberFormat: Magnitude
 #                           lines from data points to zero; always with point
 #                           markers.
 #   Bar         Text        Bar plot. Regard X values as text and draw bars
-#                           from data points to zero.
-#   StackedBar  Text        Like Bar, but stack on top of (or below if negative)
-#                           the previous bar.
-#   Area        Text        Area plot; values stack. Note that negative values,
-#                           (relative to Base), are stacked separately, so
-#                           mixing negative with positive in the same series
-#                           will likely look weird.
+#                           from data points to Base (usually zero).
+#   StackedBar  Text        Like Bar, but stack on top of (or below if negative
+#                           relative to Base) the previous bar.
+#   Area        Text        Area plot. Regard X values as text and draw an area
+#                           polygon between data points and the Base line.
+#                           Optionally also draw a line between data points,
+#                           possibly with point markers.
+#   StackedArea Text        Like Ares, but stack on top of (or below if negative
+#                           relative to Base) the previous area. Note that
+#                           negative values (relative to Base), (relative to
+#                           Base), are stacked separately, so mixing negative
+#                           with positive in the same series will likely look
+#                           weird.
 #-------------------------------------------------------------------------------
 #
 # Since the X values are true numbers for XY and Scatter types, these types
@@ -1115,14 +1122,15 @@ void do_Series_Type( void )
 {
   skip_ws();
   std::string id = get_identifier( true );
-  if ( id == "XY"         ) series_type = Chart::SeriesType::XY        ; else
-  if ( id == "Scatter"    ) series_type = Chart::SeriesType::Scatter   ; else
-  if ( id == "Line"       ) series_type = Chart::SeriesType::Line      ; else
-  if ( id == "Point"      ) series_type = Chart::SeriesType::Point     ; else
-  if ( id == "Lollipop"   ) series_type = Chart::SeriesType::Lollipop  ; else
-  if ( id == "Bar"        ) series_type = Chart::SeriesType::Bar       ; else
-  if ( id == "StackedBar" ) series_type = Chart::SeriesType::StackedBar; else
-  if ( id == "Area"       ) series_type = Chart::SeriesType::Area      ; else
+  if ( id == "XY"          ) series_type = Chart::SeriesType::XY         ; else
+  if ( id == "Scatter"     ) series_type = Chart::SeriesType::Scatter    ; else
+  if ( id == "Line"        ) series_type = Chart::SeriesType::Line       ; else
+  if ( id == "Point"       ) series_type = Chart::SeriesType::Point      ; else
+  if ( id == "Lollipop"    ) series_type = Chart::SeriesType::Lollipop   ; else
+  if ( id == "Bar"         ) series_type = Chart::SeriesType::Bar        ; else
+  if ( id == "StackedBar"  ) series_type = Chart::SeriesType::StackedBar ; else
+  if ( id == "Area"        ) series_type = Chart::SeriesType::Area       ; else
+  if ( id == "StackedArea" ) series_type = Chart::SeriesType::StackedArea; else
   if ( id == "" ) parse_err( "series type expected" ); else
   parse_err( "unknown series type '" + id + "'", true );
   expect_eol();
