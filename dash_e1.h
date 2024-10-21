@@ -2,24 +2,26 @@ std::cout << R"EOF(
 Title: Climate Data
 SubSubTitle: (source www.woodfortrees.org)
 
-Axis.Y.Label: Temperature Anomaly
-Axis.Y.Unit: Kelvin
-Axis.Y.UnitPos: Above
+Axis.Y.Label: Temperature Anomaly (K)
 
 Series.Type: Line
 Series.New:
   BEST global
   land/ocean mean
+Series.Style: 68
 
 Series.Type: Area
-Series.New:
-Series.Base: -1.5
-
-#Series.FillColor: #FFFFFF
 Series.New:
   BEST 95%
   confidence interval
 Series.Base: -1.5
+#Series.FillColor: #404040
+
+Series.Type: Area
+Series.New:
+Series.Base: -1.5
+# Use background color to obscure the fill below the low confidence value.
+#Series.FillColor: #FFFFFF
 
 Series.Data:
  1850 -0.769 -0.402 -1.136

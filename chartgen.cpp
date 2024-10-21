@@ -253,7 +253,7 @@ Axis.SecY.NumberFormat: Magnitude
 #                           between data points, possibly with point markers.
 #   Point       Text        Like Scatter, but regard X values as text.
 #   Lollipop    Text        Lollipop plot. Regard X values as text and draw
-#                           lines from data points to zero; always with point
+#                           lines from data points to Base; default with point
 #                           markers.
 #   Bar         Text        Bar plot. Regard X values as text and draw bars
 #                           from data points to Base (usually zero).
@@ -263,12 +263,11 @@ Axis.SecY.NumberFormat: Magnitude
 #                           polygon between data points and the Base line.
 #                           Optionally also draw a line between data points,
 #                           possibly with point markers.
-#   StackedArea Text        Like Ares, but stack on top of (or below if negative
-#                           relative to Base) the previous area. Note that
-#                           negative values (relative to Base), (relative to
-#                           Base), are stacked separately, so mixing negative
-#                           with positive in the same series will likely look
-#                           weird.
+#   StackedArea Text        Like Area, but stack on top of (or below if negative
+#                           relative to Base) the previous StackedArea. Note
+#                           that negative values (relative to Base) are stacked
+#                           separately, so mixing negative with positive in the
+#                           same series will likely look weird.
 #-------------------------------------------------------------------------------
 #
 # Since the X values are true numbers for XY and Scatter types, these types
