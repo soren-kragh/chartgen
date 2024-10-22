@@ -1413,7 +1413,7 @@ int main( int argc, char* argv[] )
       )
     );
     g->FrontToBack();
-    g->Last()->Attr()->SetLineWidth( 10 )->FillColor()->Set( SVG::ColorName::Red, 0.25 );
+    g->Last()->Attr()->SetLineWidth( 10 )->FillColor()->Set( SVG::ColorName::tomato );
     std::cout << canvas->GenSVG( 10 );
     ERR( "Floating point exception" );
   }
