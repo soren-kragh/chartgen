@@ -31,10 +31,10 @@ normally be fine.
 
 The generated SVG files are compatible
 with a wide variety of software. You may
-however also use the svg2png script to
-convert to bitmap (relies on inkscape),
-which is often preferred for e-mails or
-if the data set, and hence the SVG, is
-very large.
+however also use the svg2png script
+(relies on inkscape) to convert to
+bitmap, which is often preferred for
+e-mails or if the data set, and hence
+the SVG, is very large.
 
 ========================================

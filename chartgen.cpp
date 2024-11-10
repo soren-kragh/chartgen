@@ -50,6 +50,7 @@ With no FILE, or when FILE is -, read standard input.
 
   -t                Output a simple template file; a good starting point.
   -T                Output a full documentation file.
+  -eN               Output example N; good for inspiration.
   -h, --help        Display this help and exit.
   -v, --version     Display version.
 
@@ -101,7 +102,7 @@ void gen_template( bool full )
 # scalable these dimensions primarily determine the relative size of text
 # annotations and line thicknesses; texts will appear relatively larger if the
 # core chart area is small and vice versa.
-#ChartArea: 1200 800
+#ChartArea: 1000 700
 
 # Margin around chart in points; default is 5.
 #Margin: 5
@@ -240,11 +241,6 @@ Axis.SecY.NumberFormat: Magnitude
 # area.
 #LegendPos: Below
 
-# Each new series should start with this specifier giving the name of the
-# series (may be multi-line). The following Series specifiers associate to
-# this.
-Series.New: Name of series
-
 # Series type may be:
 #   Type        X-value     Description
 #-------------------------------------------------------------------------------
@@ -255,23 +251,29 @@ Series.New: Name of series
 #                           always with point markers.
 #   Line        Text        Line plot. Regard X values as text and draw lines
 #                           between data points, possibly with point markers.
+#   Point       Text        Like Scatter, but regard X values as text.
 #   Lollipop    Text        Lollipop plot. Regard X values as text and draw
-#                           lines from data points to zero; always with point
+#                           lines from data points to Base; default with point
 #                           markers.
 #   Bar         Text        Bar plot. Regard X values as text and draw bars
-#                           from data points to zero.
-#   StackedBar  Text        Like Bar, but stack on top of (or below if negative)
-#                           the previous bar.
-#   Area        Text        Area plot; values stack. Note that negative values,
-#                           if any, are stacked separately, so mixing negative
-#                           with positive in the same series will likely look
-#                           weird.
+#                           from data points to Base (usually zero).
+#   StackedBar  Text        Like Bar, but stack on top of (or below if negative
+#                           relative to Base) the previous bar.
+#   Area        Text        Area plot. Regard X values as text and draw an area
+#                           polygon between data points and the Base line.
+#                           Optionally also draw a line between data points,
+#                           possibly with point markers.
+#   StackedArea Text        Like Area, but stack on top of (or below if negative
+#                           relative to Base) the previous StackedArea. Note
+#                           that negative values (relative to Base) are stacked
+#                           separately, so mixing negative with positive in the
+#                           same series will likely look weird.
 #-------------------------------------------------------------------------------
 #
 # Since the X values are true numbers for XY and Scatter types, these types
 # should not (*) be shown on the same chart as any other types, where the X
-# value is interpreted as a text string. This attribute applies to the current
-# series and all subsequent series, or until it is redefined.
+# value is interpreted as a text string. This attribute applies to all
+# subsequent series, or until it is redefined.
 #
 # (*) If you absolutely must mix, the underlying X value on a text based X-axis
 # is just the position starting from 0, so for a Bar plot with 10 bars the X
@@ -279,10 +281,20 @@ Series.New: Name of series
 # plots on top of e.g. Bar plots.
 Series.Type: XY
 
+# Each new series should start with this specifier giving the name of the
+# series (may be multi-line). The following Series specifiers associate to
+# this.
+Series.New: Name of series
+
 # Associated Y-axis may be Primary or Secondary; the default is Primary. This
 # attribute applies to the current series and all subsequent series, or until it
 # is redefined.
 Series.AxisY: Primary
+
+# Select the base for bar and area type plots; default is 0. series. This
+# attribute applies to the current series and all subsequent series, or until it
+# is redefined.
+Series.Base: 0
 
 # Set size (diameter) of point markers; for XY plot the default is zero (no
 # point markers). This attribute applies to the current series and all
@@ -294,17 +306,42 @@ Series.AxisY: Primary
 # series, or until it is redefined.
 #Series.MarkerShape: Circle
 
-# The style of the graph. The style is a number in the range from 0 to 71;
+# The style of the graph. The style is a number in the range from 0 to 79;
 # if no Style specifier is given (recommended) it is assigned an incrementing
 # number based on the last given Series.Style.
-#  0 to  7: Solid line using 8 different colors
-#  8 to 15: Same as 0 to 7 but with short dashed line
-# 16 to 23: Same as 0 to 7 but with medium dashed line
-# 24 to 31: Same as 0 to 7 but with long dashed line
-# 32 to 63: Same as 0 to 31, but with thinner line
-# 64 to 67: Black styles (solid, short/medium/long dash)
-# 68 to 71: Same as 64 to 67, but with thinner line
+#  0 to  9: Solid line using 10 different colors
+# 10 to 19: Same as 0 to 9 but with short dashed line
+# 20 to 29: Same as 0 to 9 but with medium dashed line
+# 30 to 39: Same as 0 to 9 but with long dashed line
+# 40 to 79: Same as 0 to 39, but with thinner line
+# Specifying a Series.Style clears any persistent style modifiers.
 #Series.Style: 4
+
+# This specifies the line width; it acts as a persistent modifier to the current
+# Style. This attribute applies to the current series and all subsequent series,
+# or until it is redefined.
+#Series.LineWidth: 1
+
+# This specifies the line dash; it acts as a persistent modifier to the current
+# Style. The first number is the length of the dash and the second optional
+# number of the length of the hole. This attribute applies to the current series
+# and all subsequent series, or until it is redefined.
+#Series.LineDash: 3 1
+
+# This specifies the line color; it acts as a one-time modifier to the current
+# Style. A color can be any of the 147 named SVG color codes or an hexadecimal
+# RGB value of the form #rrggbb; None means no color. The optional 2nd value
+# (range [-1.0;1.0]) specifies by how much to lighten the color (or darken if
+# negative). The third optional value specifies the transparency of the color
+# (0.0 to 1.0). Note however that transparency may not be supported by all SVG
+# image viewers and manipulation tools. The LineColor attribute applies to the
+# current series only.
+#Series.LineColor: darkorange -0.2 0.7
+
+# This specifies the fill color used for e.g. bars, areas, marker interiors,
+# etc.; it acts as a one-time modifier to the current Style. Same format as
+# LineColor. The FillColor attribute applies to the current series only.
+#Series.FillColor: None
 
 # These are the X and Y values for the series. If no new series was created
 # beforehand, an anonymous one will be automatically created. For XY and Scatter
@@ -329,7 +366,7 @@ Series.New  : Series 1
 Series.AxisY: Primary
 Series.New  : Series 2
 Series.AxisY: Secondary
-Series.Style: 70
+Series.Style: 54
 Series.MarkerSize: 10
 Series.Data:
 #       X-value         Series 1        Series 2
@@ -344,6 +381,7 @@ Series.Data:
 Title       : Chart Title
 Axis.X.Label: X-Axis Label
 Axis.Y.Label: Y-Axis Label
+Series.Type : XY
 Series.New  : Name of series
 Series.Data :
         0       23.7
@@ -354,7 +392,7 @@ Series.Data :
         97      14
 
 # Summary of all available specifiers (see -T template for help):
-# ChartArea: 1200 800
+# ChartArea: 1000 700
 # Margin: 5
 # Title:
 # SubTitle:
@@ -395,16 +433,34 @@ Series.Data :
 # Axis.X.NumberPos: Auto
 # Axis.Y.NumberPos: Auto
 # LegendPos: Below
-# Series.New: Name of series
 # Series.Type: XY
+# Series.New: Name of series
 # Series.AxisY: Secondary
+# Series.Base: 0
 # Series.MarkerSize: 8
 # Series.MarkerShape: Circle
 # Series.Style: 32
+# Series.LineWidth: 1
+# Series.LineDash: 3 1
+# Series.LineColor: black
+# Series.FillColor: None
 # Series.Data:
 
 )EOF";
   }
+  return;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void gen_example( int N )
+{
+  switch ( N ) {
+    case 1:
+      #include <dash_e1.h>
+      break;
+  }
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -560,9 +616,17 @@ bool get_int64( int64_t& i )
     return false;
   }
 }
-bool get_double( double& d )
+bool get_double( double& d, bool none_allowed = false )
 {
   id_col = cur_col;
+  if ( none_allowed && get_char() == '-' ) {
+    char c = get_char( false );
+    if ( is_ws( c ) || c == '#' ) {
+      d = 100e300;
+      return true;
+    }
+  }
+  cur_col = id_col;
   try {
     std::string str = cur_line->line.substr( cur_col );
     str.push_back( ' ' );
@@ -706,6 +770,73 @@ void do_Switch(
   parse_err( "On/Off expected, saw '" + id + "'", true );
 }
 
+void do_Color(
+  SVG::Color* color
+)
+{
+  skip_ws();
+  std::string color_id = get_identifier( true );
+  uint8_t r, g, b;
+  double lighten = 0.0;
+  double transparency = 0.0;
+
+  bool color_ok = true;
+
+  if ( color_id == "None" ) {
+    color->Clear();
+  } else {
+    if (color_id.size() != 7 || color_id[0] != '#') {
+      color_ok = false;
+    }
+    for ( char c : color_id.substr( 1 ) ) {
+      if ( !std::isxdigit( c ) ) color_ok = false;
+    }
+    if ( color_ok ) {
+      r = static_cast<uint8_t>( std::stoi( color_id.substr(1, 2), nullptr, 16) );
+      g = static_cast<uint8_t>( std::stoi( color_id.substr(3, 2), nullptr, 16) );
+      b = static_cast<uint8_t>( std::stoi( color_id.substr(5, 2), nullptr, 16) );
+      color->Set( r, g, b );
+    } else {
+      color_ok = color->Set( color_id ) == color;
+    }
+  }
+
+  if ( !color_ok ) {
+    parse_err( "invalid color", true );
+  }
+
+  if ( !at_eol() ) {
+    expect_ws();
+    if ( !at_eol() ) {
+      if ( !get_double( lighten ) ) {
+        parse_err( "malformed lighten value" );
+      }
+      if ( lighten < -1.0 || lighten > 1.0 ) {
+        parse_err( "lighten value out of range [-1.0;1.0]", true );
+      }
+      if ( lighten < 0 )
+        color->Darken( -lighten );
+      else
+        color->Lighten( lighten );
+    }
+  }
+
+  if ( !at_eol() ) {
+    expect_ws();
+    if ( !at_eol() ) {
+      if ( !get_double( transparency ) ) {
+        parse_err( "malformed transparency value" );
+      }
+      if ( transparency < 0.0 || transparency > 1.0 ) {
+        parse_err( "transparency value out of range [0.0;1.0]", true );
+      }
+      color->SetTransparency( transparency );
+    }
+  }
+
+  expect_eol();
+}
+
 //-----------------------------------------------------------------------------
 
 void do_ChartArea( void )
@@ -716,11 +847,15 @@ void do_ChartArea( void )
   skip_ws();
   if ( at_eol() ) parse_err( "width expected" );
   if ( !get_int64( w ) ) parse_err( "malformed width" );
-  if ( w < 100 || w > 100000 ) parse_err( "width out of range", true );
+  if ( w < 100 || w > 100000 ) {
+    parse_err( "width out of range [100;100000]", true );
+  }
 
   expect_ws( "height expected" );
   if ( !get_int64( h ) ) parse_err( "malformed height" );
-  if ( h < 100 || h > 100000 ) parse_err( "height out of range", true );
+  if ( h < 100 || h > 100000 ) {
+    parse_err( "height out of range [100;100000]", true );
+  }
 
   expect_eol();
   chart.SetChartArea( w, h );
@@ -732,7 +867,9 @@ void do_Margin( void )
   skip_ws();
   if ( at_eol() ) parse_err( "margin expected" );
   if ( !get_int64( m ) ) parse_err( "malformed margin" );
-  if ( m < 0 || m > 1000 ) parse_err( "margin out of range", true );
+  if ( m < 0 || m > 1000 ) {
+    parse_err( "margin out of range [0;1000]", true );
+  }
   expect_eol();
   chart.SetMargin( m );
 }
@@ -895,8 +1032,9 @@ void do_Axis_Range( Chart::Axis* axis )
     if ( !at_eol() ) {
       if ( !get_double( cross ) ) parse_err( "malformed orthogonal axis cross" );
     }
-    expect_eol();
   }
+
+  expect_eol();
 
   axis->SetRange( min, max, cross );
 }
@@ -926,7 +1064,9 @@ void do_Axis_Tick( Chart::Axis* axis )
 
   expect_ws( "minor tick expected" );
   if ( !get_int64( minor ) ) parse_err( "malformed minor tick" );
-  if ( minor < 0 || minor > 100 ) parse_err( "minor tick out of range", true );
+  if ( minor < 0 || minor > 100 ) {
+    parse_err( "minor tick out of range [0;100]", true );
+  }
 
   expect_eol();
 
@@ -1041,30 +1181,51 @@ Chart::SeriesType series_type = Chart::SeriesType::XY;
 bool x_is_text = false;
 int32_t category_idx = 0;
 int axis_y_n = 0;
-int64_t marker_size = 0;
+double series_base = 0;
 Chart::MarkerShape marker_shape = Chart::MarkerShape::Circle;
+double marker_size = -1;
+double line_width = -1;
+double line_dash = -1;
+double line_hole = -1;
 int64_t style = 0;
 
 void NextSeriesStyle( void )
 {
-  if ( style < 64 ) {
-    style = (style + 1) % 64;
-  } else {
-    style = 64 + ((style + 1) % 8);
+  style = (style + 1) % 80;
+}
+
+void ApplyMarkerSize( Chart::Series* series )
+{
+  if ( marker_size >= 0 ) {
+    if (
+      marker_size == 0 &&
+      ( series_type == Chart::SeriesType::Scatter ||
+        series_type == Chart::SeriesType::Point
+      )
+    ) {
+      series_list.back()->SetMarkerSize( 12 );
+    } else {
+      series_list.back()->SetMarkerSize( marker_size );
+    }
   }
 }
 
 void AddSeries( std::string name = "" )
 {
-  series_list.push_back( chart.AddSeries( name ) );
-  series_list.back()->SetType( series_type );
+  series_list.push_back( chart.AddSeries( series_type ) );
+  series_list.back()->SetName( name );
   series_list.back()->SetAxisY( axis_y_n );
-  if ( marker_size > 0 ) {
-    series_list.back()->SetMarkerSize( marker_size );
-  }
-  series_list.back()->SetMarkerShape( marker_shape );
+  series_list.back()->SetBase( series_base );
   series_list.back()->SetStyle( style );
   NextSeriesStyle();
+  series_list.back()->SetMarkerShape( marker_shape );
+  ApplyMarkerSize( series_list.back() );
+  if ( line_width >= 0 ) {
+    series_list.back()->SetLineWidth( line_width );
+  }
+  if ( line_dash >= 0 ) {
+    series_list.back()->SetLineDash( line_dash, line_hole );
+  }
   defining_series = true;
 }
 
@@ -1079,19 +1240,18 @@ void do_Series_Type( void )
 {
   skip_ws();
   std::string id = get_identifier( true );
-  if ( id == "XY"         ) series_type = Chart::SeriesType::XY        ; else
-  if ( id == "Scatter"    ) series_type = Chart::SeriesType::Scatter   ; else
-  if ( id == "Line"       ) series_type = Chart::SeriesType::Line      ; else
-  if ( id == "Lollipop"   ) series_type = Chart::SeriesType::Lollipop  ; else
-  if ( id == "Bar"        ) series_type = Chart::SeriesType::Bar       ; else
-  if ( id == "StackedBar" ) series_type = Chart::SeriesType::StackedBar; else
-  if ( id == "Area"       ) series_type = Chart::SeriesType::Area      ; else
+  if ( id == "XY"          ) series_type = Chart::SeriesType::XY         ; else
+  if ( id == "Scatter"     ) series_type = Chart::SeriesType::Scatter    ; else
+  if ( id == "Line"        ) series_type = Chart::SeriesType::Line       ; else
+  if ( id == "Point"       ) series_type = Chart::SeriesType::Point      ; else
+  if ( id == "Lollipop"    ) series_type = Chart::SeriesType::Lollipop   ; else
+  if ( id == "Bar"         ) series_type = Chart::SeriesType::Bar        ; else
+  if ( id == "StackedBar"  ) series_type = Chart::SeriesType::StackedBar ; else
+  if ( id == "Area"        ) series_type = Chart::SeriesType::Area       ; else
+  if ( id == "StackedArea" ) series_type = Chart::SeriesType::StackedArea; else
   if ( id == "" ) parse_err( "series type expected" ); else
   parse_err( "unknown series type '" + id + "'", true );
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetType( series_type );
-  }
   if (
     series_type != Chart::SeriesType::XY &&
     series_type != Chart::SeriesType::Scatter
@@ -1114,15 +1274,28 @@ void do_Series_AxisY( void )
   }
 }
 
+void do_Series_Base( void )
+{
+  skip_ws();
+  if ( at_eol() ) parse_err( "base expected" );
+  if ( !get_double( series_base ) ) parse_err( "malformed base" );
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetBase( series_base );
+  }
+}
+
 void do_Series_MarkerSize( void )
 {
   skip_ws();
   if ( at_eol() ) parse_err( "marker size expected" );
-  if ( !get_int64( marker_size ) ) parse_err( "malformed marker size" );
-  if ( marker_size < 0 || marker_size > 100 ) parse_err( "marker size out of range", true );
+  if ( !get_double( marker_size ) ) parse_err( "malformed marker size" );
+  if ( marker_size < 0 || marker_size > 100 ) {
+    parse_err( "marker size out of range [0;100]", true );
+  }
   expect_eol();
   if ( defining_series ) {
-    series_list.back()->SetMarkerSize( marker_size );
+    ApplyMarkerSize( series_list.back() );
   }
 }
 
@@ -1147,12 +1320,77 @@ void do_Series_Style( void )
   skip_ws();
   if ( at_eol() ) parse_err( "style expected" );
   if ( !get_int64( style ) ) parse_err( "malformed style" );
-  if ( style < 0 || style > 71 ) parse_err( "style out of range", true );
+  if ( style < 0 || style > 79 ) {
+    parse_err( "style out of range [0;79]", true );
+  }
   expect_eol();
   if ( defining_series ) {
     series_list.back()->SetStyle( style );
     NextSeriesStyle();
+    marker_size = -1;
+    line_width = -1;
+    line_dash = -1;
+    line_hole = -1;
   }
+}
+
+void do_Series_LineWidth( void )
+{
+  skip_ws();
+  if ( at_eol() ) parse_err( "line width expected" );
+  if ( !get_double( line_width ) ) parse_err( "malformed line width" );
+  if ( line_width < 0 || line_width > 100 ) {
+    parse_err( "line width out of range [0;100]", true );
+  }
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetLineWidth( line_width );
+  }
+}
+
+void do_Series_LineDash( void )
+{
+  line_dash = 0;
+  skip_ws();
+  if ( at_eol() ) parse_err( "line dash expected" );
+  if ( !get_double( line_dash ) ) {
+    parse_err( "malformed line dash" );
+  }
+  if ( line_dash < 0 || line_dash > 100 ) {
+    parse_err( "line dash out of range [0;100]", true );
+  }
+  line_hole = line_dash;
+  if ( !at_eol() ) {
+    expect_ws();
+    if ( !at_eol() ) {
+      if ( !get_double( line_hole ) ) {
+        parse_err( "malformed line hole" );
+      }
+      if ( line_hole < 0 || line_hole > 100 ) {
+        parse_err( "line hole out of range [0;100]", true );
+      }
+    }
+  }
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetLineDash( line_dash, line_hole );
+  }
+}
+
+void do_Series_LineColor( void )
+{
+  if ( !defining_series ) {
+    parse_err( "LineColor outside defining series" );
+  }
+  do_Color( series_list.back()->LineColor() );
+}
+
+void do_Series_FillColor( void )
+{
+  if ( !defining_series ) {
+    parse_err( "FillColor outside defining series" );
+  }
+  do_Color( series_list.back()->FillColor() );
 }
 
 void do_Series_Data( void )
@@ -1182,7 +1420,7 @@ void do_Series_Data( void )
       expect_ws( "y-value expected" );
       auto old_col = cur_col;
       double y;
-      if ( !get_double( y ) ) parse_err( "malformed y-value" );
+      if ( !get_double( y, true ) ) parse_err( "malformed y-value" );
       if ( !at_ws() && !at_eol() ) parse_err( "syntax error" );
       if ( !first ) {
         if ( n >= y_values ) {
@@ -1235,9 +1473,14 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "Series.New"        , do_Series_New         },
   { "Series.Type"       , do_Series_Type        },
   { "Series.AxisY"      , do_Series_AxisY       },
+  { "Series.Base"       , do_Series_Base        },
   { "Series.MarkerSize" , do_Series_MarkerSize  },
   { "Series.MarkerShape", do_Series_MarkerShape },
   { "Series.Style"      , do_Series_Style       },
+  { "Series.LineWidth"  , do_Series_LineWidth   },
+  { "Series.LineDash"   , do_Series_LineDash    },
+  { "Series.LineColor"  , do_Series_LineColor   },
+  { "Series.FillColor"  , do_Series_FillColor   },
   { "Series.Data"       , do_Series_Data        },
 };
 
@@ -1359,7 +1602,7 @@ int main( int argc, char* argv[] )
       )
     );
     g->FrontToBack();
-    g->Last()->Attr()->SetLineWidth( 10 )->FillColor()->Set( SVG::ColorName::Red, 0.25 );
+    g->Last()->Attr()->SetLineWidth( 10 )->FillColor()->Set( SVG::ColorName::tomato );
     std::cout << canvas->GenSVG( 10 );
     ERR( "Floating point exception" );
   }
@@ -1390,6 +1633,10 @@ int main( int argc, char* argv[] )
       }
       if ( a == "-T" ) {
         gen_template( true );
+        return 0;
+      }
+      if ( a == "-e1" ) {
+        gen_example( 1 );
         return 0;
       }
       if ( a != "-" && a[ 0 ] == '-' ) {
