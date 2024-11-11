@@ -175,22 +175,24 @@ Axis.SecY.NumberFormat: Magnitude
 # Series type may be:
 #   Type        X-value     Description
 #-------------------------------------------------------------------------------
-#   XY          Number      X/Y plot (default). Regard X values as numbers and
+#   XY          Number      X/Y plot (default). Regard X-values as numbers and
 #                           draw lines between data points, possibly with point
 #                           markers.
 #   Scatter     Number      Scatter plot. Same as XY but with no lines and
-#                           always with point markers.
-#   Line        Text        Line plot. Regard X values as text and draw lines
+#                           always with point markers. Using a highly
+#                           transparent LineColor and no FillColor can achieve a
+#                           density effect for large data sets.
+#   Line        Text        Line plot. Regard X-values as text and draw lines
 #                           between data points, possibly with point markers.
-#   Point       Text        Like Scatter, but regard X values as text.
-#   Lollipop    Text        Lollipop plot. Regard X values as text and draw
+#   Point       Text        Like Scatter, but regard X-values as text.
+#   Lollipop    Text        Lollipop plot. Regard X-values as text and draw
 #                           lines from data points to Base; default with point
 #                           markers.
-#   Bar         Text        Bar plot. Regard X values as text and draw bars
+#   Bar         Text        Bar plot. Regard X-values as text and draw bars
 #                           from data points to Base (usually zero).
 #   StackedBar  Text        Like Bar, but stack on top of (or below if negative
 #                           relative to Base) the previous bar.
-#   Area        Text        Area plot. Regard X values as text and draw an area
+#   Area        Text        Area plot. Regard X-values as text and draw an area
 #                           polygon between data points and the Base line.
 #                           Optionally also draw a line between data points,
 #                           possibly with point markers.
@@ -201,15 +203,16 @@ Axis.SecY.NumberFormat: Magnitude
 #                           same series will likely look weird.
 #-------------------------------------------------------------------------------
 #
-# Since the X values are true numbers for XY and Scatter types, these types
-# should not (*) be shown on the same chart as any other types, where the X
-# value is interpreted as a text string. This attribute applies to all
+# Since the X-values are true numbers for XY and Scatter types, these types
+# should not (*) be shown on the same chart as any other types, where the
+# X-value is interpreted as a text string. This attribute applies to all
 # subsequent series, or until it is redefined.
 #
-# (*) If you absolutely must mix, the underlying X value on a text based X-axis
-# is just the position starting from 0, so for a Bar plot with 10 bars the X
-# values will go from 0 to 9. This knowledge can be used to show XY or Scatter
-# plots on top of e.g. Bar plots.
+# (*) If you absolutely must mix, the underlying X-value on a text based X-axis
+# is just the position starting from 0, so for a Bar plot with 10 bars the
+# X-values will go from 0 to 9. This knowledge can be used to show XY or Scatter
+# plots on top of e.g. Bar plots, but often Line or Point plots will be a better
+# choice in this situation.
 Series.Type: XY
 
 # Each new series should start with this specifier giving the name of the
@@ -222,14 +225,13 @@ Series.New: Name of series
 # is redefined.
 Series.AxisY: Primary
 
-# Select the base for bar and area type plots; default is 0. series. This
-# attribute applies to the current series and all subsequent series, or until it
-# is redefined.
+# Select the base for bar and area type plots; default is 0. This attribute
+# applies to the current series and all subsequent series, or until it is
+# redefined.
 Series.Base: 0
 
-# Set size (diameter) of point markers; for XY plot the default is zero (no
-# point markers). This attribute applies to the current series and all
-# subsequent series, or until it is redefined.
+# Alter size (diameter) of point markers. This attribute applies to the current
+# series and all subsequent series, or until it is redefined.
 #Series.MarkerSize: 0
 
 # The point marker shape may be Circle, Square, Triangle, or Diamond; default is
@@ -237,14 +239,16 @@ Series.Base: 0
 # series, or until it is redefined.
 #Series.MarkerShape: Circle
 
-# The style of the graph. The style is a number in the range from 0 to 79;
-# if no Style specifier is given (recommended) it is assigned an incrementing
-# number based on the last given Series.Style.
+# The style of the graph. The style is a number in the range from 0 to 79; if no
+# Style specifier is given, it is assigned an incrementing number based on the
+# last given Series.Style.
 #  0 to  9: Solid line using 10 different colors
 # 10 to 19: Same as 0 to 9 but with short dashed line
 # 20 to 29: Same as 0 to 9 but with medium dashed line
 # 30 to 39: Same as 0 to 9 but with long dashed line
 # 40 to 79: Same as 0 to 39, but with thinner line
+# Note that the 10 default colors have been chosen to be easier to discern for
+# people with the most common form of color blindness (red-green).
 # Specifying a Series.Style clears any persistent style modifiers.
 #Series.Style: 4
 
@@ -274,10 +278,10 @@ Series.Base: 0
 # LineColor. The FillColor attribute applies to the current series only.
 #Series.FillColor: None
 
-# These are the X and Y values for the series. If no new series was created
+# These are the X- and Y-values for the series. If no new series was created
 # beforehand, an anonymous one will be automatically created. For XY and Scatter
-# type plots the X value is a number, otherwise the X value is regarded as a
-# text string, which must be single quoted if it contains spaces. Series.Data is
+# type plots the X-value is a number, otherwise the X-value is regarded as a
+# text string, which must be double quoted if it contains spaces. Series.Data is
 # the last specifier for a given series; any Series specifies after the
 # Series.Data specifier apply to the next series.
 Series.Data:
@@ -289,7 +293,7 @@ Series.Data:
         97      14
 
 # Several series sharing the same X-values can be specified in one go; series
-# using a text string as the X value (everything but XY and Scatter types)
+# using a text string as the X-value (everything but XY and Scatter types)
 # should use this way of specifying the series data. Use double-quotes if the
 # text string contains spaces. If not enough new series were created beforehand,
 # anonymous ones will be automatically created as needed.

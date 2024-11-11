@@ -113,6 +113,21 @@ void trunc_nl( std::string& s )
 Chart::Main chart;
 
 std::vector< Chart::Series* > series_list;
+std::vector< Chart::SeriesType > type_list;
+
+bool defining_series = false;
+Chart::SeriesType series_type = Chart::SeriesType::XY;
+int32_t category_idx = 0;
+int axis_y_n = 0;
+double series_base = 0;
+Chart::MarkerShape marker_shape = Chart::MarkerShape::Circle;
+double marker_size = -1;
+double line_width = -1;
+double line_dash = -1;
+double line_hole = -1;
+int64_t style = 0;
+
+//------------------------------------------------------------------------------
 
 struct LineRec {
   std::string line;
@@ -799,19 +814,6 @@ void do_LegendPos( void )
 
 //-----------------------------------------------------------------------------
 
-bool defining_series = false;
-Chart::SeriesType series_type = Chart::SeriesType::XY;
-bool x_is_text = false;
-int32_t category_idx = 0;
-int axis_y_n = 0;
-double series_base = 0;
-Chart::MarkerShape marker_shape = Chart::MarkerShape::Circle;
-double marker_size = -1;
-double line_width = -1;
-double line_dash = -1;
-double line_hole = -1;
-int64_t style = 0;
-
 void NextSeriesStyle( void )
 {
   style = (style + 1) % 80;
@@ -835,6 +837,7 @@ void ApplyMarkerSize( Chart::Series* series )
 
 void AddSeries( std::string name = "" )
 {
+  type_list.push_back( series_type );
   series_list.push_back( chart.AddSeries( series_type ) );
   series_list.back()->SetName( name );
   series_list.back()->SetAxisY( axis_y_n );
@@ -875,12 +878,6 @@ void do_Series_Type( void )
   if ( id == "" ) parse_err( "series type expected" ); else
   parse_err( "unknown series type '" + id + "'", true );
   expect_eol();
-  if (
-    series_type != Chart::SeriesType::XY &&
-    series_type != Chart::SeriesType::Scatter
-  ) {
-    x_is_text = true;
-  }
 }
 
 void do_Series_AxisY( void )
@@ -1020,8 +1017,46 @@ void do_Series_Data( void )
 {
   expect_eol();
   next_line();
-  bool first = true;
+
+  // Pre-parse first line in order to determine number of Y-values.
   uint32_t y_values = 0;
+  skip_ws( true );
+  cur_col = 0;
+  while ( at_ws() ) {
+    skip_ws();
+    if ( at_eol() ) break;
+    while ( !at_eol() && !at_ws() ) cur_col++;
+    y_values++;
+  }
+  if ( y_values > 0 ) y_values--;
+  cur_col = 0;
+
+  // Auto-add new series if needed.
+  for ( uint32_t i = 0; i < y_values; i++ ) {
+    if (
+      series_list.size() == i ||
+      series_list[ series_list.size() - i - 1 ]->Size() > 0
+    )
+      AddSeries();
+  }
+
+  // Detect series types.
+  bool x_is_num = false;
+  bool x_is_txt = false;
+  for ( uint32_t i = 0; i < y_values; i++ ) {
+    auto t = type_list[ type_list.size() - i - 1 ];
+    if (
+      t == Chart::SeriesType::XY ||
+      t == Chart::SeriesType::Scatter
+    )
+      x_is_num = true;
+    else
+      x_is_txt = true;
+  }
+  if ( x_is_num && x_is_txt ) {
+    parse_err( "cannot mix XY/Scatter series types with other series types" );
+  }
+
   std::string category;
   while ( !at_eof() ) {
     skip_ws( true );
@@ -1029,7 +1064,7 @@ void do_Series_Data( void )
     if ( !at_ws() ) break;
     expect_ws( "x-value expected" );
     double x;
-    if ( x_is_text ) {
+    if ( x_is_txt ) {
       if ( !get_category( category ) ) parse_err( "malformed x-value" );
       chart.AddCategory( category );
       x = category_idx;
@@ -1038,40 +1073,21 @@ void do_Series_Data( void )
       if ( !get_double( x ) ) parse_err( "malformed x-value" );
     }
     uint32_t n = 0;
-    auto fst_y_col = cur_col;
     while ( true ) {
       expect_ws( "y-value expected" );
       auto old_col = cur_col;
       double y;
       if ( !get_double( y, true ) ) parse_err( "malformed y-value" );
       if ( !at_ws() && !at_eol() ) parse_err( "syntax error" );
-      if ( !first ) {
-        if ( n >= y_values ) {
-          cur_col = old_col;
-          parse_err( "too many y-values" );
-        }
-        series_list[ series_list.size() - y_values + n ]->Add( x, y );
+      if ( n >= y_values ) {
+        cur_col = old_col;
+        parse_err( "too many y-values" );
       }
+      series_list[ series_list.size() - y_values + n ]->Add( x, y );
       n++;
       old_col = cur_col;
       skip_ws();
-      if ( at_eol() ) {
-        if ( first ) {
-          first = false;
-          y_values = n;
-          n = 0;
-          cur_col = fst_y_col;
-          for ( uint32_t i = 0; i < y_values; i++ ) {
-            if (
-              series_list.size() == i ||
-              series_list[ series_list.size() - i - 1 ]->Size() > 0
-            )
-              AddSeries();
-          }
-          continue;
-        }
-        break;
-      }
+      if ( at_eol() ) break;
       cur_col = old_col;
     }
     expect_eol();
