@@ -3,7 +3,7 @@ Title: Climate Data
 SubSubTitle: (source www.woodfortrees.org)
 
 Axis.PriY.Label: Temperature Anomaly (C)
-Axis.SecY.Label: Parts per Million Co2
+Axis.SecY.Label: Parts per Million CO2
 
 Axis.X.Unit: Year
 
@@ -38,14 +38,14 @@ Series.LineWidth: 1
 
 Series.Type: Line
 Series.New:
-  Mauna Loa atmospheric Co2
+  Mauna Loa atmospheric CO2
 Series.LineColor: deepskyblue
 Series.LineWidth: 3
 Series.AxisY: Secondary
 
 # A dash indicates no value. We manually provide no year X-value for some years,
 # that way we can control what years are shown (every 5th).
-# Year  Lower  Conf   Temp   Co2
+# Year  Lower  Conf   Temp   CO2
 #       conf   size
 #       limit
 Series.Data:
