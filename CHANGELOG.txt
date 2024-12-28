@@ -12,6 +12,9 @@ chartgen-v0.10.0
         Added support for Series.LineColor.
         Added support for Series.FillColor.
         Changed Series.Style.
+        Added Line Axis.*.Style.
+        Added support for BasePri/BaseSec X-axis positions.
+        Added support for BarWidth
 
 chartgen-v0.9.0
         Added the following specifiers:

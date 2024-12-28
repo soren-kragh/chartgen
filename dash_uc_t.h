@@ -21,11 +21,19 @@ std::cout << R"EOF(
 # VALUEs on the same line must be whitespace separated.
 #
 # Text VALUEs such as titles and labels may span multiple lines, in which case
-# they must be uniformly indented.
+# they should be uniformly indented.
 #
 # In the following all supported specifiers will be documented with examples.
-# Many of the specifies you should normally not include, at least not until you
-# have judged the initial defaults, have been commented out below.
+# Many of the specifies that you should normally not include, at least not until
+# you have judged the initial defaults, have been commented out below.
+#
+# The nature of the X-axis affects many of the properties of the chart. The
+# X-axis can either be numerical or textual. A numerical X-axis has real number
+# values just like the Y-axis and is thus more mathematical in nature. On the
+# other hand, a textual X-axis has text strings as "values". The default is a
+# numerical X-axis, but if just one series is defined which uses textual
+# X-values (e.g. a Bar plot), then the X-axis as a whole becomes textual. See
+# Series.Type for more information.
 #
 
 # Specifies the dimensions of the core chart area where the data is graphed.
@@ -68,7 +76,7 @@ Axis.X.Orientation: Horizontal
 #Axis.X.Reverse: On
 #Axis.Y.Reverse: On
 
-# May be Auto, None, Arrow, or Edge.
+# May be Auto, None, Line, Arrow, or Edge.
 Axis.X.Style: Auto
 Axis.Y.Style: Auto
 
@@ -104,7 +112,7 @@ Axis.SecY.LogScale: On
 # Axis Style is Edge, then the orthogonal axis crossing determines at which edge
 # the axis is placed. If both a primary and a secondary Y-axis is used, then the
 # primary Y-axis is always to the left, and the secondary Y-axis is always to
-# the right. The X-axis range is ignored if the chart has text based X-values.
+# the right. The X-axis range is ignored if the chart has textual X-values.
 #Axis.X.Range: 0 100 90
 #Axis.Y.Range: -5 25
 
@@ -112,13 +120,16 @@ Axis.SecY.LogScale: On
 # default is Auto. Overrides any orthogonal axis cross defined by the Range
 # specifier. If both a primary and a secondary Y-axis is used, then the primary
 # Y-axis is always to the left, and the secondary Y-axis is always to the right.
+# For the X-axis, the special positions BasePri/BaseSec may be used to indicate
+# the Bar/Area base (usually zero, see Series.Base).
 #Axis.X.Pos: Top
 #Axis.Y.Pos: Right
 
 # Define axis ticks.
 # Linear scale:
 #   First number is the major tick interval and the second number is an integer
-#   specifying the number of minor sub-intervals per major tick.
+#   specifying the number of minor sub-intervals per major tick (ignored for
+#   textual X-axis).
 # Logarithmic scale:
 #   First number is the base, normally 10, and second is an integer specifying
 #   the number of minor sub-intervals per division, also usually 10. The base
@@ -134,6 +145,7 @@ Axis.SecY.LogScale: On
 # be shown, typically the primary Y-axis. Enabling the grid for both Y-axes is
 # probably a bad idea in most cases; a better approach is to adjust the Range
 # for the two Y-axes such the the primary grid aligns with the secondary Y-axis.
+# The minor grid is always off for textual X-axis.
 #Axis.X.Grid: On On
 #Axis.Y.Grid: On Off
 
@@ -172,6 +184,11 @@ Axis.SecY.NumberFormat: Magnitude
 # area.
 #LegendPos: Below
 
+# Specify the relative width of bars (0.0 to 1.0). The optional second value
+# (0.0 to 1.0) is the relative width of all bars belonging to the same X-value.
+# Defaults shown below.
+#BarWidth: 1.0 0.85
+
 # Series type may be:
 #   Type        X-value     Description
 #-------------------------------------------------------------------------------
@@ -208,11 +225,11 @@ Axis.SecY.NumberFormat: Magnitude
 # X-value is interpreted as a text string. This attribute applies to all
 # subsequent series, or until it is redefined.
 #
-# (*) If you absolutely must mix, the underlying X-value on a text based X-axis
-# is just the position starting from 0, so for a Bar plot with 10 bars the
-# X-values will go from 0 to 9. This knowledge can be used to show XY or Scatter
-# plots on top of e.g. Bar plots, but often Line or Point plots will be a better
-# choice in this situation.
+# (*) If you absolutely must mix, the underlying X-value on a textual X-axis is
+# just the position starting from 0, so for a Bar plot with 10 bars the X-values
+# will go from 0 to 9. This knowledge can be used to show XY or Scatter plots on
+# top of e.g. Bar plots, but often Line or Point plots will be a better choice
+# in this situation.
 Series.Type: XY
 
 # Each new series should start with this specifier giving the name of the
@@ -266,7 +283,7 @@ Series.Base: 0
 # This specifies the line color; it acts as a one-time modifier to the current
 # Style. A color can be any of the 147 named SVG color codes or an hexadecimal
 # RGB value of the form #rrggbb; None means no color. The optional 2nd value
-# (range [-1.0;1.0]) specifies by how much to lighten the color (or darken if
+# (-1.0 to 1.0) specifies by how much to lighten the color (or darken if
 # negative). The third optional value specifies the transparency of the color
 # (0.0 to 1.0). Note however that transparency may not be supported by all SVG
 # image viewers and manipulation tools. The LineColor attribute applies to the
@@ -284,6 +301,11 @@ Series.Base: 0
 # text string, which must be double quoted if it contains spaces. Series.Data is
 # the last specifier for a given series; any Series specifies after the
 # Series.Data specifier apply to the next series.
+# If a dash (-) is given for a value, it means that the data point is undefined,
+# if a tilde (~) is given for a value, it means that the data point is skipped.
+# The dash causes a break in a line plot, while a tilde does not. This feature
+# can be used in case a series has incomplete or missing data compared to the
+# other series.
 Series.Data:
         0       23.7
         7.0     2.3

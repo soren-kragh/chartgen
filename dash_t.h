@@ -22,7 +22,7 @@ Series.Data :
 # SubSubTitle:
 # Footnote:
 # FootnotePos: Auto
-# Axis.X.Orientation: Horizontal
+# Axis.X.Orientation: Vertical
 # Axis.X.Reverse: Off
 # Axis.Y.Reverse: Off
 # Axis.X.Style: Auto
@@ -56,6 +56,7 @@ Series.Data :
 # Axis.X.NumberPos: Auto
 # Axis.Y.NumberPos: Auto
 # LegendPos: Below
+# BarWidth: 0.8 0.7
 # Series.Type: XY
 # Series.New: Name of series
 # Series.AxisY: Secondary

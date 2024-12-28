@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <functional>
 #include <chart_main.h>
+#include <random>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -80,8 +81,31 @@ void gen_example( int N )
 {
   switch ( N ) {
     case 1:
+    {
       #include <dash_e1.h>
       break;
+    }
+    case 2:
+    {
+      #include <dash_e2.h>
+      break;
+    }
+    case 3:
+    {
+      std::random_device rd{};
+      std::mt19937 gen{ rd() };
+      std::normal_distribution< double > md{ 0.0, 2.0 };
+      std::uniform_real_distribution< double > ad{ 0.0, 2 * M_PI };
+      #include <dash_e3.h>
+      for ( int i = 0; i < 10000; i++ ) {
+        double m = md(gen) / 4;
+        double a = ad(gen);
+        double x = m * std::cos( a );
+        double y = m * std::sin( a );
+        std::cout << ' ' << x << ' ' << y << '\n';
+      }
+      break;
+    }
   }
   return;
 }
@@ -206,7 +230,7 @@ void parse_err( const std::string msg, bool revert_col = false )
 
 char get_char( bool adv = true )
 {
-  if ( at_eol() ) return '#';
+  if ( at_eol() ) return '\r';
   char c = cur_line->line[ cur_col ];
   if ( adv ) cur_col++;
   return c;
@@ -257,26 +281,35 @@ bool get_int64( int64_t& i )
 bool get_double( double& d, bool none_allowed = false )
 {
   id_col = cur_col;
-  if ( none_allowed && get_char() == '-' ) {
-    char c = get_char( false );
-    if ( is_ws( c ) || c == '#' ) {
-      d = 100e300;
-      return true;
+  if ( none_allowed ) {
+    char c = get_char();
+    if ( c == '-' || c == '~' ) {
+      char nc = get_char( false );
+      if ( is_ws( nc ) ) {
+        d = (c == '-') ? Chart::num_invalid : Chart::num_skip;
+        return true;
+      }
     }
   }
   cur_col = id_col;
+  bool success = false;
   try {
     std::string str = cur_line->line.substr( cur_col );
     str.push_back( ' ' );
     std::istringstream iss( str );
     if ( !(iss >> d).fail() ) {
       cur_col += iss.tellg();
-      return true;
+      success = true;
     }
-    return false;
   } catch ( const std::exception& e ) {
-    return false;
+    success = false;
   }
+  if ( success ) {
+    if ( std::abs( d ) > Chart::num_hi ) {
+      parse_err( "number too big", true );
+    }
+  }
+  return success;
 }
 
 // Read in a text based X-value which defines a category for the series.
@@ -285,11 +318,13 @@ bool get_category( std::string& t )
   t = "";
   auto fst_col = cur_col;
   bool in_quote = false;
+  bool quoted = false;
   while ( !at_eol() ) {
     char c = cur_line->line[ cur_col ];
     if ( c == '"' ) {
       if ( cur_col == fst_col ) {
         in_quote = true;
+        quoted = true;
         cur_col++;
         continue;
       } else {
@@ -297,7 +332,7 @@ bool get_category( std::string& t )
           in_quote = false;
           cur_col++;
         } else {
-          in_quote = true;
+          in_quote = true;      // To cause error.
         }
         break;
       }
@@ -308,7 +343,9 @@ bool get_category( std::string& t )
     t.push_back( c );
     cur_col++;
   }
-  return !in_quote;
+  if ( in_quote ) return false;
+  if ( !quoted && t == "-" ) t = "";
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -381,20 +418,31 @@ void expect_ws( const std::string err_msg_if_eol = "" )
 ////////////////////////////////////////////////////////////////////////////////
 
 void do_Pos(
-  Chart::Pos& pos
+  Chart::Pos& pos, int& axis_y_n
 )
 {
   std::string id = get_identifier( true );
-  if ( id == "Auto"   ) pos = Chart::Pos::Auto  ; else
-  if ( id == "Center" ) pos = Chart::Pos::Center; else
-  if ( id == "Left"   ) pos = Chart::Pos::Left  ; else
-  if ( id == "Right"  ) pos = Chart::Pos::Right ; else
-  if ( id == "Top"    ) pos = Chart::Pos::Top   ; else
-  if ( id == "Bottom" ) pos = Chart::Pos::Bottom; else
-  if ( id == "Above"  ) pos = Chart::Pos::Top   ; else
-  if ( id == "Below"  ) pos = Chart::Pos::Bottom; else
+  if ( id == "Auto"    ) pos = Chart::Pos::Auto  ; else
+  if ( id == "Center"  ) pos = Chart::Pos::Center; else
+  if ( id == "Left"    ) pos = Chart::Pos::Left  ; else
+  if ( id == "Right"   ) pos = Chart::Pos::Right ; else
+  if ( id == "Top"     ) pos = Chart::Pos::Top   ; else
+  if ( id == "Bottom"  ) pos = Chart::Pos::Bottom; else
+  if ( id == "Above"   ) pos = Chart::Pos::Top   ; else
+  if ( id == "Below"   ) pos = Chart::Pos::Bottom; else
+  if ( id == "BasePri" ) { pos = Chart::Pos::Base; axis_y_n = 0; } else
+  if ( id == "BaseSec" ) { pos = Chart::Pos::Base; axis_y_n = 1; } else
   if ( id == "" ) parse_err( "position expected" ); else
   parse_err( "unknown position '" + id + "'", true );
+}
+
+void do_Pos(
+  Chart::Pos& pos
+)
+{
+  int axis_y_n;
+  do_Pos( pos, axis_y_n );
+  if ( pos == Chart::Pos::Base ) pos = Chart::Pos::Auto;
 }
 
 void do_Switch(
@@ -414,15 +462,13 @@ void do_Color(
 {
   skip_ws();
   std::string color_id = get_identifier( true );
-  uint8_t r, g, b;
-  double lighten = 0.0;
-  double transparency = 0.0;
 
   bool color_ok = true;
 
-  if ( color_id == "None" ) {
-    color->Clear();
-  } else {
+  color->Clear();
+  color->SetTransparency( 0.0 );
+
+  if ( color_id != "None" ) {
     if (color_id.size() != 7 || color_id[0] != '#') {
       color_ok = false;
     }
@@ -430,9 +476,9 @@ void do_Color(
       if ( !std::isxdigit( c ) ) color_ok = false;
     }
     if ( color_ok ) {
-      r = static_cast<uint8_t>( std::stoi( color_id.substr(1, 2), nullptr, 16) );
-      g = static_cast<uint8_t>( std::stoi( color_id.substr(3, 2), nullptr, 16) );
-      b = static_cast<uint8_t>( std::stoi( color_id.substr(5, 2), nullptr, 16) );
+      uint8_t r = static_cast<uint8_t>( std::stoi( color_id.substr(1, 2), nullptr, 16) );
+      uint8_t g = static_cast<uint8_t>( std::stoi( color_id.substr(3, 2), nullptr, 16) );
+      uint8_t b = static_cast<uint8_t>( std::stoi( color_id.substr(5, 2), nullptr, 16) );
       color->Set( r, g, b );
     } else {
       color_ok = color->Set( color_id ) == color;
@@ -444,6 +490,7 @@ void do_Color(
   }
 
   if ( !at_eol() ) {
+    double lighten = 0.0;
     expect_ws();
     if ( !at_eol() ) {
       if ( !get_double( lighten ) ) {
@@ -460,6 +507,7 @@ void do_Color(
   }
 
   if ( !at_eol() ) {
+    double transparency = 0.0;
     expect_ws();
     if ( !at_eol() ) {
       if ( !get_double( transparency ) ) {
@@ -590,6 +638,7 @@ void do_Axis_Style( Chart::Axis* axis )
   std::string id = get_identifier( true );
   if ( id == "Auto"   ) style = Chart::AxisStyle::Auto ; else
   if ( id == "None"   ) style = Chart::AxisStyle::None ; else
+  if ( id == "Line"   ) style = Chart::AxisStyle::Line ; else
   if ( id == "Arrow"  ) style = Chart::AxisStyle::Arrow; else
   if ( id == "Edge"   ) style = Chart::AxisStyle::Edge ; else
   if ( id == "" ) parse_err( "axis style expected" ); else
@@ -682,10 +731,11 @@ void do_Axis_Range( Chart::Axis* axis )
 void do_Axis_Pos( Chart::Axis* axis )
 {
   Chart::Pos pos;
+  int axis_y_n;
   skip_ws();
-  do_Pos( pos );
+  do_Pos( pos, axis_y_n );
   expect_eol();
-  axis->SetPos( pos );
+  axis->SetPos( pos, axis_y_n );
 }
 
 //-----------------------------------------------------------------------------
@@ -810,6 +860,32 @@ void do_LegendPos( void )
   do_Pos( pos );
   expect_eol();
   chart.SetLegendPos( pos );
+}
+
+//-----------------------------------------------------------------------------
+
+void do_BarWidth( void )
+{
+  double one_width;
+  double all_width;
+
+  skip_ws();
+  if ( at_eol() ) parse_err( "width expected" );
+  if ( !get_double( one_width ) ) parse_err( "malformed width" );
+  if ( one_width <= 0.0 || one_width > 1.0 ) parse_err( "invalid width", true );
+
+  all_width = 1.0;
+  if ( !at_eol() ) {
+    expect_ws();
+    if ( !at_eol() ) {
+      if ( !get_double( all_width ) ) parse_err( "malformed width" );
+      if ( all_width <= 0.0 || all_width > 1.0 ) parse_err( "invalid width", true );
+    }
+  }
+
+  expect_eol();
+
+  chart.SetBarWidth( one_width, all_width );
 }
 
 //-----------------------------------------------------------------------------
@@ -1070,7 +1146,7 @@ void do_Series_Data( void )
       x = category_idx;
       category_idx++;
     } else {
-      if ( !get_double( x ) ) parse_err( "malformed x-value" );
+      if ( !get_double( x, true ) ) parse_err( "malformed x-value" );
     }
     uint32_t n = 0;
     while ( true ) {
@@ -1109,6 +1185,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "Footnote"          , do_Footnote           },
   { "FootnotePos"       , do_FootnotePos        },
   { "LegendPos"         , do_LegendPos          },
+  { "BarWidth"          , do_BarWidth           },
   { "Series.New"        , do_Series_New         },
   { "Series.Type"       , do_Series_Type        },
   { "Series.AxisY"      , do_Series_AxisY       },
@@ -1276,6 +1353,14 @@ int main( int argc, char* argv[] )
       }
       if ( a == "-e1" ) {
         gen_example( 1 );
+        return 0;
+      }
+      if ( a == "-e2" ) {
+        gen_example( 2 );
+        return 0;
+      }
+      if ( a == "-e3" ) {
+        gen_example( 3 );
         return 0;
       }
       if ( a != "-" && a[ 0 ] == '-' ) {
