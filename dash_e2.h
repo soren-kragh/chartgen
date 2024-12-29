@@ -32,9 +32,11 @@ Series.New: Traditional biomass
 Series.Type: Line
 Series.New: Global population
 Series.AxisY: Secondary
-Series.LineWidth: 5
+Series.LineWidth: 8
 Series.LineDash: 0
 Series.LineColor: black
+Series.MarkerSize: 4
+Series.FillColor: white
 
 # The X-axis is textual for StackedArea, so it is our responsibility to space
 # out gaps between years in case equidistant years is desired. Use tilde (~) for

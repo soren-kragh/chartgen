@@ -281,18 +281,16 @@ Series.Base: 0
 #Series.LineDash: 3 1
 
 # This specifies the line color; it acts as a one-time modifier to the current
-# Style. A color can be any of the 147 named SVG color codes or an hexadecimal
-# RGB value of the form #rrggbb; None means no color. The optional 2nd value
-# (-1.0 to 1.0) specifies by how much to lighten the color (or darken if
-# negative). The third optional value specifies the transparency of the color
-# (0.0 to 1.0). Note however that transparency may not be supported by all SVG
-# image viewers and manipulation tools. The LineColor attribute applies to the
-# current series only.
+# Style. A color can be any of the 147 named SVG colors (google "svg colors") or
+# a hexadecimal RGB value of the form #rrggbb; None means no color. The optional
+# 2nd value (-1.0 to 1.0) specifies by how much to lighten the color (or darken
+# if negative). The third optional value specifies the transparency of the color
+# (0.0 to 1.0). The LineColor attribute applies to the current series only.
 #Series.LineColor: darkorange -0.2 0.7
 
-# This specifies the fill color used for e.g. bars, areas, marker interiors,
-# etc.; it acts as a one-time modifier to the current Style. Same format as
-# LineColor. The FillColor attribute applies to the current series only.
+# This specifies the fill color used for bars, areas, marker interiors, etc.; it
+# acts as a one-time modifier to the current Style. Same format as LineColor.
+# The FillColor attribute applies to the current series only.
 #Series.FillColor: None
 
 # These are the X- and Y-values for the series. If no new series was created
@@ -323,7 +321,9 @@ Series.New  : Series 1
 Series.AxisY: Primary
 Series.New  : Series 2
 Series.AxisY: Secondary
-Series.Style: 54
+Series.Style: 50
+Series.LineColor: black
+Series.FillColor: black 0.5
 Series.MarkerSize: 10
 Series.Data:
 #       X-value         Series 1        Series 2

@@ -94,15 +94,19 @@ void gen_example( int N )
     {
       std::random_device rd{};
       std::mt19937 gen{ rd() };
-      std::normal_distribution< double > md{ 0.0, 2.0 };
+      std::normal_distribution< double > md{ 0.0, 1.0 };
       std::uniform_real_distribution< double > ad{ 0.0, 2 * M_PI };
       #include <dash_e3.h>
-      for ( int i = 0; i < 10000; i++ ) {
-        double m = md(gen) / 4;
+      int samples = 10000;
+      while ( samples > 0 ) {
+        double m = md(gen) / 2;
         double a = ad(gen);
         double x = m * std::cos( a );
         double y = m * std::sin( a );
-        std::cout << ' ' << x << ' ' << y << '\n';
+        if ( std::abs( m ) <= 1.0 ) {
+          std::cout << ' ' << x << ' ' << y << '\n';
+          samples--;
+        }
       }
       break;
     }
