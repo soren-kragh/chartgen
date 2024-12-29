@@ -6,8 +6,6 @@ ChartArea: 700 700
 
 Title:
   Normal Distributed Samples
-SubTitle:
-  2D polar plot
 SubSubTitle:
   This plot has many data points, so it is a very good idea to convert it
   to bitmap before sharing or using the picture in documents etc., e.g.:
