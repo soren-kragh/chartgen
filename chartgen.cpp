@@ -773,11 +773,17 @@ void do_Axis_Grid( Chart::Axis* axis )
   bool minor;
 
   skip_ws();
-  if ( at_eol() ) parse_err( "major grid expected" );
+  if ( at_eol() ) parse_err( "On/Off expected" );
   do_Switch( major );
 
-  expect_ws( "minor grid expected" );
-  do_Switch( minor );
+  minor = major;
+
+  if ( !at_eol() ) {
+    expect_ws();
+    if ( !at_eol() ) {
+      do_Switch( minor );
+    }
+  }
 
   expect_eol();
 
