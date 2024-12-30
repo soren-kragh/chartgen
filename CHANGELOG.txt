@@ -15,6 +15,7 @@ chartgen-v0.10.0
         Added Line Axis.*.Style.
         Added support for BasePri/BaseSec X-axis positions.
         Added support for BarWidth
+        Added support for ChartBox
 
 chartgen-v0.9.0
         Added the following specifiers:

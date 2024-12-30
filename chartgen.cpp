@@ -529,6 +529,19 @@ void do_Color(
 
 //-----------------------------------------------------------------------------
 
+void do_Margin( void )
+{
+  int64_t m;
+  skip_ws();
+  if ( at_eol() ) parse_err( "margin expected" );
+  if ( !get_int64( m ) ) parse_err( "malformed margin" );
+  if ( m < 0 || m > 1000 ) {
+    parse_err( "margin out of range [0;1000]", true );
+  }
+  expect_eol();
+  chart.SetMargin( m );
+}
+
 void do_ChartArea( void )
 {
   int64_t w;
@@ -551,17 +564,13 @@ void do_ChartArea( void )
   chart.SetChartArea( w, h );
 }
 
-void do_Margin( void )
+void do_ChartBox( void )
 {
-  int64_t m;
+  bool chart_box;
   skip_ws();
-  if ( at_eol() ) parse_err( "margin expected" );
-  if ( !get_int64( m ) ) parse_err( "malformed margin" );
-  if ( m < 0 || m > 1000 ) {
-    parse_err( "margin out of range [0;1000]", true );
-  }
+  do_Switch( chart_box );
   expect_eol();
-  chart.SetMargin( m );
+  chart.SetChartBox( chart_box );
 }
 
 void do_Title( void )
@@ -1187,8 +1196,9 @@ void do_Series_Data( void )
 using ChartAction = std::function< void() >;
 
 std::unordered_map< std::string, ChartAction > chart_actions = {
-  { "ChartArea"         , do_ChartArea          },
   { "Margin"            , do_Margin             },
+  { "ChartArea"         , do_ChartArea          },
+  { "ChartBox"          , do_ChartBox           },
   { "Title"             , do_Title              },
   { "SubTitle"          , do_SubTitle           },
   { "SubSubTitle"       , do_SubSubTitle        },

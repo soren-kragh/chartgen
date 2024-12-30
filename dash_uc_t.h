@@ -36,6 +36,9 @@ std::cout << R"EOF(
 # Series.Type for more information.
 #
 
+# Margin around entire chart in points; default is 5.
+#Margin: 5
+
 # Specifies the dimensions of the core chart area where the data is graphed.
 # The values are in points and should typically be around 1000. Since SVG is
 # scalable these dimensions primarily determine the relative size of text
@@ -43,8 +46,8 @@ std::cout << R"EOF(
 # core chart area is small and vice versa.
 #ChartArea: 1000 700
 
-# Margin around chart in points; default is 5.
-#Margin: 5
+# Draw a box around chart area; may be On or Off.
+#ChartBox: On
 
 # Titles are placed at the top of the chart.
 Title: This is the title of the chart

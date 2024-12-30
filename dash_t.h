@@ -15,8 +15,9 @@ Series.Data :
         97      14
 
 # Summary of all available specifiers (see -T template for help):
-# ChartArea: 1000 700
 # Margin: 5
+# ChartArea: 1000 700
+# ChartBox: On
 # Title:
 # SubTitle:
 # SubSubTitle:
