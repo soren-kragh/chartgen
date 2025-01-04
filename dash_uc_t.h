@@ -181,11 +181,11 @@ Axis.SecY.NumberFormat: Magnitude
 #Axis.X.NumberPos: Auto
 #Axis.Y.NumberPos: Auto
 
-# Legend position may be Auto, Left, Right, or Below. Legends for the series
-# are normally (Auto) placed somewhere inside the core chart area, but if this
-# gets too cluttered you may place the series legends outside the core chart
-# area.
-#LegendPos: Below
+# Legend position may be Auto, Left, Right, Top, or Bottom. Legends for the
+# series are normally (Auto) placed somewhere inside the core chart area, but if
+# this gets too cluttered you may place the series legends outside the core
+# chart area.
+#LegendPos: Bottom
 
 # Specify the relative width of bars (0.0 to 1.0). The optional second value
 # (0.0 to 1.0) is the relative width of all bars belonging to the same X-value.
