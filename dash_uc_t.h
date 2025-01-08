@@ -250,15 +250,6 @@ Series.AxisY: Primary
 # redefined.
 Series.Base: 0
 
-# Alter size (diameter) of point markers. This attribute applies to the current
-# series and all subsequent series, or until it is redefined.
-#Series.MarkerSize: 0
-
-# The point marker shape may be Circle, Square, Triangle, or Diamond; default is
-# Circle. This attribute applies to the current series and all subsequent
-# series, or until it is redefined.
-#Series.MarkerShape: Circle
-
 # The style of the graph. The style is a number in the range from 0 to 79; if no
 # Style specifier is given, it is assigned an incrementing number based on the
 # last given Series.Style.
@@ -269,8 +260,18 @@ Series.Base: 0
 # 40 to 79: Same as 0 to 39, but with thinner line
 # Note that the 10 default colors have been chosen to be easier to discern for
 # people with the most common form of color blindness (red-green).
-# Specifying a Series.Style clears any persistent style modifiers.
+# Specifying a Series.Style clears any persistent style modifiers except
+# Series.MarkerShape and Series.Lighten.
 #Series.Style: 4
+
+# The point marker shape may be Circle, Square, Triangle, or Diamond; default is
+# Circle. This persistent attribute applies to the current series and all
+# subsequent series, or until it is redefined.
+#Series.MarkerShape: Circle
+
+# Alter size (diameter) of point markers. This persistent attribute applies to
+# the current series and all subsequent series, or until it is redefined.
+#Series.MarkerSize: 0
 
 # This specifies the line width; it acts as a persistent modifier to the current
 # Style. This attribute applies to the current series and all subsequent series,
@@ -282,6 +283,18 @@ Series.Base: 0
 # number of the length of the hole. This attribute applies to the current series
 # and all subsequent series, or until it is redefined.
 #Series.LineDash: 3 1
+
+# This value (-1.0 to 1.0) specifies by how much the series colors should
+# lightened (or darkened if negative); it acts as a persistent additive modifier
+# to the current Style. This attribute applies to the current series and all
+# subsequent series, or until it is redefined.
+#Series.Lighten: 0
+
+# This value (0.0 to 1.0) specifies the transparency to be used for Bar and Area
+# fill color; it acts as a persistent override modifier to the current Style.
+# This attribute applies to the current series and all subsequent series, or
+# until it is redefined.
+#Series.FillTransparency: 0
 
 # This specifies the line color; it acts as a one-time modifier to the current
 # Style. A color can be any of the 147 named SVG colors (google "svg colors") or

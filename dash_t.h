@@ -62,11 +62,13 @@ Series.Data :
 # Series.New: Name of series
 # Series.AxisY: Secondary
 # Series.Base: 0
-# Series.MarkerSize: 8
-# Series.MarkerShape: Circle
 # Series.Style: 32
+# Series.MarkerShape: Circle
+# Series.MarkerSize: 8
 # Series.LineWidth: 1
 # Series.LineDash: 3 1
+# Series.Lighten: -0.3
+# Series.FillTransparency: 0.8
 # Series.LineColor: black
 # Series.FillColor: None
 # Series.Data:

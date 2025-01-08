@@ -148,12 +148,15 @@ Chart::SeriesType series_type = Chart::SeriesType::XY;
 int32_t category_idx = 0;
 int axis_y_n = 0;
 double series_base = 0;
+
+int64_t style = 0;
 Chart::MarkerShape marker_shape = Chart::MarkerShape::Circle;
 double marker_size = -1;
 double line_width = -1;
 double line_dash = -1;
 double line_hole = -1;
-int64_t style = 0;
+double lighten = 0.0;
+double fill_transparency = -1;
 
 //------------------------------------------------------------------------------
 
@@ -947,6 +950,11 @@ void AddSeries( std::string name = "" )
   if ( line_dash >= 0 ) {
     series_list.back()->SetLineDash( line_dash, line_hole );
   }
+  if ( fill_transparency >= 0 ) {
+    series_list.back()->FillColor()->SetTransparency( fill_transparency );
+  }
+  series_list.back()->LineColor()->Lighten( lighten );
+  series_list.back()->FillColor()->Lighten( lighten );
   defining_series = true;
 }
 
@@ -1000,18 +1008,26 @@ void do_Series_Base( void )
   }
 }
 
-void do_Series_MarkerSize( void )
+void do_Series_Style( void )
 {
   skip_ws();
-  if ( at_eol() ) parse_err( "marker size expected" );
-  if ( !get_double( marker_size ) ) parse_err( "malformed marker size" );
-  if ( marker_size < 0 || marker_size > 100 ) {
-    parse_err( "marker size out of range [0;100]", true );
+  if ( at_eol() ) parse_err( "style expected" );
+  if ( !get_int64( style ) ) parse_err( "malformed style" );
+  if ( style < 0 || style > 79 ) {
+    parse_err( "style out of range [0;79]", true );
   }
   expect_eol();
   if ( defining_series ) {
-    ApplyMarkerSize( series_list.back() );
+    series_list.back()->SetStyle( style );
+    NextSeriesStyle();
+    series_list.back()->LineColor()->Lighten( lighten );
+    series_list.back()->FillColor()->Lighten( lighten );
   }
+  marker_size = -1;
+  line_width = -1;
+  line_dash = -1;
+  line_hole = -1;
+  fill_transparency = -1;
 }
 
 void do_Series_MarkerShape( void )
@@ -1030,22 +1046,17 @@ void do_Series_MarkerShape( void )
   }
 }
 
-void do_Series_Style( void )
+void do_Series_MarkerSize( void )
 {
   skip_ws();
-  if ( at_eol() ) parse_err( "style expected" );
-  if ( !get_int64( style ) ) parse_err( "malformed style" );
-  if ( style < 0 || style > 79 ) {
-    parse_err( "style out of range [0;79]", true );
+  if ( at_eol() ) parse_err( "marker size expected" );
+  if ( !get_double( marker_size ) ) parse_err( "malformed marker size" );
+  if ( marker_size < 0 || marker_size > 100 ) {
+    parse_err( "marker size out of range [0;100]", true );
   }
   expect_eol();
   if ( defining_series ) {
-    series_list.back()->SetStyle( style );
-    NextSeriesStyle();
-    marker_size = -1;
-    line_width = -1;
-    line_dash = -1;
-    line_hole = -1;
+    ApplyMarkerSize( series_list.back() );
   }
 }
 
@@ -1092,12 +1103,46 @@ void do_Series_LineDash( void )
   }
 }
 
+void do_Series_Lighten( void )
+{
+  skip_ws();
+  if ( at_eol() ) parse_err( "lighten value expected" );
+  if ( !get_double( lighten ) ) {
+    parse_err( "malformed lighten value" );
+  }
+  if ( lighten < -1.0 || lighten > +1.0 ) {
+    parse_err( "lighten value out of range [-1.0;1.0]", true );
+  }
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->LineColor()->Lighten( lighten );
+    series_list.back()->FillColor()->Lighten( lighten );
+  }
+}
+
+void do_Series_FillTransparency( void )
+{
+  skip_ws();
+  if ( at_eol() ) parse_err( "transparency value expected" );
+  if ( !get_double( fill_transparency ) ) {
+    parse_err( "malformed transparency value" );
+  }
+  if ( fill_transparency < 0.0 || fill_transparency > 1.0 ) {
+    parse_err( "transparency value out of range [-1.0;1.0]", true );
+  }
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->FillColor()->SetTransparency( fill_transparency );
+  }
+}
+
 void do_Series_LineColor( void )
 {
   if ( !defining_series ) {
     parse_err( "LineColor outside defining series" );
   }
   do_Color( series_list.back()->LineColor() );
+  series_list.back()->LineColor()->Lighten( lighten );
 }
 
 void do_Series_FillColor( void )
@@ -1106,6 +1151,10 @@ void do_Series_FillColor( void )
     parse_err( "FillColor outside defining series" );
   }
   do_Color( series_list.back()->FillColor() );
+  series_list.back()->FillColor()->Lighten( lighten );
+  if ( fill_transparency >= 0 ) {
+    series_list.back()->FillColor()->SetTransparency( fill_transparency );
+  }
 }
 
 void do_Series_Data( void )
@@ -1196,28 +1245,30 @@ void do_Series_Data( void )
 using ChartAction = std::function< void() >;
 
 std::unordered_map< std::string, ChartAction > chart_actions = {
-  { "Margin"            , do_Margin             },
-  { "ChartArea"         , do_ChartArea          },
-  { "ChartBox"          , do_ChartBox           },
-  { "Title"             , do_Title              },
-  { "SubTitle"          , do_SubTitle           },
-  { "SubSubTitle"       , do_SubSubTitle        },
-  { "Footnote"          , do_Footnote           },
-  { "FootnotePos"       , do_FootnotePos        },
-  { "LegendPos"         , do_LegendPos          },
-  { "BarWidth"          , do_BarWidth           },
-  { "Series.New"        , do_Series_New         },
-  { "Series.Type"       , do_Series_Type        },
-  { "Series.AxisY"      , do_Series_AxisY       },
-  { "Series.Base"       , do_Series_Base        },
-  { "Series.MarkerSize" , do_Series_MarkerSize  },
-  { "Series.MarkerShape", do_Series_MarkerShape },
-  { "Series.Style"      , do_Series_Style       },
-  { "Series.LineWidth"  , do_Series_LineWidth   },
-  { "Series.LineDash"   , do_Series_LineDash    },
-  { "Series.LineColor"  , do_Series_LineColor   },
-  { "Series.FillColor"  , do_Series_FillColor   },
-  { "Series.Data"       , do_Series_Data        },
+  { "Margin"                 , do_Margin                  },
+  { "ChartArea"              , do_ChartArea               },
+  { "ChartBox"               , do_ChartBox                },
+  { "Title"                  , do_Title                   },
+  { "SubTitle"               , do_SubTitle                },
+  { "SubSubTitle"            , do_SubSubTitle             },
+  { "Footnote"               , do_Footnote                },
+  { "FootnotePos"            , do_FootnotePos             },
+  { "LegendPos"              , do_LegendPos               },
+  { "BarWidth"               , do_BarWidth                },
+  { "Series.New"             , do_Series_New              },
+  { "Series.Type"            , do_Series_Type             },
+  { "Series.AxisY"           , do_Series_AxisY            },
+  { "Series.Base"            , do_Series_Base             },
+  { "Series.Style"           , do_Series_Style            },
+  { "Series.MarkerShape"     , do_Series_MarkerShape      },
+  { "Series.MarkerSize"      , do_Series_MarkerSize       },
+  { "Series.LineWidth"       , do_Series_LineWidth        },
+  { "Series.LineDash"        , do_Series_LineDash         },
+  { "Series.Lighten"         , do_Series_Lighten          },
+  { "Series.FillTransparency", do_Series_FillTransparency },
+  { "Series.LineColor"       , do_Series_LineColor        },
+  { "Series.FillColor"       , do_Series_FillColor        },
+  { "Series.Data"            , do_Series_Data             },
 };
 
 using AxisAction = std::function< void( Chart::Axis* ) >;
