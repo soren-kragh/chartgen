@@ -820,6 +820,13 @@ void do_Axis_GridStyle( Chart::Axis* axis )
 
 //-----------------------------------------------------------------------------
 
+void do_Axis_GridColor( Chart::Axis* axis )
+{
+  do_Color( axis->GridColor() );
+}
+
+//-----------------------------------------------------------------------------
+
 void do_Axis_NumberFormat( Chart::Axis* axis )
 {
   Chart::NumberFormat number_format;
@@ -1287,6 +1294,7 @@ std::unordered_map< std::string, AxisAction > axis_actions = {
   { "Tick"        , do_Axis_Tick         },
   { "Grid"        , do_Axis_Grid         },
   { "GridStyle"   , do_Axis_GridStyle    },
+  { "GridColor"   , do_Axis_GridColor    },
   { "NumberFormat", do_Axis_NumberFormat },
   { "NumberUnit"  , do_Axis_NumberUnit   },
   { "MinorNumber" , do_Axis_MinorNumber  },

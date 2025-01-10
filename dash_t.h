@@ -48,6 +48,8 @@ Series.Data :
 # Axis.Y.Grid: On Off
 # Axis.X.GridStyle: Auto
 # Axis.Y.GridStyle: Auto
+# Axis.X.GridColor: blue
+# Axis.Y.GridColor: blue
 # Axis.X.NumberFormat: Auto
 # Axis.Y.NumberFormat: Auto
 # Axis.X.NumberUnit: s

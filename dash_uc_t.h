@@ -35,6 +35,12 @@ std::cout << R"EOF(
 # X-values (e.g. a Bar plot), then the X-axis as a whole becomes textual. See
 # Series.Type for more information.
 #
+# A color can be any of the 147 named SVG colors (google "svg colors") or a
+# hexadecimal RGB value of the form #rrggbb; None means no color. The optional
+# 2nd value (-1.0 to 1.0) specifies by how much to lighten the color (or darken
+# if negative). The third optional value specifies the transparency of the color
+# (0.0 to 1.0).
+#
 
 # Margin around entire chart in points; default is 5.
 #Margin: 5
@@ -155,6 +161,10 @@ Axis.SecY.LogScale: On
 # Grid style may be Auto, Dash, or Solid; default is Auto.
 #Axis.X.GridStyle: Auto
 #Axis.Y.GridStyle: Auto
+
+# Color of the grid.
+#Axis.X.GridColor: blue
+#Axis.Y.GridColor: blue
 
 # Number format may be None, Fixed, Scientific, or Magnitude. Default is Fixed
 # for linear scale and Magnitude for logarithmic scale. Magnitude means showing
@@ -297,16 +307,12 @@ Series.Base: 0
 #Series.FillTransparency: 0
 
 # This specifies the line color; it acts as a one-time modifier to the current
-# Style. A color can be any of the 147 named SVG colors (google "svg colors") or
-# a hexadecimal RGB value of the form #rrggbb; None means no color. The optional
-# 2nd value (-1.0 to 1.0) specifies by how much to lighten the color (or darken
-# if negative). The third optional value specifies the transparency of the color
-# (0.0 to 1.0). The LineColor attribute applies to the current series only.
+# Style. The LineColor attribute applies to the current series only.
 #Series.LineColor: darkorange -0.2 0.7
 
 # This specifies the fill color used for bars, areas, marker interiors, etc.; it
-# acts as a one-time modifier to the current Style. Same format as LineColor.
-# The FillColor attribute applies to the current series only.
+# acts as a one-time modifier to the current Style. The FillColor attribute
+# applies to the current series only.
 #Series.FillColor: None
 
 # These are the X- and Y-values for the series. If no new series was created
