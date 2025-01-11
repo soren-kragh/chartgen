@@ -601,7 +601,7 @@ void do_Footnote( void )
 {
   std::string txt;
   get_text( txt, true );
-  chart.SetFootnote( txt );
+  chart.AddFootnote( txt );
 }
 
 void do_FootnotePos( void )

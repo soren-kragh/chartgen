@@ -64,11 +64,12 @@ SubTitle:
 SubSubTitle:
   An extra even smaller title
 
-# Footnotes are placed at the bottom of the chart.
+# Adds a footnote. Footnotes are placed at the bottom of the chart.
 Footnote:
   https://github.com/soren-kragh/chartgen
 
-# May be Left, Right, or center; default is Left.
+# May be Left, Right, or center; default is Left. Applies to most recently
+# added footnote.
 FootnotePos: Right
 
 # In the following Axis.Y is an alias for the primary Y-axis, which is also
