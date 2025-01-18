@@ -55,6 +55,13 @@ std::cout << R"EOF(
 # Draw a box around chart area; may be On or Off.
 #ChartBox: On
 
+# The spacing and positioning of letters are based on mono-spaced ASCII letters.
+# If different letters are used, the LetterSpacing can be used to adjust the
+# spacing. The first number is the width adjustment, the second optional number
+# is the height adjustment, and the third optional number is the baseline
+# adjustment.
+#LetterSpacing: 1.8 1.1 0.8
+
 # Titles are placed at the top of the chart.
 Title: This is the title of the chart
 
@@ -179,6 +186,7 @@ Axis.SecY.NumberFormat: Magnitude
 # space.
 #Axis.X.NumberUnit: s
 #Axis.Y.NumberUnit: _Volts
+Axis.SecY.NumberUnit: Ω
 
 # Specify if numbers are shown for minor ticks, default for linear scale is
 # Off, while default for logarithmic scale is On; may be On or Off.

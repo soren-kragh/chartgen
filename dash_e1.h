@@ -2,8 +2,8 @@ std::cout << R"EOF(
 Title: Climate Data
 SubSubTitle: (source www.woodfortrees.org)
 
-Axis.PriY.Label: Temperature Anomaly (C)
-Axis.SecY.Label: Parts per Million CO2
+Axis.PriY.Label: Temperature Anomaly (°C)
+Axis.SecY.Label: Parts per Million CO₂
 
 Axis.X.Unit: Year
 
@@ -38,14 +38,14 @@ Series.LineWidth: 1
 
 Series.Type: Line
 Series.New:
-  Mauna Loa atmospheric CO2
+  Mauna Loa atmospheric CO₂
 Series.LineColor: deepskyblue
 Series.LineWidth: 3
 Series.AxisY: Secondary
 
 # A dash indicates no value. We manually provide no year X-value for some years,
 # that way we can control what years are shown (every 5th).
-# Year  Lower  Conf   Temp   CO2
+# Year  Lower  Conf   Temp   CO₂
 #       conf   size
 #       limit
 Series.Data:

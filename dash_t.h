@@ -18,6 +18,7 @@ Series.Data :
 # Margin: 5
 # ChartArea: 1000 700
 # ChartBox: On
+# LetterSpacing: 1.8 1.1 0.8
 # Title:
 # SubTitle:
 # SubSubTitle:

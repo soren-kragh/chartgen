@@ -11,7 +11,7 @@ SubSubTitle:
   This plot has many data points, so it may be a good idea to convert it to
   bitmap before sharing or using in documents etc., e.g.:
 
-  chartgen -e3 | chartgen | svg2png >example3.png
+  ⟫ chartgen -e3 | chartgen | svg2png >example3.png
 
 Axis.X.Style: None
 Axis.Y.Style: None

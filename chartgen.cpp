@@ -576,6 +576,50 @@ void do_ChartBox( void )
   chart.SetChartBox( chart_box );
 }
 
+void do_LetterSpacing( void )
+{
+  double width_adj    = 1.0;
+  double height_adj   = 1.0;
+  double baseline_adj = 1.0;
+
+  skip_ws();
+  if ( at_eol() ) parse_err( "width adjustment expected" );
+  if ( !get_double( width_adj ) ) {
+    parse_err( "malformed width adjustment" );
+  }
+  if ( width_adj < 0 || width_adj > 100 ) {
+    parse_err( "width adjustment out of range [0;100]", true );
+  }
+
+  if ( !at_eol() ) {
+    expect_ws();
+    if ( !at_eol() ) {
+      if ( !get_double( height_adj ) ) {
+        parse_err( "malformed height adjustment" );
+      }
+      if ( height_adj < 0 || height_adj > 100 ) {
+        parse_err( "height adjustment out of range [0;100]", true );
+      }
+    }
+  }
+
+  if ( !at_eol() ) {
+    expect_ws();
+    if ( !at_eol() ) {
+      if ( !get_double( baseline_adj ) ) {
+        parse_err( "malformed baseline adjustment" );
+      }
+      if ( baseline_adj < 0 || baseline_adj > 100 ) {
+        parse_err( "baseline adjustment out of range [0;100]", true );
+      }
+    }
+  }
+
+  expect_eol();
+
+  chart.SetLetterSpacing( width_adj, height_adj, baseline_adj );
+}
+
 void do_Title( void )
 {
   std::string txt;
@@ -1255,6 +1299,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "Margin"                 , do_Margin                  },
   { "ChartArea"              , do_ChartArea               },
   { "ChartBox"               , do_ChartBox                },
+  { "LetterSpacing"          , do_LetterSpacing           },
   { "Title"                  , do_Title                   },
   { "SubTitle"               , do_SubTitle                },
   { "SubSubTitle"            , do_SubSubTitle             },

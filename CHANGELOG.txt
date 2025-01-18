@@ -19,6 +19,8 @@ chartgen-v0.10.0
         Added support for Series.Lighten
         Added support for Series.FillTransparency
         Added support for Axis.*.GridColor
+        Support UTF-8
+        Added support for LetterSpacing
 
 chartgen-v0.9.0
         Added the following specifiers:
