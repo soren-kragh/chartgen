@@ -161,10 +161,12 @@ double fill_transparency = -1;
 
 //------------------------------------------------------------------------------
 
+std::vector< std::string > file_names;
+
 struct LineRec {
   std::string line;
-  std::string file_name;
   size_t      line_number;
+  uint32_t    file_name_idx;
 };
 
 std::vector< LineRec >           lines;
@@ -221,7 +223,7 @@ void parse_err( const std::string msg, bool revert_col = false )
   } else {
     if ( cur_col > cur_line->line.length() ) cur_col = cur_line->line.length();
     std::cerr
-      << cur_line->file_name << " ("
+      << file_names[ cur_line->file_name_idx ] << " ("
       << cur_line->line_number << ','
       << cur_col << "):\n";
     std::cerr << cur_line->line << '\n';
@@ -1434,7 +1436,7 @@ void parse_lines( void )
   cur_line = lines.begin();
   cur_col = 0;
 
-  // Support delivering nothing but data.
+  // Support delivering nothing but data (implicit Series.Data).
   parse_series_data();
 
   while ( parse_spec() ) {}
@@ -1445,12 +1447,14 @@ void parse_lines( void )
 void process_files( const std::vector< std::string >& file_list )
 {
   for ( const auto& file_name : file_list ) {
+    uint32_t file_name_idx = file_names.size();
+    file_names.push_back( file_name );
     size_t line_number = 0;
     if ( file_name == "-" ) {
       std::string line;
       while ( std::getline( std::cin, line ) ) {
         trunc_nl( line );
-        lines.push_back( { line, "-", ++line_number } );
+        lines.push_back( { line, ++line_number, file_name_idx } );
       }
     } else {
       std::ifstream file( file_name );
@@ -1458,7 +1462,7 @@ void process_files( const std::vector< std::string >& file_list )
         std::string line;
         while ( std::getline( file, line ) ) {
           trunc_nl( line );
-          lines.push_back( { line, file_name, ++line_number } );
+          lines.push_back( { line, ++line_number, file_name_idx } );
         }
         file.close();
       } else {
