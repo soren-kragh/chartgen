@@ -144,6 +144,7 @@ std::vector< Chart::Series* > series_list;
 std::vector< Chart::SeriesType > type_list;
 
 bool defining_series = false;
+bool series_type_defined = false;
 Chart::SeriesType series_type = Chart::SeriesType::XY;
 int32_t category_idx = 0;
 int axis_y_n = 0;
@@ -320,26 +321,24 @@ bool get_double( double& d, bool none_allowed = false )
 }
 
 // Read in a text based X-value which defines a category for the series.
-bool get_category( std::string& t )
+bool get_category( std::string& t, bool& quoted )
 {
-  t = "";
-  auto fst_col = cur_col;
+  t.clear();
+  quoted = false;
+  id_col = cur_col;
   bool in_quote = false;
-  bool quoted = false;
   while ( !at_eol() ) {
     char c = cur_line->line[ cur_col ];
     if ( c == '"' ) {
-      if ( cur_col == fst_col ) {
+      if ( cur_col == id_col ) {
         in_quote = true;
-        quoted = true;
         cur_col++;
         continue;
       } else {
         if ( in_quote ) {
           in_quote = false;
+          quoted = true;
           cur_col++;
-        } else {
-          in_quote = true;      // To cause error.
         }
         break;
       }
@@ -351,7 +350,7 @@ bool get_category( std::string& t )
     cur_col++;
   }
   if ( in_quote ) return false;
-  if ( !quoted && t == "-" ) t = "";
+  if ( !quoted && t == "-" ) t.clear();
   return true;
 }
 
@@ -986,6 +985,9 @@ void ApplyMarkerSize( Chart::Series* series )
 
 void AddSeries( std::string name = "" )
 {
+  if ( !series_type_defined ) {
+    parse_err( "undefined SeriesType" );
+  }
   type_list.push_back( series_type );
   series_list.push_back( chart.AddSeries( series_type ) );
   series_list.back()->SetName( name );
@@ -1032,6 +1034,7 @@ void do_Series_Type( void )
   if ( id == "" ) parse_err( "series type expected" ); else
   parse_err( "unknown series type '" + id + "'", true );
   expect_eol();
+  series_type_defined = true;
 }
 
 void do_Series_AxisY( void )
@@ -1208,23 +1211,61 @@ void do_Series_FillColor( void )
   }
 }
 
-void do_Series_Data( void )
+void parse_series_data( void )
 {
-  expect_eol();
-  next_line();
-
-  // Pre-parse first line in order to determine number of Y-values.
   uint32_t y_values = 0;
-  skip_ws( true );
-  cur_col = 0;
-  while ( at_ws() ) {
-    skip_ws();
-    if ( at_eol() ) break;
-    while ( !at_eol() && !at_ws() ) cur_col++;
-    y_values++;
+  uint32_t rows = 0;
+
+  // Do a pre-scan of all the data.
+  {
+    auto org_line = cur_line;
+    cur_col = 0;
+    bool x_is_text = false;
+    while ( !at_eof() ) {
+      skip_ws( true );
+      if ( at_eol() ) break;
+      double d;
+      bool got_number = false;
+      if ( get_double( d, true ) ) {
+        got_number = at_eol() || at_ws();
+      }
+      if ( !got_number ) {
+        cur_col = id_col;
+        std::string t;
+        bool quoted;
+        if ( !get_category( t, quoted ) ) {
+          parse_err( "unmatched quote", true );
+        }
+        if ( !quoted && !t.empty() && id_col == 0 ) {
+          if ( t.back() == ':' ) break;
+          auto save_col = cur_col;
+          skip_ws();
+          if ( get_char() == ':' ) break;
+          cur_col = save_col;
+        }
+        x_is_text = true;
+      }
+      if ( !at_eol() && !at_ws() ) {
+        parse_err( "syntax error" );
+      }
+      ++rows;
+      uint32_t n = 0;
+      while ( at_ws() ) {
+        skip_ws();
+        if ( at_eol() ) break;
+        while ( !at_eol() && !at_ws() ) cur_col++;
+        ++n;
+      }
+      y_values = std::max( y_values, n );
+      expect_eol();
+    }
+    if ( !series_type_defined ) {
+      series_type = x_is_text ? Chart::SeriesType::Line : Chart::SeriesType::XY;
+      series_type_defined = true;
+    }
+    cur_line = org_line;
+    cur_col = 0;
   }
-  if ( y_values > 0 ) y_values--;
-  cur_col = 0;
 
   // Auto-add new series if needed.
   for ( uint32_t i = 0; i < y_values; i++ ) {
@@ -1253,42 +1294,47 @@ void do_Series_Data( void )
   }
 
   std::string category;
-  while ( !at_eof() ) {
+  while ( rows-- ) {
     skip_ws( true );
-    cur_col = 0;
-    if ( !at_ws() ) break;
-    expect_ws( "x-value expected" );
+    if ( at_eol() ) parse_err( "X-value expected" );
     double x;
     if ( x_is_txt ) {
-      if ( !get_category( category ) ) parse_err( "malformed x-value" );
+      bool quoted;
+      if ( !get_category( category, quoted ) ) {
+        parse_err( "unmatched quote", true );
+      }
       chart.AddCategory( category );
       x = category_idx;
       category_idx++;
     } else {
-      if ( !get_double( x, true ) ) parse_err( "malformed x-value" );
+      if ( !get_double( x, true ) ) parse_err( "malformed X-value" );
     }
-    uint32_t n = 0;
-    while ( true ) {
-      expect_ws( "y-value expected" );
-      auto old_col = cur_col;
+    if ( !at_eol() && !at_ws() ) {
+      parse_err( "syntax error" );
+    }
+    for ( uint32_t n = 0; n < y_values; ++n ) {
+      skip_ws();
       double y;
-      if ( !get_double( y, true ) ) parse_err( "malformed y-value" );
-      if ( !at_ws() && !at_eol() ) parse_err( "syntax error" );
-      if ( n >= y_values ) {
-        cur_col = old_col;
-        parse_err( "too many y-values" );
+      if ( at_eol() ) {
+        y = Chart::num_skip;
+      } else {
+        if ( !get_double( y, true ) ) parse_err( "malformed Y-value" );
+        if ( !at_eol() && !at_ws() ) parse_err( "syntax error" );
       }
       series_list[ series_list.size() - y_values + n ]->Add( x, y );
-      n++;
-      old_col = cur_col;
-      skip_ws();
-      if ( at_eol() ) break;
-      cur_col = old_col;
     }
     expect_eol();
-    if ( n < y_values ) parse_err( "another y-value expected" );
   }
+
   defining_series = false;
+}
+
+
+void do_Series_Data( void )
+{
+  expect_eol();
+  next_line();
+  parse_series_data();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1387,6 +1433,10 @@ void parse_lines( void )
 {
   cur_line = lines.begin();
   cur_col = 0;
+
+  // Support delivering nothing but data.
+  parse_series_data();
+
   while ( parse_spec() ) {}
 }
 
