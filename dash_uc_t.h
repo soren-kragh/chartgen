@@ -56,6 +56,13 @@ std::cout << R"EOF(
 # Draw a box around chart area; may be On or Off.
 #ChartBox: On
 
+# The background color also determines the chart area color, unless the chart
+# area color is also given.
+#BackgroundColor: darkslategray
+#ChartAreaColor: dimgray
+#AxisColor: white
+#TextColor: lightyellow
+
 # The spacing and positioning of letters are based on mono-spaced ASCII letters.
 # If different letters are used, the LetterSpacing can be used to adjust the
 # spacing. The first number is the width adjustment, the second optional number

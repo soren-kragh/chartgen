@@ -2,6 +2,11 @@ std::cout << R"EOF(
 Title: Global Energy Consumption
 SubSubTitle: (source www.ourworldindata.org)
 
+BackgroundColor: darkslategray
+ChartAreaColor: dimgray
+AxisColor: white
+TextColor: lightyellow
+
 Axis.X.Label: Year
 Axis.X.Grid: On Off
 Axis.X.GridStyle: Solid

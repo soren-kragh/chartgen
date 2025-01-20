@@ -577,6 +577,30 @@ void do_ChartBox( void )
   chart.SetChartBox( chart_box );
 }
 
+//-----------------------------------------------------------------------------
+
+void do_BackgroundColor( void )
+{
+  do_Color( chart.BackgroundColor() );
+}
+
+void do_ChartAreaColor( void )
+{
+  do_Color( chart.ChartAreaColor() );
+}
+
+void do_AxisColor( void )
+{
+  do_Color( chart.AxisColor() );
+}
+
+void do_TextColor( void )
+{
+  do_Color( chart.TextColor() );
+}
+
+//-----------------------------------------------------------------------------
+
 void do_LetterSpacing( void )
 {
   double width_adj    = 1.0;
@@ -1347,6 +1371,10 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "Margin"                 , do_Margin                  },
   { "ChartArea"              , do_ChartArea               },
   { "ChartBox"               , do_ChartBox                },
+  { "BackgroundColor"        , do_BackgroundColor         },
+  { "ChartAreaColor"         , do_ChartAreaColor          },
+  { "AxisColor"              , do_AxisColor               },
+  { "TextColor"              , do_TextColor               },
   { "LetterSpacing"          , do_LetterSpacing           },
   { "Title"                  , do_Title                   },
   { "SubTitle"               , do_SubTitle                },

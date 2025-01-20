@@ -18,6 +18,10 @@ Series.Data :
 # Margin: 5
 # ChartArea: 1000 700
 # ChartBox: On
+# BackgroundColor: darkslategray
+# ChartAreaColor: dimgray
+# AxisColor: white
+# TextColor: lightyellow
 # LetterSpacing: 1.8 1.1 0.8
 # Title:
 # SubTitle:
