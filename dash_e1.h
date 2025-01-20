@@ -5,6 +5,9 @@ SubSubTitle: (source www.woodfortrees.org)
 Axis.PriY.Label: Temperature Anomaly (°C)
 Axis.SecY.Label: Parts per Million CO₂
 
+# Show + for positive temperature anomaly.
+Axis.PriY.NumberSign: On
+
 Axis.X.Unit: Year
 
 # StackedArea could also be used below.

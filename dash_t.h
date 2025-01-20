@@ -57,6 +57,8 @@ Series.Data :
 # Axis.Y.GridColor: blue
 # Axis.X.NumberFormat: Auto
 # Axis.Y.NumberFormat: Auto
+# Axis.X.NumberSign: On
+# Axis.Y.NumberSign: On
 # Axis.X.NumberUnit: s
 # Axis.Y.NumberUnit: _Volts
 # Axis.X.MinorNumber: On

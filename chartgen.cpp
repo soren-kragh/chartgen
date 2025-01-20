@@ -531,7 +531,7 @@ void do_Color(
   expect_eol();
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Margin( void )
 {
@@ -577,7 +577,7 @@ void do_ChartBox( void )
   chart.SetChartBox( chart_box );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_BackgroundColor( void )
 {
@@ -599,7 +599,7 @@ void do_TextColor( void )
   do_Color( chart.TextColor() );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_LetterSpacing( void )
 {
@@ -682,7 +682,7 @@ void do_FootnotePos( void )
   chart.SetFootnotePos( pos );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_Orientation( Chart::Axis* axis )
 {
@@ -702,7 +702,7 @@ void do_Axis_Orientation( Chart::Axis* axis )
   chart.AxisY( 1 )->SetAngle( vertical ?  0 : 90 );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_Reverse( Chart::Axis* axis )
 {
@@ -713,7 +713,7 @@ void do_Axis_Reverse( Chart::Axis* axis )
   axis->SetReverse( reverse );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_Style( Chart::Axis* axis )
 {
@@ -733,7 +733,7 @@ void do_Axis_Style( Chart::Axis* axis )
   axis->SetStyle( style );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_Label( Chart::Axis* axis )
 {
@@ -742,7 +742,7 @@ void do_Axis_Label( Chart::Axis* axis )
   axis->SetLabel( txt );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_SubLabel( Chart::Axis* axis )
 {
@@ -751,7 +751,7 @@ void do_Axis_SubLabel( Chart::Axis* axis )
   axis->SetSubLabel( txt );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_Unit( Chart::Axis* axis )
 {
@@ -760,7 +760,7 @@ void do_Axis_Unit( Chart::Axis* axis )
   axis->SetUnit( txt );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_UnitPos( Chart::Axis* axis )
 {
@@ -771,7 +771,7 @@ void do_Axis_UnitPos( Chart::Axis* axis )
   axis->SetUnitPos( pos );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_LogScale( Chart::Axis* axis )
 {
@@ -782,7 +782,7 @@ void do_Axis_LogScale( Chart::Axis* axis )
   axis->SetLogScale( log_scale );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_Range( Chart::Axis* axis )
 {
@@ -811,7 +811,7 @@ void do_Axis_Range( Chart::Axis* axis )
   axis->SetRange( min, max, cross );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_Pos( Chart::Axis* axis )
 {
@@ -823,7 +823,7 @@ void do_Axis_Pos( Chart::Axis* axis )
   axis->SetPos( pos, axis_y_n );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_Tick( Chart::Axis* axis )
 {
@@ -846,7 +846,7 @@ void do_Axis_Tick( Chart::Axis* axis )
   axis->SetTick( major, minor );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_Grid( Chart::Axis* axis )
 {
@@ -871,7 +871,7 @@ void do_Axis_Grid( Chart::Axis* axis )
   axis->SetGrid( major, minor );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_GridStyle( Chart::Axis* axis )
 {
@@ -887,14 +887,14 @@ void do_Axis_GridStyle( Chart::Axis* axis )
   axis->SetGridStyle( style );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_GridColor( Chart::Axis* axis )
 {
   do_Color( axis->GridColor() );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_NumberFormat( Chart::Axis* axis )
 {
@@ -914,7 +914,18 @@ void do_Axis_NumberFormat( Chart::Axis* axis )
   axis->SetNumberFormat( number_format );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+void do_Axis_NumberSign( Chart::Axis* axis )
+{
+  bool number_sign;
+  skip_ws();
+  do_Switch( number_sign );
+  expect_eol();
+  axis->SetNumberSign( number_sign );
+}
+
+//------------------------------------------------------------------------------
 
 void do_Axis_NumberUnit( Chart::Axis* axis )
 {
@@ -927,7 +938,7 @@ void do_Axis_NumberUnit( Chart::Axis* axis )
   axis->SetNumberUnit( txt );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_MinorNumber( Chart::Axis* axis )
 {
@@ -938,7 +949,7 @@ void do_Axis_MinorNumber( Chart::Axis* axis )
   axis->ShowMinorNumbers( minor_num );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_Axis_NumberPos( Chart::Axis* axis )
 {
@@ -949,7 +960,7 @@ void do_Axis_NumberPos( Chart::Axis* axis )
   axis->SetNumberPos( pos );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_LegendPos( void )
 {
@@ -960,7 +971,7 @@ void do_LegendPos( void )
   chart.SetLegendPos( pos );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void do_BarWidth( void )
 {
@@ -986,7 +997,7 @@ void do_BarWidth( void )
   chart.SetBarWidth( one_width, all_width );
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 void NextSeriesStyle( void )
 {
@@ -1417,6 +1428,7 @@ std::unordered_map< std::string, AxisAction > axis_actions = {
   { "GridStyle"   , do_Axis_GridStyle    },
   { "GridColor"   , do_Axis_GridColor    },
   { "NumberFormat", do_Axis_NumberFormat },
+  { "NumberSign"  , do_Axis_NumberSign   },
   { "NumberUnit"  , do_Axis_NumberUnit   },
   { "MinorNumber" , do_Axis_MinorNumber  },
   { "NumberPos"   , do_Axis_NumberPos    },

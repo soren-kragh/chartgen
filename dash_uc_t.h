@@ -189,6 +189,10 @@ Axis.SecY.LogScale: On
 #Axis.Y.NumberFormat: Fixed
 Axis.SecY.NumberFormat: Magnitude
 
+# Forces the sign to be shown also for positive numbers; may be On or Off.
+#Axis.X.NumberSign: On
+#Axis.Y.NumberSign: On
+
 # A number unit at a short unit indication placed after each axis number. This
 # can be an alternative to the Unit specifier above. Leading _ is replaced by
 # space.
