@@ -26,6 +26,8 @@ Series.Data :
 # Title:
 # SubTitle:
 # SubSubTitle:
+# TitlePos: Left
+# TitleInside: On
 # Footnote:
 # FootnotePos: Auto
 # Axis.X.Orientation: Vertical

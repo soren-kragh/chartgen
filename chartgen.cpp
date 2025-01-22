@@ -666,6 +666,24 @@ void do_SubSubTitle( void )
   chart.SetSubSubTitle( txt );
 }
 
+void do_TitlePos( void )
+{
+  Chart::Pos pos;
+  skip_ws();
+  do_Pos( pos );
+  expect_eol();
+  chart.SetTitlePos( pos );
+}
+
+void do_TitleInside( void )
+{
+  bool inside;
+  skip_ws();
+  do_Switch( inside );
+  expect_eol();
+  chart.SetTitleInside( inside );
+}
+
 void do_Footnote( void )
 {
   std::string txt;
@@ -1390,6 +1408,8 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "Title"                  , do_Title                   },
   { "SubTitle"               , do_SubTitle                },
   { "SubSubTitle"            , do_SubSubTitle             },
+  { "TitlePos"               , do_TitlePos                },
+  { "TitleInside"            , do_TitleInside             },
   { "Footnote"               , do_Footnote                },
   { "FootnotePos"            , do_FootnotePos             },
   { "LegendPos"              , do_LegendPos               },

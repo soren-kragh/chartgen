@@ -79,11 +79,19 @@ SubTitle:
 SubSubTitle:
   An extra even smaller title
 
+# May be Left, Right, or Center; default is Center.
+#TitlePos: Center
+
+# Specifies if the title(s) should be placed inside the chart area; may be On or
+# Off (default). It is generally not recommenced to enable this as it may block
+# out other chart elements, but for relatively small titles it can make sense.
+#TitleInside: On
+
 # Adds a footnote. Footnotes are placed at the bottom of the chart.
 Footnote:
   https://github.com/soren-kragh/chartgen
 
-# May be Left, Right, or center; default is Left. Applies to most recently
+# May be Left, Right, or Center; default is Left. Applies to most recently
 # added footnote.
 FootnotePos: Right
 

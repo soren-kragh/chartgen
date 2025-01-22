@@ -1,6 +1,11 @@
 std::cout << R"EOF(
-Title: Global Energy Consumption
-SubSubTitle: (source www.ourworldindata.org)
+Title:
+  Global Energy Consumption
+SubSubTitle:
+  source: www.ourworldindata.org
+
+TitlePos: Left
+TitleInside: On
 
 BackgroundColor: darkslategray
 ChartAreaColor: dimgray
@@ -8,7 +13,7 @@ AxisColor: white
 TextColor: lightyellow
 
 Axis.X.Label: Year
-Axis.X.Grid: On Off
+Axis.X.Grid: On
 Axis.X.GridStyle: Solid
 
 Axis.PriY.Style: Edge
@@ -17,10 +22,9 @@ Axis.PriY.Tick: 20000 2
 Axis.PriY.GridStyle: Solid
 
 Axis.SecY.Style: Edge
-Axis.SecY.Unit:
-  billion
-  people
 Axis.SecY.Label: Population
+Axis.SecY.SubLabel:
+  (billion people)
 
 Series.Type: StackedArea
 Series.New: Other renewables

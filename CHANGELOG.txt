@@ -26,6 +26,8 @@ chartgen-v0.10.0
         Added support for AxisColor
         Added support for TextColor
         Added support for NumberSign
+        Added support for TitlePos
+        Added support for TitleInside
 
 chartgen-v0.9.0
         Added the following specifiers:

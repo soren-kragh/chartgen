@@ -13,6 +13,8 @@ SubSubTitle:
 
   ⟫ chartgen -e3 | chartgen | svg2png >example3.png
 
+TitlePos: Left
+
 Axis.X.Style: None
 Axis.Y.Style: None
 
