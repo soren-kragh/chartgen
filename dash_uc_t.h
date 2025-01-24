@@ -61,6 +61,7 @@ std::cout << R"EOF(
 #BackgroundColor: darkslategray
 #ChartAreaColor: dimgray
 #AxisColor: white
+#GridColor: green
 #TextColor: lightyellow
 
 # The spacing and positioning of letters are based on mono-spaced ASCII letters.

@@ -594,6 +594,14 @@ void do_AxisColor( void )
   do_Color( chart.AxisColor() );
 }
 
+void do_GridColor( void )
+{
+  do_Color( chart.AxisX()->GridColor() );
+  for ( auto n : { 0, 1 } ) {
+    chart.AxisY( n )->GridColor()->Set( chart.AxisX()->GridColor() );
+  }
+}
+
 void do_TextColor( void )
 {
   do_Color( chart.TextColor() );
@@ -1403,6 +1411,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "BackgroundColor"        , do_BackgroundColor         },
   { "ChartAreaColor"         , do_ChartAreaColor          },
   { "AxisColor"              , do_AxisColor               },
+  { "GridColor"              , do_GridColor               },
   { "TextColor"              , do_TextColor               },
   { "LetterSpacing"          , do_LetterSpacing           },
   { "Title"                  , do_Title                   },

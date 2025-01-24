@@ -21,6 +21,7 @@ Series.Data :
 # BackgroundColor: darkslategray
 # ChartAreaColor: dimgray
 # AxisColor: white
+# GridColor: green
 # TextColor: lightyellow
 # LetterSpacing: 1.8 1.1 0.8
 # Title:

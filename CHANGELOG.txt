@@ -28,6 +28,7 @@ chartgen-v0.10.0
         Added support for NumberSign
         Added support for TitlePos
         Added support for TitleInside
+        Added GridColor
 
 chartgen-v0.9.0
         Added the following specifiers:
