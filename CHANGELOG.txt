@@ -29,8 +29,9 @@ chartgen-v0.10.0
         Added support for TitlePos
         Added support for TitleInside
         Added GridColor
-        Adder FrameWidth
-        Adder FrameColor
+        Added FrameWidth
+        Added FrameColor
+        Added FootnoteLine
 
 chartgen-v0.9.0
         Added the following specifiers:

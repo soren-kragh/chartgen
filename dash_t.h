@@ -32,7 +32,8 @@ Series.Data :
 # TitlePos: Left
 # TitleInside: On
 # Footnote:
-# FootnotePos: Auto
+# FootnotePos: Center
+# FootnoteLine: On
 # Axis.X.Orientation: Vertical
 # Axis.X.Reverse: Off
 # Axis.Y.Reverse: Off

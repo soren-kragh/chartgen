@@ -726,6 +726,15 @@ void do_FootnotePos( void )
   chart.SetFootnotePos( pos );
 }
 
+void do_FootnoteLine( void )
+{
+  bool footnote_line;
+  skip_ws();
+  do_Switch( footnote_line );
+  expect_eol();
+  chart.SetFootnoteLine( footnote_line );
+}
+
 //------------------------------------------------------------------------------
 
 void do_Axis_Orientation( Chart::Axis* axis )
@@ -1442,6 +1451,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "TitleInside"            , do_TitleInside             },
   { "Footnote"               , do_Footnote                },
   { "FootnotePos"            , do_FootnotePos             },
+  { "FootnoteLine"           , do_FootnoteLine            },
   { "LegendPos"              , do_LegendPos               },
   { "BarWidth"               , do_BarWidth                },
   { "Series.New"             , do_Series_New              },

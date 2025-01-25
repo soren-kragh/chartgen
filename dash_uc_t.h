@@ -102,6 +102,9 @@ Footnote:
 # added footnote.
 FootnotePos: Right
 
+# Enables a line above the footnotes.
+#FootnoteLine: On
+
 # In the following Axis.Y is an alias for the primary Y-axis, which is also
 # identified as Axis.PriY. A secondary Y-axis is also possible and is identified
 # as Axis.SecY. All specifies for the primary Y-axis also apply to the secondary
