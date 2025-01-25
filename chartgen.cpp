@@ -533,6 +533,19 @@ void do_Color(
 
 //------------------------------------------------------------------------------
 
+void do_FrameWidth( void )
+{
+  int64_t m;
+  skip_ws();
+  if ( at_eol() ) parse_err( "frame width expected" );
+  if ( !get_int64( m ) ) parse_err( "malformed frame width" );
+  if ( m < 0 || m > 1000 ) {
+    parse_err( "frame width out of range [0;1000]", true );
+  }
+  expect_eol();
+  chart.SetFrameWidth( m );
+}
+
 void do_Margin( void )
 {
   int64_t m;
@@ -578,6 +591,11 @@ void do_ChartBox( void )
 }
 
 //------------------------------------------------------------------------------
+
+void do_FrameColor( void )
+{
+  do_Color( chart.FrameColor() );
+}
 
 void do_BackgroundColor( void )
 {
@@ -1406,9 +1424,11 @@ void do_Series_Data( void )
 using ChartAction = std::function< void() >;
 
 std::unordered_map< std::string, ChartAction > chart_actions = {
+  { "FrameWidth"             , do_FrameWidth              },
   { "Margin"                 , do_Margin                  },
   { "ChartArea"              , do_ChartArea               },
   { "ChartBox"               , do_ChartBox                },
+  { "FrameColor"             , do_FrameColor              },
   { "BackgroundColor"        , do_BackgroundColor         },
   { "ChartAreaColor"         , do_ChartAreaColor          },
   { "AxisColor"              , do_AxisColor               },
