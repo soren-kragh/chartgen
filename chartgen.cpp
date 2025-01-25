@@ -1151,10 +1151,11 @@ void do_Series_MarkerShape( void )
 {
   skip_ws();
   std::string id = get_identifier( true );
-  if ( id == "Circle"   ) marker_shape = Chart::MarkerShape::Circle  ; else
-  if ( id == "Square"   ) marker_shape = Chart::MarkerShape::Square  ; else
-  if ( id == "Triangle" ) marker_shape = Chart::MarkerShape::Triangle; else
-  if ( id == "Diamond"  ) marker_shape = Chart::MarkerShape::Diamond ; else
+  if ( id == "Circle"      ) marker_shape = Chart::MarkerShape::Circle     ; else
+  if ( id == "Square"      ) marker_shape = Chart::MarkerShape::Square     ; else
+  if ( id == "Triangle"    ) marker_shape = Chart::MarkerShape::Triangle   ; else
+  if ( id == "InvTriangle" ) marker_shape = Chart::MarkerShape::InvTriangle; else
+  if ( id == "Diamond"     ) marker_shape = Chart::MarkerShape::Diamond    ; else
   if ( id == "" ) parse_err( "marker shape expected" ); else
   parse_err( "unknown marker shape '" + id + "'", true );
   expect_eol();

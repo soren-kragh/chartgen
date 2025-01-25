@@ -4,6 +4,8 @@ std::cout << R"EOF(
 # and pick relevant specifies from this file as needed. It is strongly
 # recommended to let chartgen determine things automatically when possible.
 #
+# The UTF-8 character encoding standard is used.
+#
 # The input file consists of a number of specifiers; any line starting with a
 # '#' at column 0 is ignored; empty lines are also ignored. The simplest input
 # file consists only of data values, the Series.Data specifier is implicit in
@@ -65,10 +67,10 @@ std::cout << R"EOF(
 #TextColor: lightyellow
 
 # The spacing and positioning of letters are based on mono-spaced ASCII letters.
-# If different letters are used, the LetterSpacing can be used to adjust the
-# spacing. The first number is the width adjustment, the second optional number
-# is the height adjustment, and the third optional number is the baseline
-# adjustment.
+# If different letters are used, the LetterSpacing may be used to adjust the
+# spacing by the given factor. The first number is the width adjustment factor,
+# the second optional number is the height adjustment factor, and the third
+# optional number is the baseline adjustment factor.
 #LetterSpacing: 1.8 1.1 0.8
 
 # Titles are placed at the top of the chart.
@@ -304,9 +306,9 @@ Series.Base: 0
 # Series.MarkerShape and Series.Lighten.
 #Series.Style: 4
 
-# The point marker shape may be Circle, Square, Triangle, or Diamond; default is
-# Circle. This persistent attribute applies to the current series and all
-# subsequent series, or until it is redefined.
+# The point marker shape may be Circle, Square, Triangle, InvTriangle, or
+# Diamond; default is Circle. This persistent attribute applies to the current
+# series and all subsequent series, or until it is redefined.
 #Series.MarkerShape: Circle
 
 # Alter size (diameter) of point markers. This persistent attribute applies to
