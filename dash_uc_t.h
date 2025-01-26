@@ -8,8 +8,8 @@ std::cout << R"EOF(
 #
 # The input file consists of a number of specifiers; any line starting with a
 # '#' at column 0 is ignored; empty lines are also ignored. The simplest input
-# file consists only of data values, the Series.Data specifier is implicit in
-# this special case.
+# file consists only of data values, the Series.Data key is implicit in this
+# special case.
 #
 # A specifier takes the form:
 # KEY: VALUE(s)

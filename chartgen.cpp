@@ -1307,10 +1307,15 @@ void do_Series_FillColor( void )
   }
 }
 
+//------------------------------------------------------------------------------
+
 void parse_series_data( void )
 {
+  defining_series = false;
+
   uint32_t y_values = 0;
   uint32_t rows = 0;
+  bool no_x_value = false;
 
   // Do a pre-scan of all the data.
   {
@@ -1355,6 +1360,22 @@ void parse_series_data( void )
       y_values = std::max( y_values, n );
       expect_eol();
     }
+    if ( rows == 0 ) {
+      cur_col = 0;
+      return;
+    }
+    if (
+      !x_is_text && y_values == 0 &&
+      ( !series_type_defined ||
+        ( series_type != Chart::SeriesType::XY &&
+          series_type != Chart::SeriesType::Scatter
+        )
+      )
+    ) {
+      x_is_text = true;
+      no_x_value = true;
+    }
+    if ( y_values == 0 ) y_values = 1;
     if ( !series_type_defined ) {
       series_type = x_is_text ? Chart::SeriesType::Line : Chart::SeriesType::XY;
       series_type_defined = true;
@@ -1395,9 +1416,11 @@ void parse_series_data( void )
     if ( at_eol() ) parse_err( "X-value expected" );
     double x;
     if ( x_is_txt ) {
-      bool quoted;
-      if ( !get_category( category, quoted ) ) {
-        parse_err( "unmatched quote", true );
+      if ( !no_x_value ) {
+        bool quoted;
+        if ( !get_category( category, quoted ) ) {
+          parse_err( "unmatched quote", true );
+        }
       }
       chart.AddCategory( category );
       x = category_idx;
@@ -1405,15 +1428,16 @@ void parse_series_data( void )
     } else {
       if ( !get_double( x, true ) ) parse_err( "malformed X-value" );
     }
-    if ( !at_eol() && !at_ws() ) {
+    if ( !no_x_value && !at_eol() && !at_ws() ) {
       parse_err( "syntax error" );
     }
     for ( uint32_t n = 0; n < y_values; ++n ) {
       skip_ws();
       double y;
-      if ( at_eol() ) {
+      if ( at_eol() && x_is_txt ) {
         y = Chart::num_skip;
       } else {
+        if ( at_eol() ) parse_err( "Y-value expected" );
         if ( !get_double( y, true ) ) parse_err( "malformed Y-value" );
         if ( !at_eol() && !at_ws() ) parse_err( "syntax error" );
       }
@@ -1422,9 +1446,8 @@ void parse_series_data( void )
     expect_eol();
   }
 
-  defining_series = false;
+  return;
 }
-
 
 void do_Series_Data( void )
 {
