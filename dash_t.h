@@ -72,6 +72,7 @@ Series.Data :
 # Axis.X.NumberPos: Auto
 # Axis.Y.NumberPos: Auto
 # LegendPos: Below
+# LegendColor: aqua 0 0.5
 # BarWidth: 0.8 0.7
 # Series.Type: XY
 # Series.New: Name of series

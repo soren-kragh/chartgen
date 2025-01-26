@@ -13,7 +13,7 @@ chartgen-v0.10.0
         Added support for Series.FillColor.
         Changed Series.Style.
         Added Line Axis.*.Style.
-        Added support for BasePri/BaseSec X-axis positions.
+        Added support 1for BasePri/BaseSec X-axis positions.
         Added support for BarWidth
         Added support for ChartBox
         Added support for Series.Lighten
@@ -32,6 +32,7 @@ chartgen-v0.10.0
         Added FrameWidth
         Added FrameColor
         Added FootnoteLine
+        Added support for LegendColor
 
 chartgen-v0.9.0
         Added the following specifiers:

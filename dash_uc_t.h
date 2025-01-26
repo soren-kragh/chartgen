@@ -236,6 +236,9 @@ Axis.SecY.NumberUnit: Ω
 # chart area.
 #LegendPos: Bottom
 
+# Change the background color of legend box (and title box).
+#LegendColor: aqua 0 0.5
+
 # Specify the relative width of bars (0.0 to 1.0). The optional second value
 # (0.0 to 1.0) is the relative width of all bars belonging to the same X-value.
 # Defaults shown below.

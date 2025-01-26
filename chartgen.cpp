@@ -1024,6 +1024,11 @@ void do_LegendPos( void )
   chart.SetLegendPos( pos );
 }
 
+void do_LegendColor( void )
+{
+  do_Color( chart.LegendColor() );
+}
+
 //------------------------------------------------------------------------------
 
 void do_BarWidth( void )
@@ -1453,6 +1458,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "FootnotePos"            , do_FootnotePos             },
   { "FootnoteLine"           , do_FootnoteLine            },
   { "LegendPos"              , do_LegendPos               },
+  { "LegendColor"            , do_LegendColor             },
   { "BarWidth"               , do_BarWidth                },
   { "Series.New"             , do_Series_New              },
   { "Series.Type"            , do_Series_Type             },

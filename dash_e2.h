@@ -11,6 +11,7 @@ BackgroundColor: darkslategray
 ChartAreaColor: dimgray
 AxisColor: white
 TextColor: lightyellow
+LegendColor: darkslategray 0 0.5
 
 Axis.X.Label: Year
 Axis.X.Grid: On
