@@ -16,7 +16,7 @@ Series.Data :
 
 # Summary of all available specifiers (see -T template for help):
 # FrameWidth: 5
-# FrameColor: brack
+# FrameColor: black
 # Margin: 5
 # ChartArea: 1000 700
 # ChartBox: On
@@ -87,5 +87,12 @@ Series.Data :
 # Series.FillTransparency: 0.8
 # Series.LineColor: black
 # Series.FillColor: None
+# Series.Tag: On
+# Series.TagPos: Below
+# Series.TagSize: 0.8
+# Series.TagBox: On
+# Series.TagTextColor: black
+# Series.TagFillColor: lightyellow 0 0.3
+# Series.TagLineColor: black
 # Series.Data:
 )EOF";

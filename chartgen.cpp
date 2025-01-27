@@ -110,6 +110,11 @@ void gen_example( int N )
       }
       break;
     }
+    case 4:
+    {
+      #include <dash_e4.h>
+      break;
+    }
   }
   return;
 }
@@ -158,6 +163,13 @@ double line_dash = -1;
 double line_hole = -1;
 double lighten = 0.0;
 double fill_transparency = -1;
+bool tag_enable = false;
+Chart::Pos tag_pos = Chart::Pos::Auto;
+double tag_size = 1.0;
+bool tag_box = false;
+SVG::Color tag_text_color;
+SVG::Color tag_fill_color;
+SVG::Color tag_line_color;
 
 //------------------------------------------------------------------------------
 
@@ -438,8 +450,11 @@ void do_Pos(
   if ( id == "Bottom"  ) pos = Chart::Pos::Bottom; else
   if ( id == "Above"   ) pos = Chart::Pos::Top   ; else
   if ( id == "Below"   ) pos = Chart::Pos::Bottom; else
+  if ( id == "Base"    ) { pos = Chart::Pos::Base; axis_y_n = 0; } else
   if ( id == "BasePri" ) { pos = Chart::Pos::Base; axis_y_n = 0; } else
   if ( id == "BaseSec" ) { pos = Chart::Pos::Base; axis_y_n = 1; } else
+  if ( id == "End"     ) pos = Chart::Pos::End   ; else
+  if ( id == "Beyond"  ) pos = Chart::Pos::Beyond; else
   if ( id == "" ) parse_err( "position expected" ); else
   parse_err( "unknown position '" + id + "'", true );
 }
@@ -450,13 +465,13 @@ void do_Pos(
 {
   int axis_y_n;
   do_Pos( pos, axis_y_n );
-  if ( pos == Chart::Pos::Base ) pos = Chart::Pos::Auto;
 }
 
 void do_Switch(
   bool& flag
 )
 {
+  skip_ws();
   std::string id = get_identifier( true );
   if ( id == "On"  ) flag = true ; else
   if ( id == "Off" ) flag = false; else
@@ -584,7 +599,6 @@ void do_ChartArea( void )
 void do_ChartBox( void )
 {
   bool chart_box;
-  skip_ws();
   do_Switch( chart_box );
   expect_eol();
   chart.SetChartBox( chart_box );
@@ -704,7 +718,6 @@ void do_TitlePos( void )
 void do_TitleInside( void )
 {
   bool inside;
-  skip_ws();
   do_Switch( inside );
   expect_eol();
   chart.SetTitleInside( inside );
@@ -729,7 +742,6 @@ void do_FootnotePos( void )
 void do_FootnoteLine( void )
 {
   bool footnote_line;
-  skip_ws();
   do_Switch( footnote_line );
   expect_eol();
   chart.SetFootnoteLine( footnote_line );
@@ -760,7 +772,6 @@ void do_Axis_Orientation( Chart::Axis* axis )
 void do_Axis_Reverse( Chart::Axis* axis )
 {
   bool reverse;
-  skip_ws();
   do_Switch( reverse );
   expect_eol();
   axis->SetReverse( reverse );
@@ -829,7 +840,6 @@ void do_Axis_UnitPos( Chart::Axis* axis )
 void do_Axis_LogScale( Chart::Axis* axis )
 {
   bool log_scale;
-  skip_ws();
   do_Switch( log_scale );
   expect_eol();
   axis->SetLogScale( log_scale );
@@ -906,8 +916,6 @@ void do_Axis_Grid( Chart::Axis* axis )
   bool major;
   bool minor;
 
-  skip_ws();
-  if ( at_eol() ) parse_err( "On/Off expected" );
   do_Switch( major );
 
   minor = major;
@@ -972,7 +980,6 @@ void do_Axis_NumberFormat( Chart::Axis* axis )
 void do_Axis_NumberSign( Chart::Axis* axis )
 {
   bool number_sign;
-  skip_ws();
   do_Switch( number_sign );
   expect_eol();
   axis->SetNumberSign( number_sign );
@@ -996,7 +1003,6 @@ void do_Axis_NumberUnit( Chart::Axis* axis )
 void do_Axis_MinorNumber( Chart::Axis* axis )
 {
   bool minor_num;
-  skip_ws();
   do_Switch( minor_num );
   expect_eol();
   axis->ShowMinorNumbers( minor_num );
@@ -1103,6 +1109,13 @@ void AddSeries( std::string name = "" )
   }
   series_list.back()->LineColor()->Lighten( lighten );
   series_list.back()->FillColor()->Lighten( lighten );
+  series_list.back()->SetTagEnable( tag_enable );
+  series_list.back()->SetTagPos( tag_pos );
+  series_list.back()->SetTagSize( tag_size );
+  series_list.back()->SetTagBox( tag_box );
+  series_list.back()->TagTextColor()->Set( &tag_text_color );
+  series_list.back()->TagFillColor()->Set( &tag_fill_color );
+  series_list.back()->TagLineColor()->Set( &tag_line_color );
   defining_series = true;
 }
 
@@ -1171,12 +1184,18 @@ void do_Series_Style( void )
     NextSeriesStyle();
     series_list.back()->LineColor()->Lighten( lighten );
     series_list.back()->FillColor()->Lighten( lighten );
+    series_list.back()->TagTextColor()->Undef();
+    series_list.back()->TagFillColor()->Undef();
+    series_list.back()->TagLineColor()->Undef();
   }
   marker_size = -1;
   line_width = -1;
   line_dash = -1;
   line_hole = -1;
   fill_transparency = -1;
+  tag_text_color.Undef();
+  tag_fill_color.Undef();
+  tag_line_color.Undef();
 }
 
 void do_Series_MarkerShape( void )
@@ -1309,6 +1328,76 @@ void do_Series_FillColor( void )
 
 //------------------------------------------------------------------------------
 
+void do_Series_Tag( void )
+{
+  do_Switch( tag_enable );
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetTagEnable( tag_enable );
+  }
+}
+
+void do_Series_TagPos( void )
+{
+  skip_ws();
+  do_Pos( tag_pos );
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetTagPos( tag_pos );
+  }
+}
+
+void do_Series_TagSize( void )
+{
+  skip_ws();
+  if ( at_eol() ) parse_err( "tag size value expected" );
+  if ( !get_double( tag_size ) ) {
+    parse_err( "malformed tag size value" );
+  }
+  if ( tag_size < 0.001 || tag_size > 1000 ) {
+    parse_err( "tag size value out of range", true );
+  }
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetTagSize( tag_size );
+  }
+}
+
+void do_Series_TagBox( void )
+{
+  do_Switch( tag_box );
+  expect_eol();
+  if ( defining_series ) {
+    series_list.back()->SetTagBox( tag_box );
+  }
+}
+
+void do_Series_TagTextColor( void )
+{
+  do_Color( &tag_text_color );
+  if ( defining_series ) {
+    series_list.back()->TagTextColor()->Set( &tag_text_color );
+  }
+}
+
+void do_Series_TagFillColor( void )
+{
+  do_Color( &tag_fill_color );
+  if ( defining_series ) {
+    series_list.back()->TagFillColor()->Set( &tag_fill_color );
+  }
+}
+
+void do_Series_TagLineColor( void )
+{
+  do_Color( &tag_line_color );
+  if ( defining_series ) {
+    series_list.back()->TagLineColor()->Set( &tag_line_color );
+  }
+}
+
+//------------------------------------------------------------------------------
+
 void parse_series_data( void )
 {
   defining_series = false;
@@ -1411,8 +1500,10 @@ void parse_series_data( void )
   }
 
   std::string category;
+  std::string_view tag_x;
   while ( rows-- ) {
     skip_ws( true );
+    id_col = cur_col;
     if ( at_eol() ) parse_err( "X-value expected" );
     double x;
     if ( x_is_txt ) {
@@ -1431,17 +1522,29 @@ void parse_series_data( void )
     if ( !no_x_value && !at_eol() && !at_ws() ) {
       parse_err( "syntax error" );
     }
+    tag_x =
+      std::string_view(
+        cur_line->line
+      ).substr( id_col, cur_col - id_col );
     for ( uint32_t n = 0; n < y_values; ++n ) {
+      uint32_t series_idx = series_list.size() - y_values + n;
       skip_ws();
       double y;
       if ( at_eol() && x_is_txt ) {
         y = Chart::num_skip;
+        series_list[ series_idx ]->Add( x, y );
       } else {
         if ( at_eol() ) parse_err( "Y-value expected" );
         if ( !get_double( y, true ) ) parse_err( "malformed Y-value" );
         if ( !at_eol() && !at_ws() ) parse_err( "syntax error" );
+        series_list[ series_idx ]->Add(
+          x, y,
+          tag_x,
+          std::string_view(
+            cur_line->line
+          ).substr( id_col, cur_col - id_col )
+        );
       }
-      series_list[ series_list.size() - y_values + n ]->Add( x, y );
     }
     expect_eol();
   }
@@ -1496,6 +1599,13 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "Series.FillTransparency", do_Series_FillTransparency },
   { "Series.LineColor"       , do_Series_LineColor        },
   { "Series.FillColor"       , do_Series_FillColor        },
+  { "Series.Tag"             , do_Series_Tag              },
+  { "Series.TagPos"          , do_Series_TagPos           },
+  { "Series.TagSize"         , do_Series_TagSize          },
+  { "Series.TagBox"          , do_Series_TagBox           },
+  { "Series.TagTextColor"    , do_Series_TagTextColor     },
+  { "Series.TagFillColor"    , do_Series_TagFillColor     },
+  { "Series.TagLineColor"    , do_Series_TagLineColor     },
   { "Series.Data"            , do_Series_Data             },
 };
 
@@ -1668,6 +1778,10 @@ int main( int argc, char* argv[] )
       }
       if ( a == "-e3" ) {
         gen_example( 3 );
+        return 0;
+      }
+      if ( a == "-e4" ) {
+        gen_example( 4 );
         return 0;
       }
       if ( a != "-" && a[ 0 ] == '-' ) {

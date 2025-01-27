@@ -47,7 +47,7 @@ std::cout << R"EOF(
 
 # Frame width around entire chart in points; default is no frame (0).
 #FrameWidth: 5
-#FrameColor: brack
+#FrameColor: black
 
 # Margin around entire chart in points; default is 5.
 #Margin: 5
@@ -356,6 +356,31 @@ Series.Base: 0
 # acts as a one-time modifier to the current Style. The FillColor attribute
 # applies to the current series only.
 #Series.FillColor: None
+
+# Enable tagging of data points, that is, showing the data values near the data
+# points. This will quickly become cluttered, so should only be used for
+# relatively simple charts. For XY and Scatter plot, both the X- and the Y-value
+# are shown.
+#Series.Tag: On
+
+# Position of tag; may be Auto, Left, Right, Above, Below, or Center. Default is
+# Auto. For Bar and Lollipop type plots the position may be Auto, Base, End, and
+# Beyond.
+#Series.TagPos: Below
+
+# Tag size scaling factor.
+#Series.TagSize: 0.8
+
+# Show the tag in a small box; may be On or Off.
+#Series.TagBox: On
+
+# Tag text color, the fill color of the tag box (if any), and the color of the
+# line around the tag box (if any); they act as persistent modifiers to the
+# current Style. These attributes apply to the current series and all subsequent
+# series, or until they are redefined.
+#Series.TagTextColor: black
+#Series.TagFillColor: lightyellow 0 0.3
+#Series.TagLineColor: black
 
 # These are the X- and Y-values for the series. If no new series was created
 # beforehand, an anonymous one will be automatically created. For XY and Scatter

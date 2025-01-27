@@ -1,6 +1,6 @@
 std::cout << R"EOF(
 Title: Climate Data
-SubSubTitle: (source www.woodfortrees.org)
+SubSubTitle: (source: www.woodfortrees.org)
 
 Axis.PriY.Label: Temperature Anomaly (°C)
 Axis.SecY.Label: Parts per Million CO₂

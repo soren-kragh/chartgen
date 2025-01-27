@@ -33,6 +33,12 @@ chartgen-v0.10.0
         Added FrameColor
         Added FootnoteLine
         Added support for LegendColor
+        Added Series.TagPos
+        Added Series.TagSize
+        Added Series.TagBox
+        Added Series.TagTextColor
+        Added Series.TagFillColor
+        Added Series.TagLineColor
 
 chartgen-v0.9.0
         Added the following specifiers:

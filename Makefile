@@ -13,7 +13,7 @@ all: ${EXE}
 
 ${EXE}: ${DEPS}
 	@rm -f ${EXE}
-	@g++ -std=c++11 -Wall -O3 -Wfatal-errors \
+	@g++ -std=c++17 -Wall -O3 -Wfatal-errors \
 	${CPPS} -o ${EXE} $(addprefix -I ,${DIRS})
 
 .PHONY: run
