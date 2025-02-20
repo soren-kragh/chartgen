@@ -18,7 +18,7 @@ Series.Data :
 # FrameWidth: 5
 # FrameColor: black
 # Margin: 5
-# ChartArea: 1000 700
+# ChartArea: 1000 600
 # ChartBox: On
 # BackgroundColor: darkslategray
 # ChartAreaColor: dimgray

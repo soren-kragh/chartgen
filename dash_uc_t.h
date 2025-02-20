@@ -57,7 +57,7 @@ std::cout << R"EOF(
 # scalable these dimensions primarily determine the relative size of text
 # annotations and line thicknesses; texts will appear relatively larger if the
 # core chart area is small and vice versa.
-#ChartArea: 1000 700
+#ChartArea: 1000 600
 
 # Draw a box around chart area; may be On or Off.
 #ChartBox: On
