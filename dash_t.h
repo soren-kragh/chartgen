@@ -74,6 +74,7 @@ Series.Data :
 # LegendPos: Below
 # LegendColor: aqua 0 0.5
 # BarWidth: 0.8 0.7
+# BarMargin: 0
 # Series.Type: XY
 # Series.New: Name of series
 # Series.AxisY: Secondary

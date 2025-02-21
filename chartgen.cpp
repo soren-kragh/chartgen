@@ -1061,6 +1061,20 @@ void do_BarWidth( void )
   chart.SetBarWidth( one_width, all_width );
 }
 
+void do_BarMargin( void )
+{
+  double margin;
+
+  skip_ws();
+  if ( at_eol() ) parse_err( "margin expected" );
+  if ( !get_double( margin ) ) parse_err( "malformed margin" );
+  if ( margin < 0.0 ) parse_err( "invalid margin", true );
+
+  expect_eol();
+
+  chart.SetBarMargin( margin );
+}
+
 //------------------------------------------------------------------------------
 
 void NextSeriesStyle( void )
@@ -1586,6 +1600,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "LegendPos"              , do_LegendPos               },
   { "LegendColor"            , do_LegendColor             },
   { "BarWidth"               , do_BarWidth                },
+  { "BarMargin"              , do_BarMargin               },
   { "Series.New"             , do_Series_New              },
   { "Series.Type"            , do_Series_Type             },
   { "Series.AxisY"           , do_Series_AxisY            },

@@ -240,9 +240,17 @@ Axis.SecY.NumberUnit: Ω
 #LegendColor: aqua 0 0.5
 
 # Specify the relative width of bars (0.0 to 1.0). The optional second value
-# (0.0 to 1.0) is the relative width of all bars belonging to the same X-value.
+# (0.0 to 1.0) determines the total relative width allocated to all bars at the
+# same X-value before individual widths are applied.
 # Defaults shown below.
 #BarWidth: 1.0 0.85
+
+# The bar margin specifies the extra margin for the X-axis of bar graphs, and
+# all textual X-axis. For example, if a bar graph has three bars and BarMargin
+# is 1.0, then the X-axis will be laid out as if it has five buckets
+# (1.0+3+1.0). The effect is that extra margin is created to the start/end of
+# the bar graph (or any textual X-axis graph).
+#BarMargin: 0
 
 # Series type may be:
 #   Type        X-value     Description
