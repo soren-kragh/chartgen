@@ -4,6 +4,7 @@ std::cout << R"EOF(
 Title       : Chart Title
 Axis.X.Label: X-Axis Label
 Axis.Y.Label: Y-Axis Label
+
 Series.Type : XY
 Series.New  : Name of series
 Series.Data :

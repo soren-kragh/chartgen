@@ -284,21 +284,27 @@ Axis.SecY.NumberUnit: Ω
 #-------------------------------------------------------------------------------
 #
 # Since the X-values are true numbers for XY and Scatter types, these types
-# should not (*) be shown on the same chart as any other types, where the
-# X-value is interpreted as a text string. This attribute applies to all
+# should normally not (*) be shown on the same chart as any other types, where
+# the X-value is interpreted as a text string. This attribute applies to all
 # subsequent series, or until it is redefined.
 #
-# (*) If you absolutely must mix, the underlying X-value on a textual X-axis is
-# just the position starting from 0, so for a Bar plot with 10 bars the X-values
-# will go from 0 to 9. This knowledge can be used to show XY or Scatter plots on
-# top of e.g. Bar plots, but often Line or Point plots will be a better choice
-# in this situation.
+
+# (*) If you do mix, the underlying X-value on a textual X-axis is just the
+# position starting from 0, so for a Bar plot with 10 bars the X-values will go
+# from 0 to 9. This knowledge can be used to show XY or Scatter plots on top of
+# e.g. Bar plots, but often Line or Point plots will be a better choice in this
+# situation.
+#
+# The Series-Type specifier must be given BEFORE the Series.New to which it
+# associate.
 Series.Type: XY
 
-# Each new series should start with this specifier giving the name of the
-# series (may be multi-line). The following Series specifiers associate to
-# this.
+# Each new series must start with this specifier giving the name of the
+# series (may be multi-line); the type of the newly created series will be
+# defined by the previously given Series.Type.
 Series.New: Name of series
+
+# The following Series specifiers associate to the above newly created series.
 
 # Associated Y-axis may be Primary or Secondary; the default is Primary. This
 # attribute applies to the current series and all subsequent series, or until it
