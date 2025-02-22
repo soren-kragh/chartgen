@@ -69,6 +69,14 @@ for SVG_FILE in "${SVG[@]}"; do
     DF="$TMP/output.png"
   fi
 
+  if [[ ! -f "$SF" || ! -r "$SF" ]]; then
+    show_err "File not readable: $SF"
+  fi
+
+  if [[ ! -w "$DF" && ( -e "$DF" || ! -w "$(dirname "$DF")" ) ]]; then
+    show_err "File not writable: $DF"
+  fi
+
   if [[ $PIPE != 1 ]]; then
     >&2 echo "$DF"
   fi
