@@ -246,10 +246,10 @@ Axis.SecY.NumberUnit: Ω
 #BarWidth: 1.0 0.85
 
 # The bar margin specifies the extra margin for the X-axis of bar graphs, and
-# all textual X-axis. For example, if a bar graph has three bars and BarMargin
-# is 1.0, then the X-axis will be laid out as if it has five buckets
-# (1.0+3+1.0). The effect is that extra margin is created to the start/end of
-# the bar graph (or any textual X-axis graph).
+# all textual X-axis graphs such as Line or Area. For example, if a bar graph
+# has three bars and BarMargin is 1.0, then the X-axis will be laid out as if it
+# has five buckets (1.0+3+1.0). The effect is that extra margin is created at
+# the start/end of the bar graph (or any textual X-axis graph).
 #BarMargin: 0
 
 # Series type may be:
@@ -402,11 +402,11 @@ Series.Base: 0
 # text string, which must be double quoted if it contains spaces. Series.Data is
 # the last specifier for a given series; any Series specifies after the
 # Series.Data specifier apply to the next series.
-# If a dash (-) is given for a value, it means that the data point is undefined,
-# if a tilde (~) is given for a value, it means that the data point is skipped.
-# The dash causes a break in a line plot, while a tilde does not. This feature
-# can be used in case a series has incomplete or missing data compared to the
-# other series.
+# If a dash (-) is given for a value, it means that the data point is skipped,
+# if an exclamation mark (!) is given for a value, it means that the data point
+# is undefined. The exclamation mark causes a break in a line plot, while a dash
+# does not. This feature can be used in case a series has incomplete or missing
+# data compared to the other series.
 Series.Data:
         0       23.7
         7.0     2.3

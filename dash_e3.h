@@ -2,7 +2,7 @@ std::cout << R"EOF(
 Footnote: https://github.com/soren-kragh/chartgen
 FootnotePos: Right
 
-ChartArea: 700 700
+ChartArea: 600 600
 ChartBox: On
 
 Title:

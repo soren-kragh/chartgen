@@ -15,6 +15,7 @@ TextColor: white
 # Try it.
 #Axis.X.Orientation: Vertical
 #Axis.X.Reverse: On
+#BarMargin: 0.5
 
 Axis.Y.LogScale: On
 

@@ -305,10 +305,10 @@ bool get_double( double& d, bool none_allowed = false )
   id_col = cur_col;
   if ( none_allowed ) {
     char c = get_char();
-    if ( c == '-' || c == '~' ) {
+    if ( c == '-' || c == '!' ) {
       char nc = get_char( false );
       if ( is_ws( nc ) ) {
-        d = (c == '-') ? Chart::num_invalid : Chart::num_skip;
+        d = (c == '!') ? Chart::num_invalid : Chart::num_skip;
         return true;
       }
     }
