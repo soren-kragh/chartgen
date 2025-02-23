@@ -1221,6 +1221,7 @@ void do_Series_MarkerShape( void )
   if ( id == "Triangle"    ) marker_shape = Chart::MarkerShape::Triangle   ; else
   if ( id == "InvTriangle" ) marker_shape = Chart::MarkerShape::InvTriangle; else
   if ( id == "Diamond"     ) marker_shape = Chart::MarkerShape::Diamond    ; else
+  if ( id == "Cross"       ) marker_shape = Chart::MarkerShape::Cross      ; else
   if ( id == "HorLine"     ) marker_shape = Chart::MarkerShape::HorLine    ; else
   if ( id == "VerLine"     ) marker_shape = Chart::MarkerShape::VerLine    ; else
   if ( id == "" ) parse_err( "marker shape expected" ); else

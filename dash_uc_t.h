@@ -331,8 +331,9 @@ Series.Base: 0
 #Series.Style: 4
 
 # The point marker shape may be Circle, Square, Triangle, InvTriangle, Diamond,
-# VerLine, or HorLine; default is Circle. This persistent attribute applies to
-# the current series and all subsequent series, or until it is redefined.
+# Cross, VerLine, or HorLine; default is Circle. This persistent attribute
+# applies to the current series and all subsequent series, or until it is
+# redefined.
 #Series.MarkerShape: Circle
 
 # Alter size (diameter) of point markers. This persistent attribute applies to
