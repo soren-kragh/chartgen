@@ -708,11 +708,21 @@ void do_SubSubTitle( void )
 
 void do_TitlePos( void )
 {
-  Chart::Pos pos;
+  Chart::Pos pos_x;
+  Chart::Pos pos_y = Chart::Pos::Top;
+
   skip_ws();
-  do_Pos( pos );
+  do_Pos( pos_x );
+
+  if ( !at_eol() ) {
+    expect_ws();
+    if ( !at_eol() ) {
+      do_Pos( pos_y );
+    }
+  }
+
   expect_eol();
-  chart.SetTitlePos( pos );
+  chart.SetTitlePos( pos_x, pos_y );
 }
 
 void do_TitleInside( void )
