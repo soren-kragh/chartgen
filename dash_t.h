@@ -72,6 +72,8 @@ Series.Data :
 # Axis.Y.MinorNumber: Off
 # Axis.X.NumberPos: Auto
 # Axis.Y.NumberPos: Auto
+# Axis.X.NumberSize: 1.0
+# Axis.Y.NumberSize: 1.0
 # LegendPos: Below
 # LegendColor: aqua 0 0.5
 # LegendOutline: Off

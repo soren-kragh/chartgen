@@ -232,6 +232,10 @@ Axis.SecY.NumberUnit: Ω
 #Axis.X.NumberPos: Auto
 #Axis.Y.NumberPos: Auto
 
+# Set the relative size of axis numbers and axis unit.
+#Axis.X.NumberSize: 1.0
+#Axis.Y.NumberSize: 1.0
+
 # Legend position may be Auto, Left, Right, Top, or Bottom. Legends for the
 # series are normally (Auto) placed somewhere inside the core chart area, but if
 # this gets too cluttered you may place the series legends outside the core

@@ -1031,6 +1031,23 @@ void do_Axis_NumberPos( Chart::Axis* axis )
 
 //------------------------------------------------------------------------------
 
+void do_Axis_NumberSize( Chart::Axis* axis )
+{
+  double size;
+  skip_ws();
+  if ( at_eol() ) parse_err( "number size value expected" );
+  if ( !get_double( size ) ) {
+    parse_err( "malformed number size value" );
+  }
+  if ( size < 0.01 || size > 100 ) {
+    parse_err( "number size value out of range", true );
+  }
+  expect_eol();
+  axis->SetNumberSize( size );
+}
+
+//------------------------------------------------------------------------------
+
 void do_LegendPos( void )
 {
   Chart::Pos pos;
@@ -1389,7 +1406,7 @@ void do_Series_TagSize( void )
   if ( !get_double( tag_size ) ) {
     parse_err( "malformed tag size value" );
   }
-  if ( tag_size < 0.001 || tag_size > 1000 ) {
+  if ( tag_size < 0.01 || tag_size > 100 ) {
     parse_err( "tag size value out of range", true );
   }
   expect_eol();
@@ -1668,6 +1685,7 @@ std::unordered_map< std::string, AxisAction > axis_actions = {
   { "NumberUnit"  , do_Axis_NumberUnit   },
   { "MinorNumber" , do_Axis_MinorNumber  },
   { "NumberPos"   , do_Axis_NumberPos    },
+  { "NumberSize"  , do_Axis_NumberSize   },
 };
 
 bool parse_spec( void )

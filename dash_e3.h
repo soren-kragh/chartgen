@@ -15,6 +15,9 @@ SubSubTitle:
 
 TitlePos: Left
 
+Axis.X.Range: -1.25 +1.25
+Axis.Y.Range: -1.25 +1.25
+
 Axis.X.Style: None
 Axis.Y.Style: None
 
@@ -25,8 +28,13 @@ Axis.Y.Pos: Left
 Axis.X.NumberPos: Above
 Axis.Y.NumberPos: Right
 
-Axis.X.Range: -1.25 +1.25
-Axis.Y.Range: -1.25 +1.25
+# Show plus sign for positive axis numbers.
+Axis.X.NumberSign: On
+Axis.Y.NumberSign: On
+
+# Make axis numbers a little bigger.
+Axis.X.NumberSize: 1.4
+Axis.Y.NumberSize: 1.4
 
 # You must select the type before defining the series.
 Series.Type: Scatter
