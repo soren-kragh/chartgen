@@ -40,6 +40,7 @@ chartgen-v0.10.0
         Added Series.TagFillColor
         Added Series.TagLineColor
         Added BarMargin
+        Added LegendOutline
 
 chartgen-v0.9.0
         Added the following specifiers:

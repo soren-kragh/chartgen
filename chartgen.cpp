@@ -1045,6 +1045,14 @@ void do_LegendColor( void )
   do_Color( chart.LegendColor() );
 }
 
+void do_LegendOutline( void )
+{
+  bool outline;
+  do_Switch( outline );
+  expect_eol();
+  chart.SetLegendOutline( outline );
+}
+
 //------------------------------------------------------------------------------
 
 void do_BarWidth( void )
@@ -1612,6 +1620,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "FootnoteLine"           , do_FootnoteLine            },
   { "LegendPos"              , do_LegendPos               },
   { "LegendColor"            , do_LegendColor             },
+  { "LegendOutline"          , do_LegendOutline           },
   { "BarWidth"               , do_BarWidth                },
   { "BarMargin"              , do_BarMargin               },
   { "Series.New"             , do_Series_New              },

@@ -241,6 +241,11 @@ Axis.SecY.NumberUnit: Ω
 # Change the background color of legend box (and title box).
 #LegendColor: aqua 0 0.5
 
+# Specify if line style legends are shown with an outline around the legend text
+# (On), or with a small line segment in front of the legend text (Off); default
+# is On. Note that the outline is suppressed for thick lines no matter what.
+#LegendOutline: Off
+
 # Specify the relative width of bars (0.0 to 1.0). The optional second value
 # (0.0 to 1.0) determines the total relative width allocated to all bars at the
 # same X-value before individual widths are applied.

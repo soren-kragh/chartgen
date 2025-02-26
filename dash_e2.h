@@ -12,6 +12,7 @@ ChartAreaColor: dimgray
 AxisColor: white
 TextColor: lightyellow
 LegendColor: darkslategray 0 0.5
+LegendOutline: Off
 
 Axis.X.Label: Year
 Axis.X.Grid: On
@@ -42,7 +43,7 @@ Series.New: Traditional biomass
 Series.Type: Line
 Series.New: Global population
 Series.AxisY: Secondary
-Series.LineWidth: 8
+Series.LineWidth: 10
 Series.LineDash: 0
 Series.LineColor: black
 Series.MarkerSize: 4
