@@ -15,7 +15,7 @@ Series.Data :
         71      4.3
         97      14
 
-# Summary of all available specifiers (see -T template for help):
+# Summary of all available specifiers (see -T template for detailed descriptions):
 # FrameWidth: 5
 # FrameColor: black
 # Margin: 5
@@ -36,44 +36,25 @@ Series.Data :
 # FootnotePos: Center
 # FootnoteLine: On
 # Axis.X.Orientation: Vertical
-# Axis.X.Reverse: Off
-# Axis.Y.Reverse: Off
-# Axis.X.Style: Auto
-# Axis.Y.Style: Auto
-# Axis.X.Label:
-# Axis.Y.Label:
-# Axis.X.SubLabel:
-# Axis.Y.SubLabel:
-# Axis.X.Unit:
-# Axis.Y.Unit:
-# Axis.X.UnitPos: Above
-# Axis.Y.UnitPos: Right
-# Axis.X.LogScale: On
-# Axis.Y.LogScale: On
-# Axis.X.Range: 0 100 90
-# Axis.Y.Range: -5 25
-# Axis.X.Pos: Top
-# Axis.Y.Pos: Right
-# Axis.X.Tick: 10.0 4
-# Axis.Y.Tick: 1.0 0
-# Axis.X.Grid: Off On
-# Axis.Y.Grid: On Off
-# Axis.X.GridStyle: Auto
-# Axis.Y.GridStyle: Auto
-# Axis.X.GridColor: blue
-# Axis.Y.GridColor: blue
-# Axis.X.NumberFormat: Auto
-# Axis.Y.NumberFormat: Auto
-# Axis.X.NumberSign: On
-# Axis.Y.NumberSign: On
-# Axis.X.NumberUnit: s
-# Axis.Y.NumberUnit: _Volts
-# Axis.X.MinorNumber: On
-# Axis.Y.MinorNumber: Off
-# Axis.X.NumberPos: Auto
-# Axis.Y.NumberPos: Auto
-# Axis.X.NumberSize: 1.0
-# Axis.Y.NumberSize: 1.0
+# Axis.*.Reverse: Off
+# Axis.*.Style: Auto
+# Axis.*.Label:
+# Axis.*.SubLabel:
+# Axis.*.Unit:
+# Axis.*.UnitPos: Above
+# Axis.*.LogScale: On
+# Axis.*.Range: 0 100 90
+# Axis.*.Pos: Top
+# Axis.*.Tick: 10.0 4
+# Axis.*.Grid: Off On
+# Axis.*.GridStyle: Auto
+# Axis.*.GridColor: blue
+# Axis.*.NumberFormat: Auto
+# Axis.*.NumberSign: On
+# Axis.*.NumberUnit: s
+# Axis.*.MinorNumber: On
+# Axis.*.NumberPos: Auto
+# Axis.*.NumberSize: 1.0
 # LegendPos: Below
 # LegendColor: aqua 0 0.5
 # LegendOutline: Off
