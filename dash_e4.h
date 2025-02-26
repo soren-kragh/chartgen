@@ -13,6 +13,7 @@ GridColor: skyblue
 TextColor: white
 
 # Try it.
+#Axis.X.NumberSize: 0.9
 #Axis.X.Orientation: Vertical
 #Axis.X.Reverse: On
 #BarMargin: 0.5
