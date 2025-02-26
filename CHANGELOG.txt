@@ -42,6 +42,10 @@ chartgen-v0.10.0
         Added BarMargin
         Added LegendOutline
         Added Axis.*.NumberSize
+        Added Axis.*.LabelSize
+        Added TitleSize
+        Added FootnoteSize
+        Added LegendSize
 
 chartgen-v0.9.0
         Added the following specifiers:

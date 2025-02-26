@@ -32,14 +32,17 @@ Series.Data :
 # SubSubTitle:
 # TitlePos: Left
 # TitleInside: On
+# TitleSize: 1.0
 # Footnote:
 # FootnotePos: Center
 # FootnoteLine: On
+# FootnoteSize: 1.0
 # Axis.X.Orientation: Vertical
 # Axis.*.Reverse: Off
 # Axis.*.Style: Auto
 # Axis.*.Label:
 # Axis.*.SubLabel:
+# Axis.*.LabelSize: 1.0
 # Axis.*.Unit:
 # Axis.*.UnitPos: Above
 # Axis.*.LogScale: On
@@ -49,7 +52,7 @@ Series.Data :
 # Axis.*.Grid: Off On
 # Axis.*.GridStyle: Auto
 # Axis.*.GridColor: blue
-# Axis.*.NumberFormat: Auto
+# Axis.*.NumberFormat: Magnitude
 # Axis.*.NumberSign: On
 # Axis.*.NumberUnit: s
 # Axis.*.MinorNumber: On
@@ -58,6 +61,7 @@ Series.Data :
 # LegendPos: Below
 # LegendColor: aqua 0 0.5
 # LegendOutline: Off
+# LegendSize: 1.0
 # BarWidth: 0.8 0.7
 # BarMargin: 0
 # Series.Type: XY

@@ -96,6 +96,9 @@ SubSubTitle:
 # chart elements, but for relatively small titles it can make sense.
 #TitleInside: On
 
+# Set the relative size of titles.
+#TitleSize: 1.0
+
 # Adds a footnote. Footnotes are placed at the bottom of the chart.
 Footnote:
   https://github.com/soren-kragh/chartgen
@@ -106,6 +109,9 @@ FootnotePos: Right
 
 # Enables a line above the footnotes.
 #FootnoteLine: On
+
+# Set the relative size of footnote texts.
+#FootnoteSize: 1.0
 
 # In the following Axis.Y is an alias for the primary Y-axis, which is also
 # identified as Axis.PriY. A secondary Y-axis is also possible and is identified
@@ -131,6 +137,10 @@ Axis.SecY.Label: Secondary Y-Axis
 
 Axis.X.SubLabel: smaller label
 Axis.Y.SubLabel: smaller label
+
+# Set the relative size of axis labels.
+#Axis.X.LabelSize: 1.0
+#Axis.Y.LabelSize: 1.0
 
 # Especially for linear scale, it is often a good idea to select units and scale
 # the data accordingly to avoid very small or very large numbers in the graph.
@@ -249,6 +259,9 @@ Axis.SecY.NumberUnit: Ω
 # (On), or with a small line segment in front of the legend text (Off); default
 # is On. Note that the outline is suppressed for thick lines no matter what.
 #LegendOutline: Off
+
+# Set the relative size of legend box texts.
+#LegendSize: 1.0
 
 # Specify the relative width of bars (0.0 to 1.0). The optional second value
 # (0.0 to 1.0) determines the total relative width allocated to all bars at the

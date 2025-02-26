@@ -733,6 +733,21 @@ void do_TitleInside( void )
   chart.SetTitleInside( inside );
 }
 
+void do_TitleSize( void )
+{
+  double size;
+  skip_ws();
+  if ( at_eol() ) parse_err( "title size value expected" );
+  if ( !get_double( size ) ) {
+    parse_err( "malformed title size value" );
+  }
+  if ( size < 0.01 || size > 100 ) {
+    parse_err( "title size value out of range", true );
+  }
+  expect_eol();
+  chart.SetTitleSize( size );
+}
+
 void do_Footnote( void )
 {
   std::string txt;
@@ -755,6 +770,21 @@ void do_FootnoteLine( void )
   do_Switch( footnote_line );
   expect_eol();
   chart.SetFootnoteLine( footnote_line );
+}
+
+void do_FootnoteSize( void )
+{
+  double size;
+  skip_ws();
+  if ( at_eol() ) parse_err( "footnote size value expected" );
+  if ( !get_double( size ) ) {
+    parse_err( "malformed footnote size value" );
+  }
+  if ( size < 0.01 || size > 100 ) {
+    parse_err( "footnote size value out of range", true );
+  }
+  expect_eol();
+  chart.SetFootnoteSize( size );
 }
 
 //------------------------------------------------------------------------------
@@ -823,6 +853,23 @@ void do_Axis_SubLabel( Chart::Axis* axis )
   std::string txt;
   get_text( txt, true );
   axis->SetSubLabel( txt );
+}
+
+//------------------------------------------------------------------------------
+
+void do_Axis_LabelSize( Chart::Axis* axis )
+{
+  double size;
+  skip_ws();
+  if ( at_eol() ) parse_err( "label size value expected" );
+  if ( !get_double( size ) ) {
+    parse_err( "malformed label size value" );
+  }
+  if ( size < 0.01 || size > 100 ) {
+    parse_err( "label size value out of range", true );
+  }
+  expect_eol();
+  axis->SetLabelSize( size );
 }
 
 //------------------------------------------------------------------------------
@@ -1068,6 +1115,21 @@ void do_LegendOutline( void )
   do_Switch( outline );
   expect_eol();
   chart.SetLegendOutline( outline );
+}
+
+void do_LegendSize( void )
+{
+  double size;
+  skip_ws();
+  if ( at_eol() ) parse_err( "Legend size value expected" );
+  if ( !get_double( size ) ) {
+    parse_err( "malformed Legend size value" );
+  }
+  if ( size < 0.01 || size > 100 ) {
+    parse_err( "Legend size value out of range", true );
+  }
+  expect_eol();
+  chart.SetLegendSize( size );
 }
 
 //------------------------------------------------------------------------------
@@ -1632,12 +1694,15 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "SubSubTitle"            , do_SubSubTitle             },
   { "TitlePos"               , do_TitlePos                },
   { "TitleInside"            , do_TitleInside             },
+  { "TitleSize"              , do_TitleSize               },
   { "Footnote"               , do_Footnote                },
   { "FootnotePos"            , do_FootnotePos             },
   { "FootnoteLine"           , do_FootnoteLine            },
+  { "FootnoteSize"           , do_FootnoteSize            },
   { "LegendPos"              , do_LegendPos               },
   { "LegendColor"            , do_LegendColor             },
   { "LegendOutline"          , do_LegendOutline           },
+  { "LegendSize"             , do_LegendSize              },
   { "BarWidth"               , do_BarWidth                },
   { "BarMargin"              , do_BarMargin               },
   { "Series.New"             , do_Series_New              },
@@ -1671,6 +1736,7 @@ std::unordered_map< std::string, AxisAction > axis_actions = {
   { "Style"       , do_Axis_Style        },
   { "Label"       , do_Axis_Label        },
   { "SubLabel"    , do_Axis_SubLabel     },
+  { "LabelSize"   , do_Axis_LabelSize    },
   { "Unit"        , do_Axis_Unit         },
   { "UnitPos"     , do_Axis_UnitPos      },
   { "LogScale"    , do_Axis_LogScale     },
