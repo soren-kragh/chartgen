@@ -1319,8 +1319,8 @@ void do_Series_MarkerShape( void )
   if ( id == "InvTriangle" ) marker_shape = Chart::MarkerShape::InvTriangle; else
   if ( id == "Diamond"     ) marker_shape = Chart::MarkerShape::Diamond    ; else
   if ( id == "Cross"       ) marker_shape = Chart::MarkerShape::Cross      ; else
-  if ( id == "HorLine"     ) marker_shape = Chart::MarkerShape::HorLine    ; else
-  if ( id == "VerLine"     ) marker_shape = Chart::MarkerShape::VerLine    ; else
+  if ( id == "LineX"       ) marker_shape = Chart::MarkerShape::LineX      ; else
+  if ( id == "LineY"       ) marker_shape = Chart::MarkerShape::LineY      ; else
   if ( id == "" ) parse_err( "marker shape expected" ); else
   parse_err( "unknown marker shape '" + id + "'", true );
   expect_eol();
