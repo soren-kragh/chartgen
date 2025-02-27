@@ -46,6 +46,8 @@ chartgen-v0.10.0
         Added TitleSize
         Added FootnoteSize
         Added LegendSize
+        Added LegendHeading
+        Added LegendFrame
 
 chartgen-v0.9.0
         Added the following specifiers:

@@ -15,7 +15,7 @@ Series.Data :
         71      4.3
         97      14
 
-# Summary of all available specifiers (see -T template for detailed descriptions):
+# Summary of all available specifiers (see -T template for details):
 # FrameWidth: 5
 # FrameColor: black
 # Margin: 5
@@ -58,6 +58,8 @@ Series.Data :
 # Axis.*.MinorNumber: On
 # Axis.*.NumberPos: Auto
 # Axis.*.NumberSize: 1.0
+# LegendHeading: Countries
+# LegendFrame: On
 # LegendPos: Below
 # LegendColor: aqua 0 0.5
 # LegendOutline: Off

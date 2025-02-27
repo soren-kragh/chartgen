@@ -1095,6 +1095,21 @@ void do_Axis_NumberSize( Chart::Axis* axis )
 
 //------------------------------------------------------------------------------
 
+void do_LegendHeading( void )
+{
+  std::string txt;
+  get_text( txt, true );
+  chart.SetLegendHeading( txt );
+}
+
+void do_LegendFrame( void )
+{
+  bool frame;
+  do_Switch( frame );
+  expect_eol();
+  chart.SetLegendFrame( frame );
+}
+
 void do_LegendPos( void )
 {
   Chart::Pos pos;
@@ -1699,6 +1714,8 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "FootnotePos"            , do_FootnotePos             },
   { "FootnoteLine"           , do_FootnoteLine            },
   { "FootnoteSize"           , do_FootnoteSize            },
+  { "LegendHeading"          , do_LegendHeading           },
+  { "LegendFrame"            , do_LegendFrame             },
   { "LegendPos"              , do_LegendPos               },
   { "LegendColor"            , do_LegendColor             },
   { "LegendOutline"          , do_LegendOutline           },

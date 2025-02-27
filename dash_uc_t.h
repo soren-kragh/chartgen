@@ -246,6 +246,14 @@ Axis.SecY.NumberUnit: Ω
 #Axis.X.NumberSize: 1.0
 #Axis.Y.NumberSize: 1.0
 
+# An optional legend heading.
+#LegendHeading: Types of Food
+
+# Normally it is determined automatically whether a frame should be drawn around
+# the legends; specifying LegendFrame forces the frame to be shown or not; may
+# be On or Off.
+#LegendFrame: On
+
 # Legend position may be Auto, Left, Right, Top, or Bottom. Legends for the
 # series are normally (Auto) placed somewhere inside the core chart area, but if
 # this gets too cluttered you may place the series legends outside the core
