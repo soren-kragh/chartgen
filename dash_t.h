@@ -16,8 +16,8 @@ Series.Data :
         97      14
 
 # Summary of all available specifiers (see -T template for details):
-# FrameWidth: 5
-# FrameColor: black
+# BorderWidth: 5
+# BorderColor: black
 # Margin: 5
 # ChartArea: 1000 600
 # ChartBox: On

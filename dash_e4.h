@@ -5,8 +5,8 @@ ChartArea: 1000 500
 Title: Programming Language Performance
 SubSubTitle: (source: Rui Pereira et al., 2020)
 
-FrameWidth: 3
-FrameColor: white
+BorderWidth: 3
+BorderColor: white
 BackgroundColor: midnightblue -0.4
 AxisColor: skyblue
 GridColor: skyblue
