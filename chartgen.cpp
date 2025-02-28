@@ -552,10 +552,10 @@ void do_BorderWidth( void )
 {
   int64_t m;
   skip_ws();
-  if ( at_eol() ) parse_err( "frame width expected" );
-  if ( !get_int64( m ) ) parse_err( "malformed frame width" );
+  if ( at_eol() ) parse_err( "border width expected" );
+  if ( !get_int64( m ) ) parse_err( "malformed border width" );
   if ( m < 0 || m > 1000 ) {
-    parse_err( "frame width out of range [0;1000]", true );
+    parse_err( "border width out of range [0;1000]", true );
   }
   expect_eol();
   chart.SetBorderWidth( m );

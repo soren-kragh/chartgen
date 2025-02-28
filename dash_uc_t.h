@@ -45,7 +45,7 @@ std::cout << R"EOF(
 # (0.0 to 1.0).
 #
 
-# Border width around entire chart in points; default is no frame (0).
+# Border width around entire chart in points; default is no border (0).
 #BorderWidth: 5
 #BorderColor: black
 
