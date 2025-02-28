@@ -26,6 +26,7 @@ Series.Data :
 # AxisColor: white
 # GridColor: green
 # TextColor: lightyellow
+# FrameColor: aqua 0 0.5
 # LetterSpacing: 1.8 1.1 0.8
 # Title:
 # SubTitle:
@@ -61,7 +62,6 @@ Series.Data :
 # LegendHeading: Countries
 # LegendFrame: On
 # LegendPos: Below
-# LegendColor: aqua 0 0.5
 # LegendOutline: Off
 # LegendSize: 1.0
 # BarWidth: 0.8 0.7

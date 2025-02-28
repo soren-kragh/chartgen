@@ -11,10 +11,8 @@ BackgroundColor: darkslategray
 ChartAreaColor: dimgray
 AxisColor: white
 TextColor: lightyellow
+FrameColor: darkslategray 0 0.5
 
-# The LegendColor also controls the color of the title box
-# when TitleInside is On.
-LegendColor: darkslategray 0 0.5
 LegendFrame: Off
 LegendOutline: Off
 

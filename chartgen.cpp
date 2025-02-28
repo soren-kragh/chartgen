@@ -639,6 +639,11 @@ void do_TextColor( void )
   do_Color( chart.TextColor() );
 }
 
+void do_FrameColor( void )
+{
+  do_Color( chart.FrameColor() );
+}
+
 //------------------------------------------------------------------------------
 
 void do_LetterSpacing( void )
@@ -1117,11 +1122,6 @@ void do_LegendPos( void )
   do_Pos( pos );
   expect_eol();
   chart.SetLegendPos( pos );
-}
-
-void do_LegendColor( void )
-{
-  do_Color( chart.LegendColor() );
 }
 
 void do_LegendOutline( void )
@@ -1703,6 +1703,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "AxisColor"              , do_AxisColor               },
   { "GridColor"              , do_GridColor               },
   { "TextColor"              , do_TextColor               },
+  { "FrameColor"             , do_FrameColor              },
   { "LetterSpacing"          , do_LetterSpacing           },
   { "Title"                  , do_Title                   },
   { "SubTitle"               , do_SubTitle                },
@@ -1717,7 +1718,6 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "LegendHeading"          , do_LegendHeading           },
   { "LegendFrame"            , do_LegendFrame             },
   { "LegendPos"              , do_LegendPos               },
-  { "LegendColor"            , do_LegendColor             },
   { "LegendOutline"          , do_LegendOutline           },
   { "LegendSize"             , do_LegendSize              },
   { "BarWidth"               , do_BarWidth                },

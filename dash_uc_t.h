@@ -70,6 +70,9 @@ std::cout << R"EOF(
 #GridColor: green
 #TextColor: lightyellow
 
+# The background color of legend box and title box (when these are shown).
+#FrameColor: aqua 0 0.5
+
 # The spacing and positioning of letters are based on mono-spaced ASCII letters.
 # If different letters are used, the LetterSpacing may be used to adjust the
 # spacing by the given factor. The first number is the width adjustment factor,
@@ -259,9 +262,6 @@ Axis.SecY.NumberUnit: Ω
 # this gets too cluttered you may place the series legends outside the core
 # chart area.
 #LegendPos: Bottom
-
-# Change the background color of legend box (and title box).
-#LegendColor: aqua 0 0.5
 
 # Specify if line style legends are shown with an outline around the legend text
 # (On), or with a small line segment in front of the legend text (Off); default
