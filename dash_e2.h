@@ -6,6 +6,7 @@ SubSubTitle:
 
 TitlePos: Left
 TitleInside: On
+TitleFrame: On
 
 BackgroundColor: darkslategray
 ChartAreaColor: dimgray

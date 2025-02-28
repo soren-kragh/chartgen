@@ -48,6 +48,7 @@ chartgen-v0.10.0
         Added LegendSize
         Added LegendHeading
         Added LegendFrame
+        Added TitleFrame
 
 chartgen-v0.9.0
         Added the following specifiers:

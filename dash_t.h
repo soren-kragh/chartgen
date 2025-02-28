@@ -31,6 +31,7 @@ Series.Data :
 # Title:
 # SubTitle:
 # SubSubTitle:
+# TitleFrame: On
 # TitlePos: Left
 # TitleInside: On
 # TitleSize: 1.0

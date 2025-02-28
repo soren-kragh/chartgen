@@ -89,6 +89,11 @@ SubTitle:
 SubSubTitle:
   An extra even smaller title
 
+# Normally it is determined automatically whether a frame should be drawn around
+# the titles; specifying TitleFrame forces the frame to be shown or not; may
+# be On or Off.
+#TitleFrame: On
+
 # May be Left, Right, or Center; default is Center. The optional second argument
 # may be Top or Bottom and sets the vertical alignment when inside the chart
 # area (TitleInside: On); default is Top.
