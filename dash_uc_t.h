@@ -24,7 +24,8 @@ std::cout << R"EOF(
 # VALUEs on the same line must be whitespace separated.
 #
 # Text VALUEs such as titles and labels may span multiple lines, in which case
-# they should be uniformly indented.
+# they should be uniformly indented. Please observe the LetterSpacing specifier
+# in case wide letters are used.
 #
 # In the following all supported specifiers will be documented with examples.
 # Many of the specifies that you should normally not include, at least not until
