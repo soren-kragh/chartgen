@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive SVG</title>
+    <style>
+        text {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <svg width="600" height="600" id="svgCanvas">
+
+        <g stroke="black" stroke-width="3" fill="yellow" style="pointer-events: none;">
+          <circle cx="100" cy="100" r="50" />
+          <circle cx="100" cy="200" r="70" />
+          <circle cx="100" cy="300" r="90" />
+        </g>
+
+        <!-- Invisible interaction objects -->
+        <g stroke="none" stroke-width="10" fill="none" style="pointer-events: visible;" id="interactionLayer">
+          <circle cx="100" cy="100" r="50" txt="Hi"/>
+          <circle cx="100" cy="200" r="70" txt="Hello"/>
+          <circle cx="100" cy="300" r="90" txt="Howdy"/>
+        </g>
+
+        <!-- Placeholder for text and box -->
+        <g id="tooltip" visibility="hidden">
+            <rect id="tooltipBox" fill="lightyellow" stroke="black" rx="4" ry="4"></rect>
+            <text id="tooltipText" x="0" y="0" fill="black"></text>
+        </g>
+
+    </svg>
+
+    <script>
+        const interactionLayer = document.getElementById('interactionLayer');
+        const tooltip = document.getElementById('tooltip');
+        const tooltipBox = document.getElementById('tooltipBox');
+        const tooltipText = document.getElementById('tooltipText');
+        const svgCanvas = document.getElementById('svgCanvas');
+
+        interactionLayer.addEventListener('mouseover', (event) => {
+            const target = event.target;
+            const text = target.getAttribute('txt');
+            const cx = parseFloat(target.getAttribute('cx'));
+            const cy = parseFloat(target.getAttribute('cy'));
+
+            target.setAttribute('stroke', 'black' );
+
+            // Set the text content and calculate dimensions
+            tooltipText.textContent = text;
+            const bbox = tooltipText.getBBox();
+
+            // Position the box and text
+            tooltipBox.setAttribute('x', cx + 60); // Offset to the right
+            tooltipBox.setAttribute('y', cy - bbox.height / 2 - 5); // Center vertically
+            tooltipBox.setAttribute('width', bbox.width + 10); // Add padding
+            tooltipBox.setAttribute('height', bbox.height + 10);
+            tooltipText.setAttribute('x', cx + 65); // Align text inside the box
+            tooltipText.setAttribute('y', cy + 5); // Adjust text baseline
+
+            // Show the tooltip
+            tooltip.setAttribute('visibility', 'visible');
+        });
+
+        interactionLayer.addEventListener('mouseout', (event) => {
+            // Hide the tooltip
+            tooltip.setAttribute('visibility', 'hidden');
+            event.target.setAttribute('stroke', 'none' );
+        });
+    </script>
+</body>
+</html>
