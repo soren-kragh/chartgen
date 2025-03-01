@@ -45,10 +45,11 @@ Written by Soren Kragh
 void show_help( void )
 {
   std::cout << R"EOF(Usage: chartgen [OPTION]... [FILE]...
-Generate a chart in SVG format from FILE(s) to standard output.
+Generate a chart in SVG or HTML format from FILE(s) to standard output.
 
 With no FILE, or when FILE is -, read standard input.
 
+  -H                Output interactive HTML instead of SVG.
   -t                Output a simple template file; a good starting point.
   -T                Output a full documentation file.
   -eN               Output example N; good for inspiration.
@@ -97,6 +98,7 @@ void gen_example( int N )
       std::normal_distribution< double > md{ 0.0, 1.0 };
       std::uniform_real_distribution< double > ad{ 0.0, 2 * M_PI };
       #include <dash_e3.h>
+      std::cout << std::showpos << std::fixed << std::setprecision( 6 );
       int samples = 10000;
       while ( samples > 0 ) {
         double m = md( gen ) / 2;
@@ -1021,6 +1023,27 @@ void do_Axis_Tick( Chart::Axis* axis )
 
 //------------------------------------------------------------------------------
 
+void do_Axis_TickSpacing( Chart::Axis* axis )
+{
+  int64_t start;
+  int64_t stride;
+
+  skip_ws();
+  if ( at_eol() ) parse_err( "start expected" );
+  if ( !get_int64( start ) ) parse_err( "malformed start" );
+
+  expect_ws( "stride expected" );
+  if ( !get_int64( stride ) ) parse_err( "malformed stride" );
+  if ( stride < 1 ) {
+    parse_err( "stride must be greater than zero", true );
+  }
+
+  expect_eol();
+  axis->SetTickSpacing( start, stride );
+}
+
+//------------------------------------------------------------------------------
+
 void do_Axis_Grid( Chart::Axis* axis )
 {
   bool major;
@@ -1258,7 +1281,7 @@ void ApplyMarkerSize( Chart::Series* series )
   }
 }
 
-void AddSeries( std::string name = "" )
+void AddSeries( std::string name = "", bool anonymous_snap = false )
 {
   if ( !series_type_defined ) {
     parse_err( "undefined SeriesType" );
@@ -1266,6 +1289,7 @@ void AddSeries( std::string name = "" )
   type_list.push_back( series_type );
   series_list.push_back( chart.AddSeries( series_type ) );
   series_list.back()->SetName( name );
+  series_list.back()->SetAnonymousSnap( anonymous_snap );
   series_list.back()->SetAxisY( axis_y_n );
   series_list.back()->SetBase( series_base );
   series_list.back()->SetStyle( style );
@@ -1575,7 +1599,7 @@ void do_Series_TagLineColor( void )
 
 //------------------------------------------------------------------------------
 
-void parse_series_data( void )
+void parse_series_data( bool anonymous_snap = false )
 {
   defining_series = false;
 
@@ -1593,11 +1617,13 @@ void parse_series_data( void )
       if ( at_eol() ) break;
       double d;
       bool got_number = false;
-      if ( get_double( d, true ) ) {
-        got_number = at_eol() || at_ws();
+      if ( !x_is_text ) {
+        if ( get_double( d ) ) {
+          got_number = at_eol() || at_ws();
+        }
+        if ( !got_number ) cur_col = id_col;
       }
       if ( !got_number ) {
-        cur_col = id_col;
         std::string t;
         bool quoted;
         if ( !get_category( t, quoted ) ) {
@@ -1656,7 +1682,7 @@ void parse_series_data( void )
       series_list.size() == i ||
       series_list[ series_list.size() - i - 1 ]->Size() > 0
     )
-      AddSeries();
+      AddSeries( "", anonymous_snap );
   }
 
   // Detect series types.
@@ -1809,6 +1835,7 @@ std::unordered_map< std::string, AxisAction > axis_actions = {
   { "Range"       , do_Axis_Range        },
   { "Pos"         , do_Axis_Pos          },
   { "Tick"        , do_Axis_Tick         },
+  { "TickSpacing" , do_Axis_TickSpacing  },
   { "Grid"        , do_Axis_Grid         },
   { "GridStyle"   , do_Axis_GridStyle    },
   { "GridColor"   , do_Axis_GridColor    },
@@ -1863,7 +1890,7 @@ void parse_lines( void )
   cur_col = 0;
 
   // Support delivering nothing but data (implicit Series.Data).
-  parse_series_data();
+  parse_series_data( true );
 
   while ( parse_spec() ) {}
 }
@@ -1939,6 +1966,10 @@ int main( int argc, char* argv[] )
       continue;
     }
     if ( !out_of_options ) {
+      if ( a == "-H" ) {
+        chart.EnableHTML( true );
+        continue;
+      }
       if ( a == "-v" || a == "--version" ) {
         show_version();
         return 0;
@@ -1988,11 +2019,7 @@ int main( int argc, char* argv[] )
 
   process_files( file_list );
 
-  std::ostringstream oss;
-  SVG::Canvas* canvas = chart.Build();
-  oss << canvas->GenSVG();
-  delete canvas;
-  std::cout << oss.str();
+  std::cout << chart.Build();
 
   return 0;
 }

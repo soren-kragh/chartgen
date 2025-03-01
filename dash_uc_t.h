@@ -204,6 +204,14 @@ Axis.SecY.LogScale: On
 #Axis.X.Tick: 10.0 4
 #Axis.Y.Tick: 1.0 0
 
+# When the X-axis is textual, often it will not be possible to show the text for
+# all data points. An attempt will be made to fit the text, but at some point
+# texts will have to be dropped. The TickSpacing allows user control over what
+# is shown, for example, if the texts represent years, showing only every 10th
+# year can be appealing. The first number is the starting position to show, and
+# the second number is the stride after that.
+#Axis.X.TickSpacing: 0 10
+
 # Turn grid lines on/off for major and minor ticks; may be On or Off. Unless
 # explicitly enabled for both Y-axes, only the grid for one of the Y-axes will
 # be shown, typically the primary Y-axis. Enabling the grid for both Y-axes is

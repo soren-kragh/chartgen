@@ -49,6 +49,8 @@ chartgen-v0.10.0
         Added LegendHeading
         Added LegendFrame
         Added TitleFrame
+        Added Axis.X.TickSpacing
+        Add HTML support
 
 chartgen-v0.9.0
         Added the following specifiers:

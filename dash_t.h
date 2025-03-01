@@ -51,6 +51,7 @@ Series.Data :
 # Axis.*.Range: 0 100 90
 # Axis.*.Pos: Top
 # Axis.*.Tick: 10.0 4
+# Axis.*.TickSpacing: 0 5
 # Axis.*.Grid: Off On
 # Axis.*.GridStyle: Auto
 # Axis.*.GridColor: blue

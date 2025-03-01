@@ -19,6 +19,7 @@ TextColor: white
 #BarMargin: 0.5
 
 Axis.Y.LogScale: On
+Axis.Y.NumberFormat: Fixed
 
 Series.FillTransparency: 0.6
 
