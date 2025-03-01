@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive SVG</title>
+  <style>
+    text {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <svg width="800" height="600" id="svgCanvas">
+    <!-- Visible decorative objects -->
+    <g stroke="black" stroke-width="3" fill="yellow" style="pointer-events: none;">
+      <rect x="100" y="100" width="600" height="400" />
+      <circle cx="350" cy="250" r="100" fill="none" />
+      <circle cx="450" cy="350" r="100" fill="none" />
+    </g>
+
+    <!-- Invisible interaction objects -->
+    <g stroke="none" fill="none" style="pointer-events: visible;" id="interactionLayer">
+      <rect x="100" y="100" width="600" height="400" id="interactionArea" />
+      <circle cx="350" cy="250" r="100" />
+      <circle cx="450" cy="350" r="100" />
+    </g>
+  </svg>
+
+  <script>
+    // Get the SVG and interaction area elements
+    const svg = document.getElementById("svgCanvas");
+    const interactionArea = document.getElementById("interactionArea");
+    // Get all snap circles (all circles in the interactionLayer except the rectangle)
+    const snapCircles = document.querySelectorAll("#interactionLayer circle");
+
+    // Create crosshair lines
+    const crosshairV = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    const crosshairH = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    // Style them as desired (red lines, for instance) and disable pointer events
+    crosshairV.setAttribute("stroke", "red");
+    crosshairH.setAttribute("stroke", "red");
+    crosshairV.setAttribute("stroke-width", "1");
+    crosshairH.setAttribute("stroke-width", "1");
+    crosshairV.style.pointerEvents = "none";
+    crosshairH.style.pointerEvents = "none";
+    // Initially hide the crosshair
+    crosshairV.style.display = "none";
+    crosshairH.style.display = "none";
+    // Append crosshair lines to the SVG
+    svg.appendChild(crosshairV);
+    svg.appendChild(crosshairH);
+
+    // Define the boundaries of the interactionArea
+    const areaX = parseFloat(interactionArea.getAttribute("x"));
+    const areaY = parseFloat(interactionArea.getAttribute("y"));
+    const areaWidth = parseFloat(interactionArea.getAttribute("width"));
+    const areaHeight = parseFloat(interactionArea.getAttribute("height"));
+    const areaRight = areaX + areaWidth;
+    const areaBottom = areaY + areaHeight;
+
+    // Utility function: convert mouse event to SVG coordinate
+    function getSVGPoint(event) {
+      const pt = svg.createSVGPoint();
+      pt.x = event.clientX;
+      pt.y = event.clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    // Update crosshair position based on the pointer (or snap point)
+    function updateCrosshair(mouseX, mouseY) {
+      // Set vertical line: fixed x, from top to bottom of the interaction area
+      crosshairV.setAttribute("x1", mouseX);
+      crosshairV.setAttribute("y1", areaY);
+      crosshairV.setAttribute("x2", mouseX);
+      crosshairV.setAttribute("y2", areaBottom);
+      // Set horizontal line: fixed y, from left to right of the interaction area
+      crosshairH.setAttribute("x1", areaX);
+      crosshairH.setAttribute("y1", mouseY);
+      crosshairH.setAttribute("x2", areaRight);
+      crosshairH.setAttribute("y2", mouseY);
+    }
+
+    // Handler for mouse move on the SVG canvas
+    svg.addEventListener("mousemove", (event) => {
+      const svgPoint = getSVGPoint(event);
+      const mouseX = svgPoint.x;
+      const mouseY = svgPoint.y;
+
+      // Check if pointer is inside the interaction area
+      if (mouseX >= areaX && mouseX <= areaRight && mouseY >= areaY && mouseY <= areaBottom) {
+        // Show crosshair lines
+        crosshairV.style.display = "inline";
+        crosshairH.style.display = "inline";
+
+        // Check for snapping: iterate over circles to see if mouse is within any
+        let snapX = mouseX;
+        let snapY = mouseY;
+        let minDist = Infinity;
+        snapCircles.forEach(circle => {
+          // Get circle center and radius (convert string to number)
+          const cx = parseFloat(circle.getAttribute("cx"));
+          const cy = parseFloat(circle.getAttribute("cy"));
+          const r = parseFloat(circle.getAttribute("r"));
+          // Calculate distance from mouse to circle center
+          const dx = mouseX - cx;
+          const dy = mouseY - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          // If inside the circle and closer than any previous snap candidate...
+          if (dist <= r && dist < minDist) {
+            minDist = dist;
+            snapX = cx;
+            snapY = cy;
+          }
+        });
+
+        // Update the crosshair position (snapped or not)
+        updateCrosshair(snapX, snapY);
+      } else {
+        // Hide crosshair if the pointer is outside the interaction area
+        crosshairV.style.display = "none";
+        crosshairH.style.display = "none";
+      }
+    });
+
+    // Optionally, hide the crosshair when the mouse leaves the SVG canvas entirely
+    svg.addEventListener("mouseleave", () => {
+      crosshairV.style.display = "none";
+      crosshairH.style.display = "none";
+    });
+  </script>
+</body>
+</html>

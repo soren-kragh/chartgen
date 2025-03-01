@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive SVG</title>
+    <style>
+        text {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <svg width="800" height="600" id="svgCanvas">
+
+        <!-- Visible decorative objects -->
+        <g stroke="black" stroke-width="3" fill="yellow" style="pointer-events: none;">
+          <rect x="100" y="100" width="600" height="400" />
+          <circle cx="350" cy="250" r="100" fill="none" />
+          <circle cx="450" cy="350" r="100" fill="none" />
+        </g>
+
+        <!-- Invisible interaction objects -->
+        <g stroke="none" fill="none" style="pointer-events: visible;" id="interactionLayer">
+          <rect x="100" y="100" width="600" height="400" id="interactionArea" />
+          <circle cx="350" cy="250" r="100" />
+          <circle cx="450" cy="350" r="100" />
+        </g>
+
+    </svg>
+
+    <script>
+
+    </script>
+</body>
+</html>
