@@ -55,6 +55,8 @@ Series.Tag: On
 Series.TagBox: On
 Series.TagSize: 1
 Series.TagPos: Beyond
+Series.TagFillColor: black
+Series.TagLineColor: white
 Series.TagTextColor: white
 
 Series.Data:

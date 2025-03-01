@@ -141,7 +141,7 @@ void gen_example( int N )
           do dy = rnd_dy( gen ); while ( neg_y[ i ] + dy > 0.0 );
           neg_y[ i ] += dy;
         }
-        std::cout << " \"Hour " << sample << '"';
+        std::cout << " \"Hour " << std::setw( 2 ) << sample << '"';
         for ( int i = 0; i < number; i++ ) {
           std::cout << ' ' << pos_y[ i ];
           sum += pos_y[ i ];
