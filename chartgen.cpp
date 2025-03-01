@@ -79,6 +79,8 @@ void gen_template( bool full )
 
 void gen_example( int N )
 {
+  std::random_device rd{};
+  std::mt19937 gen{ rd() };
   switch ( N ) {
     case 1:
     {
@@ -92,15 +94,13 @@ void gen_example( int N )
     }
     case 3:
     {
-      std::random_device rd{};
-      std::mt19937 gen{ rd() };
       std::normal_distribution< double > md{ 0.0, 1.0 };
       std::uniform_real_distribution< double > ad{ 0.0, 2 * M_PI };
       #include <dash_e3.h>
       int samples = 10000;
       while ( samples > 0 ) {
-        double m = md(gen) / 2;
-        double a = ad(gen);
+        double m = md( gen ) / 2;
+        double a = ad( gen );
         double x = m * std::cos( a );
         double y = m * std::sin( a );
         if ( std::abs( m ) <= 1.0 ) {
@@ -113,6 +113,46 @@ void gen_example( int N )
     case 4:
     {
       #include <dash_e4.h>
+      break;
+    }
+    case 5:
+    {
+      std::uniform_real_distribution< double > rnd_dy{ -10e12, +10e12 };
+      int number = 3;
+      std::vector< double > pos_y( number, 0.0 );
+      std::vector< double > neg_y( number, 0.0 );
+      for ( int i = 0; i < 3; i++ ) {
+        double dy = 0;
+        for ( int i = 0; i < number; i++ ) {
+          do dy = rnd_dy( gen ); while ( pos_y[ i ] + dy < 0.0 );
+          pos_y[ i ] += dy;
+          do dy = rnd_dy( gen ); while ( neg_y[ i ] + dy > 0.0 );
+          neg_y[ i ] += dy;
+        }
+      }
+      #include <dash_e5.h>
+      std::cout << std::scientific << std::setprecision( 1 );
+      for ( int sample = 0; sample < 24; sample++ ) {
+        double sum = 0;
+        double dy = 0;
+        for ( int i = 0; i < number; i++ ) {
+          do dy = rnd_dy( gen ); while ( pos_y[ i ] + dy < 0.0 );
+          pos_y[ i ] += dy;
+          do dy = rnd_dy( gen ); while ( neg_y[ i ] + dy > 0.0 );
+          neg_y[ i ] += dy;
+        }
+        std::cout << " \"Hour " << sample << '"';
+        for ( int i = 0; i < number; i++ ) {
+          std::cout << ' ' << pos_y[ i ];
+          sum += pos_y[ i ];
+        }
+        for ( int i = 0; i < number; i++ ) {
+          std::cout << ' ' << neg_y[ i ];
+          sum += neg_y[ i ];
+        }
+        std::cout << ' ' << sum;
+        std::cout << '\n';
+      }
       break;
     }
   }
@@ -1929,6 +1969,10 @@ int main( int argc, char* argv[] )
       }
       if ( a == "-e4" ) {
         gen_example( 4 );
+        return 0;
+      }
+      if ( a == "-e5" ) {
+        gen_example( 5 );
         return 0;
       }
       if ( a != "-" && a[ 0 ] == '-' ) {
