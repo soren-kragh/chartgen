@@ -13,25 +13,27 @@
 </head>
 <body>
   <svg width="800" height="600" id="svgCanvas">
-    <!-- Visible decorative objects -->
-    <g stroke="black" stroke-width="3" fill="yellow" style="pointer-events: none;">
-      <rect x="100" y="100" width="600" height="400" />
-      <circle cx="350" cy="250" r="10" fill="none" />
-      <circle cx="450" cy="350" r="10" fill="none" />
-    </g>
+    <g style="pointer-events: none;">
+      <!-- Visible decorative objects -->
+      <g stroke="black" stroke-width="3" fill="yellow" >
+        <rect x="100" y="100" width="600" height="400" />
+        <circle cx="350" cy="250" r="10" fill="none" />
+        <circle cx="450" cy="350" r="10" fill="none" />
+      </g>
 
-    <!-- Predefined crosshair lines, initially hidden -->
-    <g>
-      <line id="crosshairV" stroke="red" stroke-width="1" style="display:none;" />
-      <line id="crosshairH" stroke="red" stroke-width="1" style="display:none;" />
-    </g>
+      <!-- Invisible interaction objects -->
+      <g id="interactionLayer" stroke="none" fill="transparent" style="pointer-events: all;">
+        <rect x="100" y="100" width="600" height="400" id="interactionArea" />
+        <g id="snapPoints" >
+          <circle cx="350" cy="250" r="100" />
+          <circle cx="450" cy="350" r="100" />
+        </g>
+      </g>
 
-    <!-- Invisible interaction objects -->
-    <g stroke="none" fill="none" style="pointer-events: visible;" id="interactionLayer">
-      <rect x="100" y="100" width="600" height="400" id="interactionArea" />
-      <g id="snapPoints" fill="transparent">
-        <circle cx="350" cy="250" r="100" />
-        <circle cx="450" cy="350" r="100" />
+      <!-- Predefined crosshair lines, initially hidden -->
+      <g id="crosshair" style="display:none;">
+        <line id="crosshairV" stroke="red" stroke-width="1" />
+        <line id="crosshairH" stroke="red" stroke-width="1" />
       </g>
     </g>
   </svg>
@@ -39,6 +41,7 @@
   <script>
     const svg = document.getElementById("svgCanvas");
     const interactionArea = document.getElementById("interactionArea");
+    const crosshair = document.getElementById("crosshair");
     const crosshairV = document.getElementById("crosshairV");
     const crosshairH = document.getElementById("crosshairH");
 
@@ -78,8 +81,7 @@
         mouseX >= areaX1 && mouseX <= areaY2 &&
         mouseY >= areaY1 && mouseY <= areaX2
       ) {
-        crosshairV.style.display = "inline";
-        crosshairH.style.display = "inline";
+        crosshair.style.display = "inline";
 
         const elems = document.elementsFromPoint(event.clientX, event.clientY);
         const snapCandidates =
@@ -107,14 +109,12 @@
 
         updateCrosshair(snapX, snapY);
       } else {
-        crosshairV.style.display = "none";
-        crosshairH.style.display = "none";
+        crosshair.style.display = "none";
       }
     });
 
     svg.addEventListener("mouseleave", () => {
-      crosshairV.style.display = "none";
-      crosshairH.style.display = "none";
+      crosshair.style.display = "none";
     });
   </script>
 </body>
