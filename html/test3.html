@@ -16,8 +16,14 @@
     <!-- Visible decorative objects -->
     <g stroke="black" stroke-width="3" fill="yellow" style="pointer-events: none;">
       <rect x="100" y="100" width="600" height="400" />
-      <circle cx="350" cy="250" r="100" fill="none" />
-      <circle cx="450" cy="350" r="100" fill="none" />
+      <circle cx="350" cy="250" r="10" fill="none" />
+      <circle cx="450" cy="350" r="10" fill="none" />
+    </g>
+
+    <!-- Predefined crosshair lines, initially hidden -->
+    <g>
+      <line id="crosshairV" stroke="red" stroke-width="1" style="display:none;" />
+      <line id="crosshairH" stroke="red" stroke-width="1" style="display:none;" />
     </g>
 
     <!-- Invisible interaction objects -->
@@ -33,20 +39,8 @@
   <script>
     const svg = document.getElementById("svgCanvas");
     const interactionArea = document.getElementById("interactionArea");
-
-    // Create crosshair lines
-    const crosshairV = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    const crosshairH = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    crosshairV.setAttribute("stroke", "red");
-    crosshairH.setAttribute("stroke", "red");
-    crosshairV.setAttribute("stroke-width", "1");
-    crosshairH.setAttribute("stroke-width", "1");
-    crosshairV.style.pointerEvents = "none";
-    crosshairH.style.pointerEvents = "none";
-    crosshairV.style.display = "none";
-    crosshairH.style.display = "none";
-    svg.appendChild(crosshairV);
-    svg.appendChild(crosshairH);
+    const crosshairV = document.getElementById("crosshairV");
+    const crosshairH = document.getElementById("crosshairH");
 
     const areaX1 = parseFloat(interactionArea.getAttribute("x"));
     const areaY1 = parseFloat(interactionArea.getAttribute("y"));
@@ -100,11 +94,10 @@
           snapCandidates.forEach(circle => {
             const cx = parseFloat(circle.getAttribute("cx"));
             const cy = parseFloat(circle.getAttribute("cy"));
-            const r = parseFloat(circle.getAttribute("r"));
             const dx = mouseX - cx;
             const dy = mouseY - cy;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist <= r && dist < minDist) {
+            const dist = dx * dx + dy * dy;
+            if (dist < minDist) {
               minDist = dist;
               snapX = cx;
               snapY = cy;
