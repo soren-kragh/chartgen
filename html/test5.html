@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive SVG</title>
+  <style>
+    text {
+      font-family: "DejaVu Sans Mono", "Consolas", "Menlo", "Courier New", "monospace";
+      font-size: 12;
+    }
+  </style>
+</head>
+<body>
+  <svg width="800" height="600" id="svgCanvas">
+    <g style="pointer-events: none;">
+
+      <!-- Visible decorative objects -->
+      <g stroke="black" stroke-width="3" fill="yellow" >
+        <rect x="100" y="100" width="600" height="400" />
+        <line x1="100" y1="100" x2="100" y2="80" />
+        <line x1="200" y1="100" x2="200" y2="80" />
+        <line x1="300" y1="100" x2="300" y2="80" />
+        <line x1="400" y1="100" x2="400" y2="80" />
+        <line x1="500" y1="100" x2="500" y2="80" />
+        <line x1="600" y1="100" x2="600" y2="80" />
+        <line x1="700" y1="100" x2="700" y2="80" />
+        <circle cx="350" cy="250" r="10" fill="none" />
+        <circle cx="450" cy="350" r="10" fill="none" />
+      </g>
+
+      <!-- Invisible interaction objects -->
+      <g id="interactionLayer" stroke="none" fill="transparent" style="pointer-events: all;">
+        <rect x="100" y="100" width="600" height="400" id="interactionArea" />
+        <g id="snapPoints" >
+          <circle cx="350" cy="250" r="100" id="0" />
+          <circle cx="450" cy="350" r="100" id="1" />
+        </g>
+      </g>
+
+      <!-- Predefined crosshair lines, initially hidden -->
+      <g id="crosshair" style="display:none;">
+        <line id="crosshairV" stroke="red" stroke-width="1" />
+        <line id="crosshairH" stroke="red" stroke-width="1" />
+      </g>
+
+    </g>
+  </svg>
+
+<script>
+////////////////////////////////////////////////////////////////////////////////
+
+data = [
+  { title : [ "Line1\\\"\nHej μ😂", "Line2", "Line3" ],
+    x_value : "Always 1 line",
+    y_value : "Always 1 line"
+  },
+  { title : [ "Another", "title" ],
+    x_value : "The x value",
+    y_value : "The y value"
+  }
+];
+
+const intSnapX = true;
+const areaValX1 = 0;
+const areaValX2 = 6;
+const legalValX1 = 1;
+const legalValX2 = 5;
+
+const intSnapY = true;
+const areaValY1 = 0;
+const areaValY2 = 50;
+const legalValY1 = 5;
+const legalValY2 = 45;
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("svgCanvas");
+
+const interactionArea = document.getElementById("interactionArea");
+const areaX1 = parseFloat(interactionArea.getAttribute("x"));
+const areaY1 = parseFloat(interactionArea.getAttribute("y"));
+const areaX2 = areaX1 + parseFloat(interactionArea.getAttribute("width"));
+const areaY2 = areaY1 + parseFloat(interactionArea.getAttribute("height"));
+
+////////////////////////////////////////////////////////////////////////////////
+
+function removeInfoBox() {
+  let existing = document.getElementById("info-box");
+  if (existing) {
+    existing.parentNode.removeChild(existing);
+  }
+}
+
+function createInfoBox(index, x, y) {
+  removeInfoBox();
+
+  // Get the data for this index
+  var item = data[index];
+
+  // Create a group (<g>) to hold the box and text
+  var group = document.createElementNS(SVG_NS, "g");
+  group.setAttribute("id", "info-box");
+
+  // Define font sizes and line heights
+  var titleFontSize = 16;
+  var valueFontSize = 12;
+  var titleLineHeight = 18;
+  var valueLineHeight = 14;
+
+  // Starting coordinates (top-left of the text block)
+  var startX = x + 10;
+  var startY = y + 10;
+
+  // Add each title line as a separate text element
+  item.title.forEach(function(line, i) {
+    var textEl = document.createElementNS(SVG_NS, "text");
+    textEl.setAttribute("x", startX);
+    // The "y" attribute here adds the line height for each subsequent line.
+    textEl.setAttribute("y", startY + (i * titleLineHeight) + titleFontSize);
+    textEl.setAttribute("font-size", titleFontSize);
+    textEl.setAttribute("font-weight", "bold")
+    textEl.textContent = line;
+    group.appendChild(textEl);
+  });
+
+  // Calculate the y position after the title lines
+  var currentY = startY + (item.title.length * titleLineHeight);
+
+  // Create text element for x_value
+  var xText = document.createElementNS(SVG_NS, "text");
+  xText.setAttribute("x", startX);
+  xText.setAttribute("y", currentY + valueLineHeight);
+  xText.setAttribute("font-size", valueFontSize);
+  xText.textContent = item.x_value;
+  group.appendChild(xText);
+
+  // Create text element for y_value
+  var yText = document.createElementNS(SVG_NS, "text");
+  yText.setAttribute("x", startX);
+  // Position below the x_value line
+  yText.setAttribute("y", currentY + 2 * valueLineHeight);
+  yText.setAttribute("font-size", valueFontSize);
+  yText.textContent = item.y_value;
+  group.appendChild(yText);
+
+  // Append the group first so that we can compute its bounding box.
+  svg.appendChild(group);
+
+  // Create a background rectangle behind the text.
+  // Use getBBox() to measure the group.
+  var padding = 5; // padding for the background rectangle
+  var bbox = group.getBBox();
+  var rect = document.createElementNS(SVG_NS, "rect");
+  rect.setAttribute("x", bbox.x - padding);
+  rect.setAttribute("y", bbox.y - padding);
+  rect.setAttribute("width", bbox.width + 2 * padding);
+  rect.setAttribute("height", bbox.height + 2 * padding);
+  rect.setAttribute("fill", "lightyellow");
+  rect.setAttribute("fill-opacity", "0.9");
+  rect.setAttribute("stroke", "black");
+
+  // Insert the rectangle as the first child so it appears behind the text.
+  group.insertBefore(rect, group.firstChild);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+const crosshair = document.getElementById("crosshair");
+const crosshairV = document.getElementById("crosshairV");
+const crosshairH = document.getElementById("crosshairH");
+
+function getMouseSVGPoint(event) {
+  const pt = svg.createSVGPoint();
+  pt.x = event.clientX;
+  pt.y = event.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+function updateCrosshair(x, y) {
+  {
+    crosshairV.setAttribute("x1", x);
+    crosshairV.setAttribute("y1", areaY1);
+    crosshairV.setAttribute("x2", x);
+    crosshairV.setAttribute("y2", areaY2);
+  }
+  {
+    crosshairH.setAttribute("x1", areaX1);
+    crosshairH.setAttribute("y1", y);
+    crosshairH.setAttribute("x2", areaX2);
+    crosshairH.setAttribute("y2", y);
+  }
+}
+
+svg.addEventListener("mousemove", (event) => {
+  const svgPoint = getMouseSVGPoint(event);
+  const mouseX = svgPoint.x;
+  const mouseY = svgPoint.y;
+
+  if (
+    mouseX >= areaX1 && mouseX <= areaX2 &&
+    mouseY >= areaY1 && mouseY <= areaY2
+  ) {
+    const elems = document.elementsFromPoint(event.clientX, event.clientY);
+    const snapCandidates =
+      elems.filter(el => el.parentNode.id === 'snapPoints');
+
+    let x = mouseX;
+    let y = mouseY;
+    let minDist = Infinity;
+    let minId = Infinity;
+
+    if (snapCandidates.length > 0) {
+      snapCandidates.forEach(circle => {
+        const cx = parseFloat(circle.getAttribute("cx"));
+        const cy = parseFloat(circle.getAttribute("cy"));
+        const dx = mouseX - cx;
+        const dy = mouseY - cy;
+        const dist = dx * dx + dy * dy;
+        if (dist < minDist) {
+          minDist = dist;
+          minId = parseInt(circle.getAttribute("id"));
+          x = cx;
+          y = cy;
+        }
+      });
+      createInfoBox( minId, 0, 0 );
+    } else {
+      removeInfoBox();
+      if (intSnapX) {
+        x = (x - areaX1) * (areaValX2 - areaValX1) / (areaX2 - areaX1);
+        x = Math.round( x + areaValX1 );
+        if ( x < legalValX1 ) x = legalValX1;
+        if ( x > legalValX2 ) x = legalValX2;
+        x = (x - areaValX1) * (areaX2 - areaX1) / (areaValX2 - areaValX1);
+        x = x + areaX1;
+      }
+      if (intSnapY) {
+        y = (y - areaY1) * (areaValY2 - areaValY1) / (areaY2 - areaY1);
+        y = Math.round( y + areaValY1 );
+        if ( y < legalValY1 ) y = legalValY1;
+        if ( y > legalValY2 ) y = legalValY2;
+        y = (y - areaValY1) * (areaY2 - areaY1) / (areaValY2 - areaValY1);
+        y = y + areaY1;
+      }
+    }
+
+    updateCrosshair(x, y);
+    crosshair.style.display = "inline";
+  } else {
+    crosshair.style.display = "none";
+    removeInfoBox();
+  }
+});
+
+svg.addEventListener("mouseleave", () => {
+  crosshair.style.display = "none";
+  removeInfoBox();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+</script>
+
+</body>
+</html>
