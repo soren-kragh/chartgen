@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive SVG</title>
+  <style>
+    text {
+      font-family: "DejaVu Sans Mono", "Consolas", "Menlo", "Courier New", "monospace";
+      font-size: 12;
+    }
+  </style>
+</head>
+<body>
+  <svg width="800" height="600" id="svgCanvas">
+    <g style="pointer-events: none;">
+
+      <!-- Visible decorative objects -->
+      <g stroke="black" stroke-width="2" fill="white" >
+        <rect x="100" y="100" width="600" height="400" />
+        <line x1="100" y1="100" x2="100" y2="80" />
+        <line x1="200" y1="100" x2="200" y2="80" />
+        <line x1="300" y1="100" x2="300" y2="80" />
+        <line x1="400" y1="100" x2="400" y2="80" />
+        <line x1="500" y1="100" x2="500" y2="80" />
+        <line x1="600" y1="100" x2="600" y2="80" />
+        <line x1="700" y1="100" x2="700" y2="80" />
+        <circle cx="350" cy="250" r="10" stroke="none" fill="blue" />
+        <circle cx="370" cy="270" r="10" stroke="none" fill="blue" />
+      </g>
+
+      <!-- Invisible interaction objects -->
+      <g stroke="none" fill="transparent" style="pointer-events: all;">
+        <g id="snapPoints" >
+          <circle cx="350" cy="250" r="20" id="0" />
+          <circle cx="370" cy="270" r="20" id="1" />
+        </g>
+      </g>
+
+    </g>
+  </svg>
+
+<script>
+////////////////////////////////////////////////////////////////////////////////
+
+const chart = {
+  crosshairLineColor : "#000000",
+  crosshairFillColor : "#FFFFFF",
+  infoBoxLineColor : "#000000",
+  infoBoxFillColor : "white",
+
+  areaX1 : 100,
+  areaY1 : 100,
+  areaX2 : 700,
+  areaY2 : 500,
+
+  intSnapX : false,
+  areaValX1 : 0,
+  areaValX2 : 6,
+  legalValX1 : 1,
+  legalValX2 : 5,
+
+  intSnapY : false,
+  areaValY1 : 0,
+  areaValY2 : 50,
+  legalValY1 : 5,
+  legalValY2 : 45,
+
+  data : [
+    { title : [ "Line1\\\"\nHej μ😂", "Line2", "Line3" ],
+      x_value : "Always 1 line",
+      y_value : "Always 1 line"
+    },
+    { title : [ "Another", "title" ],
+      x_value : "The x value",
+      y_value : "The y value"
+    }
+  ],
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("svgCanvas");
+
+////////////////////////////////////////////////////////////////////////////////
+
+function removeCrosshair() {
+  let existing = document.getElementById("crosshair");
+  if (existing) {
+    existing.parentNode.removeChild(existing);
+  }
+}
+
+function createCrosshair(x, y, atPoint) {
+  removeCrosshair();
+
+  let group = document.createElementNS(SVG_NS, "g");
+  group.setAttribute("id", "crosshair");
+  group.setAttribute("style", "pointer-events: none;")
+  group.setAttribute("stroke-width", 2)
+  group.setAttribute("stroke-dasharray", "12 8")
+  group.setAttribute("stroke", chart.crosshairLineColor)
+  group.setAttribute("fill", chart.crosshairFillColor)
+
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", x);
+    line.setAttribute("y2", chart.areaY2);
+    group.appendChild(line);
+  }
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", x);
+    line.setAttribute("y2", chart.areaY1);
+    group.appendChild(line);
+  }
+
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", chart.areaX2);
+    line.setAttribute("y2", y);
+    group.appendChild(line);
+  }
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", chart.areaX1);
+    line.setAttribute("y2", y);
+    group.appendChild(line);
+  }
+
+  if (atPoint) {
+    let circle = document.createElementNS(SVG_NS, "circle");
+    circle.setAttribute("cx", x);
+    circle.setAttribute("cy", y);
+    circle.setAttribute("r", 5);
+    circle.setAttribute("stroke-dasharray", "none")
+    group.appendChild(circle);
+  }
+
+  svg.appendChild(group);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function removeInfoBox() {
+  let existing = document.getElementById("info-box");
+  if (existing) {
+    existing.parentNode.removeChild(existing);
+  }
+}
+
+function createInfoBox(pointId, x, y, anchor) {
+  removeInfoBox();
+
+  var item = chart.data[pointId];
+
+  // Create a group (<g>) to hold the box and text
+  var group = document.createElementNS(SVG_NS, "g");
+  group.setAttribute("id", "info-box");
+  group.setAttribute("font-weight", "bold")
+  group.setAttribute("style", "pointer-events: none;")
+  group.setAttribute("fill", chart.infoBoxLineColor);
+  group.setAttribute("stroke", "none");
+
+  // Define font sizes and line heights
+  var titleFontSize = 14;
+  var valueFontSize = 12;
+  var titleLineHeight = 16;
+  var valueLineHeight = 14;
+  var padding = 8;      // padding for the background rectangle
+  var margin = 24;      // margin around background rectangle
+
+  // Starting coordinates (top-left of the text block)
+  var startX = margin + padding;
+  var startY = margin + padding;
+
+  // Add each title line as a separate text element
+  item.title.forEach(function(line, i) {
+    var textEl = document.createElementNS(SVG_NS, "text");
+    textEl.setAttribute("x", startX);
+    // The "y" attribute here adds the line height for each subsequent line.
+    textEl.setAttribute("y", startY + (i * titleLineHeight) + titleFontSize);
+    textEl.setAttribute("font-size", titleFontSize);
+    textEl.textContent = line;
+    group.appendChild(textEl);
+  });
+
+  // Calculate the y position after the title lines
+  var currentY = startY + (item.title.length * titleLineHeight);
+
+  // Create text element for x_value
+  var xText = document.createElementNS(SVG_NS, "text");
+  xText.setAttribute("x", startX);
+  xText.setAttribute("y", currentY + valueLineHeight);
+  xText.setAttribute("font-size", valueFontSize);
+  xText.textContent = item.x_value;
+  group.appendChild(xText);
+
+  // Create text element for y_value
+  var yText = document.createElementNS(SVG_NS, "text");
+  yText.setAttribute("x", startX);
+  // Position below the x_value line
+  yText.setAttribute("y", currentY + 2 * valueLineHeight);
+  yText.setAttribute("font-size", valueFontSize);
+  yText.textContent = item.y_value;
+  group.appendChild(yText);
+
+  // Append the group first so that we can compute its bounding box.
+  svg.appendChild(group);
+
+  // Create a background rectangle behind the text.
+  // Use getBBox() to measure the group.
+  var bbox = group.getBBox();
+  var rect = document.createElementNS(SVG_NS, "rect");
+  rect.setAttribute("x", bbox.x - padding);
+  rect.setAttribute("y", bbox.y - padding);
+  rect.setAttribute("width", bbox.width + 2 * padding);
+  rect.setAttribute("height", bbox.height + 2 * padding);
+  rect.setAttribute("rx", padding);
+  rect.setAttribute("fill", chart.infoBoxFillColor);
+  rect.setAttribute("stroke-width", 2)
+  rect.setAttribute("stroke", chart.infoBoxLineColor);
+
+  // Insert the rectangle as the first child so it appears behind the text.
+  group.insertBefore(rect, group.firstChild);
+
+  let translateX = x - anchor.anchorX * (bbox.width + 2*(padding + margin));
+  let translateY = y - anchor.anchorY * (bbox.height + 2*(padding + margin));
+
+  group.setAttribute("transform", `translate(${translateX}, ${translateY})`);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function getMouseSVGPoint(event) {
+  const pt = svg.createSVGPoint();
+  pt.x = event.clientX;
+  pt.y = event.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+svg.addEventListener("mousemove", (event) => {
+  const svgPoint = getMouseSVGPoint(event);
+  const mouseX = svgPoint.x;
+  const mouseY = svgPoint.y;
+
+  if (
+    mouseX >= chart.areaX1 && mouseX <= chart.areaX2 &&
+    mouseY >= chart.areaY1 && mouseY <= chart.areaY2
+  ) {
+    const elems = document.elementsFromPoint(event.clientX, event.clientY);
+    const snapCandidates =
+      elems.filter(el => el.parentNode.id === 'snapPoints');
+
+    let x = mouseX;
+    let y = mouseY;
+    let minDist = Infinity;
+    let minId = Infinity;
+    let atPoint = false;
+
+    if (snapCandidates.length > 0) {
+      snapCandidates.forEach(circle => {
+        const cx = parseFloat(circle.getAttribute("cx"));
+        const cy = parseFloat(circle.getAttribute("cy"));
+        const dx = mouseX - cx;
+        const dy = mouseY - cy;
+        const dist = dx * dx + dy * dy;
+        if (dist < minDist) {
+          minDist = dist;
+          minId = parseInt(circle.getAttribute("id"));
+          x = cx;
+          y = cy;
+          atPoint = true;
+        }
+      });
+      let anchor = { anchorX : 0, anchorY : 0 };
+      if (x > (chart.areaX2 + chart.areaX1)/2) anchor.anchorX = 1;
+      if (y > (chart.areaY2 + chart.areaY1)/2) anchor.anchorY = 1;
+      createInfoBox(minId, x, y, anchor);
+    } else {
+      removeInfoBox();
+      if (chart.intSnapX) {
+        x = (x - chart.areaX1) * (chart.areaValX2 - chart.areaValX1);
+        x = x / (chart.areaX2 - chart.areaX1);
+        x = Math.round( x + chart.areaValX1 );
+        if ( x < chart.legalValX1 ) x = chart.legalValX1;
+        if ( x > chart.legalValX2 ) x = chart.legalValX2;
+        x = (x - chart.areaValX1) * (chart.areaX2 - chart.areaX1);
+        x = x / (chart.areaValX2 - chart.areaValX1);
+        x = x + chart.areaX1;
+      }
+      if (chart.intSnapY) {
+        y = (y - chart.areaY1) * (chart.areaValY2 - chart.areaValY1);
+        y = y / (chart.areaY2 - chart.areaY1);
+        y = Math.round( y + chart.areaValY1 );
+        if ( y < chart.legalValY1 ) y = chart.legalValY1;
+        if ( y > chart.legalValY2 ) y = chart.legalValY2;
+        y = (y - chart.areaValY1) * (chart.areaY2 - chart.areaY1);
+        y = y / (chart.areaValY2 - chart.areaValY1);
+        y = y + chart.areaY1;
+      }
+    }
+
+    createCrosshair(x, y, atPoint);
+  } else {
+    removeCrosshair();
+    removeInfoBox();
+  }
+});
+
+svg.addEventListener("mouseleave", () => {
+  removeCrosshair();
+  removeInfoBox();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+</script>
+
+</body>
+</html>
