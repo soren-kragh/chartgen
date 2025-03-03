@@ -16,7 +16,7 @@
     <g style="pointer-events: none;">
 
       <!-- Visible decorative objects -->
-      <g stroke="black" stroke-width="3" fill="yellow" >
+      <g stroke="black" stroke-width="2" fill="white" >
         <rect x="100" y="100" width="600" height="400" />
         <line x1="100" y1="100" x2="100" y2="80" />
         <line x1="200" y1="100" x2="200" y2="80" />
@@ -25,23 +25,17 @@
         <line x1="500" y1="100" x2="500" y2="80" />
         <line x1="600" y1="100" x2="600" y2="80" />
         <line x1="700" y1="100" x2="700" y2="80" />
-        <circle cx="350" cy="250" r="10" fill="none" />
-        <circle cx="450" cy="350" r="10" fill="none" />
+        <circle cx="350" cy="250" r="10" stroke="none" fill="blue" />
+        <circle cx="370" cy="270" r="10" stroke="none" fill="blue" />
       </g>
 
       <!-- Invisible interaction objects -->
-      <g id="interactionLayer" stroke="none" fill="transparent" style="pointer-events: all;">
+      <g stroke="none" fill="transparent" style="pointer-events: all;">
         <rect x="100" y="100" width="600" height="400" id="interactionArea" />
         <g id="snapPoints" >
-          <circle cx="350" cy="250" r="100" id="0" />
-          <circle cx="450" cy="350" r="100" id="1" />
+          <circle cx="350" cy="250" r="20" id="0" />
+          <circle cx="370" cy="270" r="20" id="1" />
         </g>
-      </g>
-
-      <!-- Predefined crosshair lines, initially hidden -->
-      <g id="crosshair" style="display:none;">
-        <line id="crosshairV" stroke="red" stroke-width="1" />
-        <line id="crosshairH" stroke="red" stroke-width="1" />
       </g>
 
     </g>
@@ -64,16 +58,18 @@ data = [
   }
 ];
 
-const cursorLineColor = "#000000";
-const cursorFillColor = "#FFFFFF";
+const crosshairLineColor = "#000000";
+const crosshairFillColor = "#FFFFFF";
+const infoBoxLineColor = "#000000";
+const infoBoxFillColor = "white";
 
-const intSnapX = true;
+const intSnapX = false;
 const areaValX1 = 0;
 const areaValX2 = 6;
 const legalValX1 = 1;
 const legalValX2 = 5;
 
-const intSnapY = true;
+const intSnapY = false;
 const areaValY1 = 0;
 const areaValY2 = 50;
 const legalValY1 = 5;
@@ -84,6 +80,72 @@ const areaX1 = parseFloat(interactionArea.getAttribute("x"));
 const areaY1 = parseFloat(interactionArea.getAttribute("y"));
 const areaX2 = areaX1 + parseFloat(interactionArea.getAttribute("width"));
 const areaY2 = areaY1 + parseFloat(interactionArea.getAttribute("height"));
+
+////////////////////////////////////////////////////////////////////////////////
+
+function removeCrosshair() {
+  let existing = document.getElementById("crosshair");
+  if (existing) {
+    existing.parentNode.removeChild(existing);
+  }
+}
+
+function createCrosshair(x, y, atPoint) {
+  removeCrosshair();
+
+  let group = document.createElementNS(SVG_NS, "g");
+  group.setAttribute("id", "crosshair");
+  group.setAttribute("style", "pointer-events: none;")
+  group.setAttribute("stroke-width", 2)
+  group.setAttribute("stroke-dasharray", "12 8")
+  group.setAttribute("stroke", crosshairLineColor)
+  group.setAttribute("fill", crosshairFillColor)
+
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", x);
+    line.setAttribute("y2", areaY2);
+    group.appendChild(line);
+  }
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", x);
+    line.setAttribute("y2", areaY1);
+    group.appendChild(line);
+  }
+
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", areaX2);
+    line.setAttribute("y2", y);
+    group.appendChild(line);
+  }
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", areaX1);
+    line.setAttribute("y2", y);
+    group.appendChild(line);
+  }
+
+  if (atPoint) {
+    let circle = document.createElementNS(SVG_NS, "circle");
+    circle.setAttribute("cx", x);
+    circle.setAttribute("cy", y);
+    circle.setAttribute("r", 5);
+    circle.setAttribute("stroke-dasharray", "none")
+    group.appendChild(circle);
+  }
+
+  svg.appendChild(group);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -105,6 +167,8 @@ function createInfoBox(index, x, y, anchor) {
   group.setAttribute("id", "info-box");
   group.setAttribute("font-weight", "bold")
   group.setAttribute("style", "pointer-events: none;")
+  group.setAttribute("fill", infoBoxLineColor);
+  group.setAttribute("stroke", "none");
 
   // Define font sizes and line heights
   var titleFontSize = 16;
@@ -161,9 +225,9 @@ function createInfoBox(index, x, y, anchor) {
   rect.setAttribute("width", bbox.width + 2 * padding);
   rect.setAttribute("height", bbox.height + 2 * padding);
   rect.setAttribute("rx", padding);
-  rect.setAttribute("fill", "lightyellow");
-  rect.setAttribute("fill-opacity", "0.9");
-  rect.setAttribute("stroke", "black");
+  rect.setAttribute("fill", infoBoxFillColor);
+  rect.setAttribute("stroke-width", 2)
+  rect.setAttribute("stroke", infoBoxLineColor);
 
   // Insert the rectangle as the first child so it appears behind the text.
   group.insertBefore(rect, group.firstChild);
@@ -176,30 +240,11 @@ function createInfoBox(index, x, y, anchor) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const crosshair = document.getElementById("crosshair");
-const crosshairV = document.getElementById("crosshairV");
-const crosshairH = document.getElementById("crosshairH");
-
 function getMouseSVGPoint(event) {
   const pt = svg.createSVGPoint();
   pt.x = event.clientX;
   pt.y = event.clientY;
   return pt.matrixTransform(svg.getScreenCTM().inverse());
-}
-
-function updateCrosshair(x, y) {
-  {
-    crosshairV.setAttribute("x1", x);
-    crosshairV.setAttribute("y1", areaY1);
-    crosshairV.setAttribute("x2", x);
-    crosshairV.setAttribute("y2", areaY2);
-  }
-  {
-    crosshairH.setAttribute("x1", areaX1);
-    crosshairH.setAttribute("y1", y);
-    crosshairH.setAttribute("x2", areaX2);
-    crosshairH.setAttribute("y2", y);
-  }
 }
 
 svg.addEventListener("mousemove", (event) => {
@@ -219,6 +264,7 @@ svg.addEventListener("mousemove", (event) => {
     let y = mouseY;
     let minDist = Infinity;
     let minId = Infinity;
+    let atPoint = false;
 
     if (snapCandidates.length > 0) {
       snapCandidates.forEach(circle => {
@@ -232,6 +278,7 @@ svg.addEventListener("mousemove", (event) => {
           minId = parseInt(circle.getAttribute("id"));
           x = cx;
           y = cy;
+          atPoint = true;
         }
       });
       let anchor = { anchorX : 0, anchorY : 0 };
@@ -258,16 +305,15 @@ svg.addEventListener("mousemove", (event) => {
       }
     }
 
-    updateCrosshair(x, y);
-    crosshair.style.display = "inline";
+    createCrosshair(x, y, atPoint);
   } else {
-    crosshair.style.display = "none";
+    removeCrosshair();
     removeInfoBox();
   }
 });
 
 svg.addEventListener("mouseleave", () => {
-  crosshair.style.display = "none";
+  removeCrosshair();
   removeInfoBox();
 });
 
