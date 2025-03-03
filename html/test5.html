@@ -50,6 +50,9 @@
 <script>
 ////////////////////////////////////////////////////////////////////////////////
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("svgCanvas");
+
 data = [
   { title : [ "Line1\\\"\nHej μ😂", "Line2", "Line3" ],
     x_value : "Always 1 line",
@@ -60,6 +63,9 @@ data = [
     y_value : "The y value"
   }
 ];
+
+const cursorLineColor = "#000000";
+const cursorFillColor = "#FFFFFF";
 
 const intSnapX = true;
 const areaValX1 = 0;
@@ -72,9 +78,6 @@ const areaValY1 = 0;
 const areaValY2 = 50;
 const legalValY1 = 5;
 const legalValY2 = 45;
-
-const SVG_NS = "http://www.w3.org/2000/svg";
-const svg = document.getElementById("svgCanvas");
 
 const interactionArea = document.getElementById("interactionArea");
 const areaX1 = parseFloat(interactionArea.getAttribute("x"));
@@ -91,7 +94,7 @@ function removeInfoBox() {
   }
 }
 
-function createInfoBox(index, x, y) {
+function createInfoBox(index, x, y, anchor) {
   removeInfoBox();
 
   // Get the data for this index
@@ -100,16 +103,20 @@ function createInfoBox(index, x, y) {
   // Create a group (<g>) to hold the box and text
   var group = document.createElementNS(SVG_NS, "g");
   group.setAttribute("id", "info-box");
+  group.setAttribute("font-weight", "bold")
+  group.setAttribute("style", "pointer-events: none;")
 
   // Define font sizes and line heights
   var titleFontSize = 16;
   var valueFontSize = 12;
   var titleLineHeight = 18;
   var valueLineHeight = 14;
+  var padding = 8;      // padding for the background rectangle
+  var margin = 24;      // margin around background rectangle
 
   // Starting coordinates (top-left of the text block)
-  var startX = x + 10;
-  var startY = y + 10;
+  var startX = margin + padding;
+  var startY = margin + padding;
 
   // Add each title line as a separate text element
   item.title.forEach(function(line, i) {
@@ -118,7 +125,6 @@ function createInfoBox(index, x, y) {
     // The "y" attribute here adds the line height for each subsequent line.
     textEl.setAttribute("y", startY + (i * titleLineHeight) + titleFontSize);
     textEl.setAttribute("font-size", titleFontSize);
-    textEl.setAttribute("font-weight", "bold")
     textEl.textContent = line;
     group.appendChild(textEl);
   });
@@ -148,19 +154,24 @@ function createInfoBox(index, x, y) {
 
   // Create a background rectangle behind the text.
   // Use getBBox() to measure the group.
-  var padding = 5; // padding for the background rectangle
   var bbox = group.getBBox();
   var rect = document.createElementNS(SVG_NS, "rect");
   rect.setAttribute("x", bbox.x - padding);
   rect.setAttribute("y", bbox.y - padding);
   rect.setAttribute("width", bbox.width + 2 * padding);
   rect.setAttribute("height", bbox.height + 2 * padding);
+  rect.setAttribute("rx", padding);
   rect.setAttribute("fill", "lightyellow");
   rect.setAttribute("fill-opacity", "0.9");
   rect.setAttribute("stroke", "black");
 
   // Insert the rectangle as the first child so it appears behind the text.
   group.insertBefore(rect, group.firstChild);
+
+  let translateX = x - anchor.anchorX * (bbox.width + 2*(padding + margin));
+  let translateY = y - anchor.anchorY * (bbox.height + 2*(padding + margin));
+
+  group.setAttribute("transform", `translate(${translateX}, ${translateY})`);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -223,7 +234,10 @@ svg.addEventListener("mousemove", (event) => {
           y = cy;
         }
       });
-      createInfoBox( minId, 0, 0 );
+      let anchor = { anchorX : 0, anchorY : 0 };
+      if ( x > (areaX2 + areaX1)/2 ) anchor.anchorX = 1;
+      if ( y > (areaY2 + areaY1)/2 ) anchor.anchorY = 1;
+      createInfoBox( minId, x, y, anchor );
     } else {
       removeInfoBox();
       if (intSnapX) {
