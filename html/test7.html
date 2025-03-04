@@ -49,6 +49,8 @@ const chart = {
   infoBoxLineColor : "#000000",
   infoBoxFillColor : "#EEEEEE",
 
+  valueFontSize : 10,
+
   areaX1 : 100,
   areaY1 : 100,
   areaX2 : 700,
@@ -99,8 +101,8 @@ const chart = {
 
   data : [
     { s : 0,
-      x : "Always 1 line",
-      y : "Always 1 line"
+      x : "Perl",
+      y : "47.31"
     },
     { s : 0,
       x : "The x value",
@@ -108,6 +110,9 @@ const chart = {
     }
   ],
 };
+
+const keepAwayFromAxis = 12;
+const keepAwayFromCursor = 24;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -232,26 +237,25 @@ function createAxisBox(id, x, y, axis, pos) {
   )
     return;
 
-  const padX = 6;
-  const padY = 3;
-  const keepAway = 12;
-
   const group = document.createElementNS(SVG_NS, "g");
   group.setAttribute("id", id);
   group.setAttribute("style", "pointer-events: none;")
 
   {
     let text = document.createElementNS(SVG_NS, "text");
-    text.setAttribute("font-size", 12);
+    text.setAttribute("font-size", chart.valueFontSize);
     text.setAttribute("font-weight", "bold")
     text.setAttribute("fill", chart.infoBoxLineColor);
     text.setAttribute("stroke", "none");
-    text.textContent = formatNumber(val, false, 4, true);
+    text.textContent = formatNumber(val, true, 4, true);
     group.appendChild(text);
   }
 
   svg.appendChild(group);
   let bbox = group.getBBox();
+
+  const padX = chart.valueFontSize / 2;
+  const padY = chart.valueFontSize / 4;
 
   {
     let rect = document.createElementNS(SVG_NS, "rect");
@@ -271,36 +275,38 @@ function createAxisBox(id, x, y, axis, pos) {
   let transX = -bbox.width/2 - bbox.x;
   let transY = -bbox.height/2 - bbox.y;
 
+  let space = keepAwayFromAxis + keepAwayFromCursor;
+
   switch (pos) {
     case "top":
       transX += x;
-      if ( y - chart.areaY1 < bbox.height + 2*keepAway ) {
-        transY += y - bbox.height/2 - keepAway;
+      if ( y - chart.areaY1 < bbox.height + space ) {
+        transY += y - bbox.height/2 - keepAwayFromCursor;
       } else {
-        transY += chart.areaY1 + bbox.height/2 + keepAway;
+        transY += chart.areaY1 + bbox.height/2 + keepAwayFromAxis;
       }
       break;
     case "bottom":
       transX += x;
-      if ( chart.areaY2 - y < bbox.height + 2*keepAway ) {
-        transY += y + bbox.height/2 + keepAway;
+      if ( chart.areaY2 - y < bbox.height + space ) {
+        transY += y + bbox.height/2 + keepAwayFromCursor;
       } else {
-        transY += chart.areaY2 - bbox.height/2 - keepAway;
+        transY += chart.areaY2 - bbox.height/2 - keepAwayFromAxis;
       }
       break;
     case "left":
-      if ( x - chart.areaX1 < bbox.width + 2*keepAway ) {
-        transX += x - bbox.width/2 - keepAway;
+      if ( x - chart.areaX1 < bbox.width + space ) {
+        transX += x - bbox.width/2 - keepAwayFromCursor;
       } else {
-        transX += chart.areaX1 + bbox.width/2 + keepAway;
+        transX += chart.areaX1 + bbox.width/2 + keepAwayFromAxis;
       }
       transY += y;
       break;
     case "right":
-      if ( chart.areaX2 - x < bbox.width + 2*keepAway ) {
-        transX += x + bbox.width/2 + keepAway;
+      if ( chart.areaX2 - x < bbox.width + space ) {
+        transX += x + bbox.width/2 + keepAwayFromCursor;
       } else {
-        transX += chart.areaX2 - bbox.width/2 - keepAway;
+        transX += chart.areaX2 - bbox.width/2 - keepAwayFromAxis;
       }
       transY += y;
       break;
@@ -331,31 +337,28 @@ function createInfoBox(pointId, x, y, anchor) {
   group.setAttribute("fill", chart.infoBoxLineColor);
   group.setAttribute("stroke", "none");
 
-  // Define font sizes and line heights
-  const valueFontSize = 12;
-  const valueLineHeight = 14;
-  const padding = 6;
-  const keepAway = 24;
+  const padX = chart.valueFontSize / 2;
+  const padY = chart.valueFontSize / 4;
 
-  let startX = keepAway + padding;
-  let startY = keepAway + padding;
+  let startX = 0;
+  let startY = 0;
 
   {
-    startY += valueLineHeight;
+    startY += chart.valueFontSize * 1.2;
     let text = document.createElementNS(SVG_NS, "text");
     text.setAttribute("x", startX);
     text.setAttribute("y", startY);
-    text.setAttribute("font-size", valueFontSize);
+    text.setAttribute("font-size", chart.valueFontSize);
     text.textContent = "X: " + (chart.axisSwap ? item.y : item.x);
     group.appendChild(text);
   }
 
   {
-    startY += valueLineHeight;
+    startY += chart.valueFontSize * 1.2;
     let text = document.createElementNS(SVG_NS, "text");
     text.setAttribute("x", startX);
     text.setAttribute("y", startY);
-    text.setAttribute("font-size", valueFontSize);
+    text.setAttribute("font-size", chart.valueFontSize);
     text.textContent = "Y: " + (chart.axisSwap ? item.x : item.y);
     group.appendChild(text);
   }
@@ -365,19 +368,23 @@ function createInfoBox(pointId, x, y, anchor) {
 
   {
     let rect = document.createElementNS(SVG_NS, "rect");
-    rect.setAttribute("x", bbox.x - padding);
-    rect.setAttribute("y", bbox.y - padding);
-    rect.setAttribute("width", bbox.width + 2 * padding);
-    rect.setAttribute("height", bbox.height + 2 * padding);
-    rect.setAttribute("rx", padding);
+    rect.setAttribute("x", bbox.x - padX);
+    rect.setAttribute("y", bbox.y - padY);
+    rect.setAttribute("width", bbox.width + 2 * padX);
+    rect.setAttribute("height", bbox.height + 2 * padY);
+    rect.setAttribute("rx", padX);
     rect.setAttribute("fill", chart.infoBoxFillColor);
     rect.setAttribute("stroke-width", 2)
     rect.setAttribute("stroke", chart.infoBoxLineColor);
     group.insertBefore(rect, group.firstChild);
   }
 
-  let transX = x - anchor.anchorX * (bbox.width + 2*(padding + keepAway));
-  let transY = y - anchor.anchorY * (bbox.height + 2*(padding + keepAway));
+  bbox = group.getBBox();
+
+  let transX = x - bbox.x - bbox.width/2;
+  let transY = y - bbox.y - bbox.height/2;
+  transX -= anchor.anchorX * (bbox.width/2 + keepAwayFromCursor);
+  transY -= anchor.anchorY * (bbox.height/2 + keepAwayFromCursor);
 
   group.setAttribute("transform", `translate(${transX}, ${transY})`);
 }
@@ -425,7 +432,7 @@ svg.addEventListener("mousemove", (event) => {
           atPoint = true;
         }
       });
-      let anchor = { anchorX : 0, anchorY : 0 };
+      let anchor = { anchorX : -1, anchorY : -1 };
       if (x > (chart.areaX2 + chart.areaX1)/2) anchor.anchorX = 1;
       if (y > (chart.areaY2 + chart.areaY1)/2) anchor.anchorY = 1;
       createInfoBox(minId, x, y, anchor);
