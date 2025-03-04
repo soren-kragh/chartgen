@@ -47,7 +47,7 @@ const chart = {
   crosshairLineColor : "#000000",
   crosshairFillColor : "#FFFFFF",
   infoBoxLineColor : "#000000",
-  infoBoxFillColor : "white",
+  infoBoxFillColor : "#EEEEEE",
 
   areaX1 : 100,
   areaY1 : 100,
@@ -61,19 +61,26 @@ const chart = {
   legalValX2 : 5,
 
   intSnapY : false,
-  areaValY1 : 0,
-  areaValY2 : 50,
-  legalValY1 : 5,
-  legalValY2 : 45,
+  areaValY1 : 50,
+  areaValY2 : 0,
+  legalValY1 : 50,
+  legalValY2 : 0,
+
+  angleX : 0,
+
+  series : [
+    { svgId : "c0s0"
+    }
+  ],
 
   data : [
-    { title : [ "Line1\\\"\nHej μ😂", "Line2", "Line3" ],
-      x_value : "Always 1 line",
-      y_value : "Always 1 line"
+    { s : 0,
+      x : "Always 1 line",
+      y : "Always 1 line"
     },
-    { title : [ "Another", "title" ],
-      x_value : "The x value",
-      y_value : "The y value"
+    { s : 0,
+      x : "The x value",
+      y : "The y value"
     }
   ],
 };
@@ -161,10 +168,10 @@ function removeInfoBox() {
 function createInfoBox(pointId, x, y, anchor) {
   removeInfoBox();
 
-  var item = chart.data[pointId];
+  const item = chart.data[pointId];
 
   // Create a group (<g>) to hold the box and text
-  var group = document.createElementNS(SVG_NS, "g");
+  const group = document.createElementNS(SVG_NS, "g");
   group.setAttribute("id", "info-box");
   group.setAttribute("font-weight", "bold")
   group.setAttribute("style", "pointer-events: none;")
@@ -172,66 +179,59 @@ function createInfoBox(pointId, x, y, anchor) {
   group.setAttribute("stroke", "none");
 
   // Define font sizes and line heights
-  var titleFontSize = 14;
-  var valueFontSize = 12;
-  var titleLineHeight = 16;
-  var valueLineHeight = 14;
-  var padding = 8;      // padding for the background rectangle
-  var margin = 24;      // margin around background rectangle
+  const valueFontSize = 12;
+  const valueLineHeight = 14;
+  const padding = 6;
+  const margin = 24;
 
-  // Starting coordinates (top-left of the text block)
-  var startX = margin + padding;
-  var startY = margin + padding;
+  let startX = margin + padding;
+  let startY = margin + padding;
 
-  // Add each title line as a separate text element
-  item.title.forEach(function(line, i) {
-    var textEl = document.createElementNS(SVG_NS, "text");
-    textEl.setAttribute("x", startX);
-    // The "y" attribute here adds the line height for each subsequent line.
-    textEl.setAttribute("y", startY + (i * titleLineHeight) + titleFontSize);
-    textEl.setAttribute("font-size", titleFontSize);
-    textEl.textContent = line;
-    group.appendChild(textEl);
-  });
+  {
+    startY += valueLineHeight;
+    let text = document.createElementNS(SVG_NS, "text");
+    text.setAttribute("x", startX);
+    text.setAttribute("y", startY);
+    text.setAttribute("font-size", valueFontSize);
+    if ( chart.angleX === 0 ) {
+      text.textContent = "X: " + item.x;
+    } else {
+      text.textContent = "X: " + item.y;
+    }
+    group.appendChild(text);
+  }
 
-  // Calculate the y position after the title lines
-  var currentY = startY + (item.title.length * titleLineHeight);
-
-  // Create text element for x_value
-  var xText = document.createElementNS(SVG_NS, "text");
-  xText.setAttribute("x", startX);
-  xText.setAttribute("y", currentY + valueLineHeight);
-  xText.setAttribute("font-size", valueFontSize);
-  xText.textContent = item.x_value;
-  group.appendChild(xText);
-
-  // Create text element for y_value
-  var yText = document.createElementNS(SVG_NS, "text");
-  yText.setAttribute("x", startX);
-  // Position below the x_value line
-  yText.setAttribute("y", currentY + 2 * valueLineHeight);
-  yText.setAttribute("font-size", valueFontSize);
-  yText.textContent = item.y_value;
-  group.appendChild(yText);
+  {
+    startY += valueLineHeight;
+    let text = document.createElementNS(SVG_NS, "text");
+    text.setAttribute("x", startX);
+    text.setAttribute("y", startY);
+    text.setAttribute("font-size", valueFontSize);
+    if ( chart.angleX === 0 ) {
+      text.textContent = "Y: " + item.y;
+    } else {
+      text.textContent = "Y: " + item.x;
+    }
+    group.appendChild(text);
+  }
 
   // Append the group first so that we can compute its bounding box.
   svg.appendChild(group);
 
-  // Create a background rectangle behind the text.
-  // Use getBBox() to measure the group.
-  var bbox = group.getBBox();
-  var rect = document.createElementNS(SVG_NS, "rect");
-  rect.setAttribute("x", bbox.x - padding);
-  rect.setAttribute("y", bbox.y - padding);
-  rect.setAttribute("width", bbox.width + 2 * padding);
-  rect.setAttribute("height", bbox.height + 2 * padding);
-  rect.setAttribute("rx", padding);
-  rect.setAttribute("fill", chart.infoBoxFillColor);
-  rect.setAttribute("stroke-width", 2)
-  rect.setAttribute("stroke", chart.infoBoxLineColor);
+  let bbox = group.getBBox();
 
-  // Insert the rectangle as the first child so it appears behind the text.
-  group.insertBefore(rect, group.firstChild);
+  {
+    let rect = document.createElementNS(SVG_NS, "rect");
+    rect.setAttribute("x", bbox.x - padding);
+    rect.setAttribute("y", bbox.y - padding);
+    rect.setAttribute("width", bbox.width + 2 * padding);
+    rect.setAttribute("height", bbox.height + 2 * padding);
+    rect.setAttribute("rx", padding);
+    rect.setAttribute("fill", chart.infoBoxFillColor);
+    rect.setAttribute("stroke-width", 2)
+    rect.setAttribute("stroke", chart.infoBoxLineColor);
+    group.insertBefore(rect, group.firstChild);
+  }
 
   let translateX = x - anchor.anchorX * (bbox.width + 2*(padding + margin));
   let translateY = y - anchor.anchorY * (bbox.height + 2*(padding + margin));
