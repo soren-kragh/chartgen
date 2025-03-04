@@ -66,7 +66,10 @@ const chart = {
   legalValY1 : 50,
   legalValY2 : 0,
 
-  angleX : 0,
+  axisSwap : true,
+
+  categoryAxis : false,
+  categories : [],
 
   series : [
     { svgId : "c0s0"
@@ -182,10 +185,10 @@ function createInfoBox(pointId, x, y, anchor) {
   const valueFontSize = 12;
   const valueLineHeight = 14;
   const padding = 6;
-  const margin = 24;
+  const keepAway = 24;
 
-  let startX = margin + padding;
-  let startY = margin + padding;
+  let startX = keepAway + padding;
+  let startY = keepAway + padding;
 
   {
     startY += valueLineHeight;
@@ -193,11 +196,7 @@ function createInfoBox(pointId, x, y, anchor) {
     text.setAttribute("x", startX);
     text.setAttribute("y", startY);
     text.setAttribute("font-size", valueFontSize);
-    if ( chart.angleX === 0 ) {
-      text.textContent = "X: " + item.x;
-    } else {
-      text.textContent = "X: " + item.y;
-    }
+    text.textContent = "X: " + (chart.axisSwap ? item.y : item.x);
     group.appendChild(text);
   }
 
@@ -207,11 +206,7 @@ function createInfoBox(pointId, x, y, anchor) {
     text.setAttribute("x", startX);
     text.setAttribute("y", startY);
     text.setAttribute("font-size", valueFontSize);
-    if ( chart.angleX === 0 ) {
-      text.textContent = "Y: " + item.y;
-    } else {
-      text.textContent = "Y: " + item.x;
-    }
+    text.textContent = "Y: " + (chart.axisSwap ? item.x : item.y);
     group.appendChild(text);
   }
 
@@ -233,8 +228,8 @@ function createInfoBox(pointId, x, y, anchor) {
     group.insertBefore(rect, group.firstChild);
   }
 
-  let translateX = x - anchor.anchorX * (bbox.width + 2*(padding + margin));
-  let translateY = y - anchor.anchorY * (bbox.height + 2*(padding + margin));
+  let translateX = x - anchor.anchorX * (bbox.width + 2*(padding + keepAway));
+  let translateY = y - anchor.anchorY * (bbox.height + 2*(padding + keepAway));
 
   group.setAttribute("transform", `translate(${translateX}, ${translateY})`);
 }
