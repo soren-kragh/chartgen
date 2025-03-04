@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive SVG</title>
+  <style>
+    text {
+      font-family: "DejaVu Sans Mono", "Consolas", "Menlo", "Courier New", "monospace";
+      font-size: 12;
+    }
+  </style>
+</head>
+<body>
+  <svg width="800" height="600" id="svgCanvas">
+    <g style="pointer-events: none;">
+
+      <!-- Visible decorative objects -->
+      <g stroke="black" stroke-width="2" fill="white" >
+        <rect x="100" y="100" width="600" height="400" />
+        <line x1="100" y1="100" x2="100" y2="80" />
+        <line x1="200" y1="100" x2="200" y2="80" />
+        <line x1="300" y1="100" x2="300" y2="80" />
+        <line x1="400" y1="100" x2="400" y2="80" />
+        <line x1="500" y1="100" x2="500" y2="80" />
+        <line x1="600" y1="100" x2="600" y2="80" />
+        <line x1="700" y1="100" x2="700" y2="80" />
+        <circle cx="350" cy="250" r="10" stroke="none" fill="blue" />
+        <circle cx="370" cy="270" r="10" stroke="none" fill="blue" />
+      </g>
+
+      <!-- Invisible interaction objects -->
+      <g stroke="none" fill="transparent" style="pointer-events: all;">
+        <g id="snapPoints" >
+          <circle cx="350" cy="250" r="20" id="0" />
+          <circle cx="370" cy="270" r="20" id="1" />
+        </g>
+      </g>
+
+    </g>
+  </svg>
+
+<script>
+////////////////////////////////////////////////////////////////////////////////
+
+const chart = {
+  crosshairLineColor : "#000000",
+  crosshairFillColor : "#FFFFFF",
+  infoBoxLineColor : "#000000",
+  infoBoxFillColor : "#EEEEEE",
+
+  areaX1 : 100,
+  areaY1 : 100,
+  areaX2 : 700,
+  areaY2 : 500,
+
+  axisX : [
+    { show : true,
+      isCategory : true,
+      areaVal1 : -6,
+      areaVal2 : 6,
+      legalVal1 : -5,
+      legalVal2 : 5
+    },
+    { show : true,
+      isCategory : true,
+      areaVal1 : -60.555,
+      areaVal2 : 60.555,
+      legalVal1 : -10e99,
+      legalVal2 : +10e99
+    }
+  ],
+
+  axisY : [
+    { show : true,
+      isCategory : false,
+      areaVal1 : 50,
+      areaVal2 : 0,
+      legalVal1 : 50,
+      legalVal2 : 0
+    },
+    { show : true,
+      isCategory : false,
+      areaVal1 : 100000,
+      areaVal2 : 0,
+      legalVal1 : 100000,
+      legalVal2 : 0
+    }
+  ],
+
+  axisSwap : false,
+
+  categories : [],
+
+  series : [
+    { svgId : "c0s0"
+    }
+  ],
+
+  data : [
+    { s : 0,
+      x : "Always 1 line",
+      y : "Always 1 line"
+    },
+    { s : 0,
+      x : "The x value",
+      y : "The y value"
+    }
+  ],
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("svgCanvas");
+
+////////////////////////////////////////////////////////////////////////////////
+
+function formatNumber(num, scientific, decimals, sign) {
+  let formatted;
+
+  if (scientific) {
+    formatted = num.toExponential(decimals);
+  } else {
+    formatted = num.toFixed(decimals);
+  }
+
+  // Ensure the sign is always shown.
+  if (sign && num >= 0) {
+    formatted = '+' + formatted;
+  }
+
+  return formatted;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function removeCrosshair() {
+  let existing = document.getElementById("crosshair");
+  if (existing) {
+    existing.parentNode.removeChild(existing);
+  }
+}
+
+function createCrosshair(x, y, atPoint) {
+  removeCrosshair();
+
+  let group = document.createElementNS(SVG_NS, "g");
+  group.setAttribute("id", "crosshair");
+  group.setAttribute("style", "pointer-events: none;")
+  group.setAttribute("stroke-width", 2)
+  group.setAttribute("stroke-dasharray", "12 8")
+  group.setAttribute("stroke", chart.crosshairLineColor)
+  group.setAttribute("fill", chart.crosshairFillColor)
+
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", x);
+    line.setAttribute("y2", chart.areaY2);
+    group.appendChild(line);
+  }
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", x);
+    line.setAttribute("y2", chart.areaY1);
+    group.appendChild(line);
+  }
+
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", chart.areaX2);
+    line.setAttribute("y2", y);
+    group.appendChild(line);
+  }
+  {
+    let line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", chart.areaX1);
+    line.setAttribute("y2", y);
+    group.appendChild(line);
+  }
+
+  if (atPoint) {
+    let circle = document.createElementNS(SVG_NS, "circle");
+    circle.setAttribute("cx", x);
+    circle.setAttribute("cy", y);
+    circle.setAttribute("r", 5);
+    circle.setAttribute("stroke-dasharray", "none")
+    group.appendChild(circle);
+  }
+
+  svg.appendChild(group);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function removeAxisBox(id) {
+  let existing = document.getElementById(id);
+  if (existing) {
+    existing.parentNode.removeChild(existing);
+  }
+}
+
+function createAxisBox(id, x, y, axis, pos) {
+  removeAxisBox(id);
+
+  if (!axis.show) return;
+
+  let coor = x;
+  let coorMin = chart.areaX1;
+  let coorMax = chart.areaX2;
+  if (pos === "left" || pos === "right") {
+    coor = y;
+    coorMin = chart.areaY1;
+    coorMax = chart.areaY2;
+  }
+
+  let val = coor - coorMin;
+  val = val * (axis.areaVal2 - axis.areaVal1) / (coorMax - coorMin);
+  val += axis.areaVal1;
+
+  if (
+    (val < axis.legalVal1 && val < axis.legalVal2) ||
+    (val > axis.legalVal1 && val > axis.legalVal2)
+  )
+    return;
+
+  const padX = 6;
+  const padY = 3;
+  const keepAway = 12;
+
+  const group = document.createElementNS(SVG_NS, "g");
+  group.setAttribute("id", id);
+  group.setAttribute("style", "pointer-events: none;")
+
+  {
+    let text = document.createElementNS(SVG_NS, "text");
+    text.setAttribute("font-size", 12);
+    text.setAttribute("font-weight", "bold")
+    text.setAttribute("fill", chart.infoBoxLineColor);
+    text.setAttribute("stroke", "none");
+    text.textContent = formatNumber(val, false, 4, true);
+    group.appendChild(text);
+  }
+
+  svg.appendChild(group);
+  let bbox = group.getBBox();
+
+  {
+    let rect = document.createElementNS(SVG_NS, "rect");
+    rect.setAttribute("x", bbox.x - padX);
+    rect.setAttribute("y", bbox.y - padY);
+    rect.setAttribute("width", bbox.width + 2 * padX);
+    rect.setAttribute("height", bbox.height + 2 * padY);
+    rect.setAttribute("rx", padX);
+    rect.setAttribute("fill", chart.infoBoxFillColor);
+    rect.setAttribute("stroke-width", 2)
+    rect.setAttribute("stroke", chart.infoBoxLineColor);
+    group.insertBefore(rect, group.firstChild);
+  }
+
+  bbox = group.getBBox();
+
+  let transX = -bbox.width/2 - bbox.x;
+  let transY = -bbox.height/2 - bbox.y;
+
+  switch (pos) {
+    case "top":
+      transX += x;
+      if ( y - chart.areaY1 < bbox.height + 2*keepAway ) {
+        transY += y - bbox.height/2 - keepAway;
+      } else {
+        transY += chart.areaY1 + bbox.height/2 + keepAway;
+      }
+      break;
+    case "bottom":
+      transX += x;
+      if ( chart.areaY2 - y < bbox.height + 2*keepAway ) {
+        transY += y + bbox.height/2 + keepAway;
+      } else {
+        transY += chart.areaY2 - bbox.height/2 - keepAway;
+      }
+      break;
+    case "left":
+      if ( x - chart.areaX1 < bbox.width + 2*keepAway ) {
+        transX += x - bbox.width/2 - keepAway;
+      } else {
+        transX += chart.areaX1 + bbox.width/2 + keepAway;
+      }
+      transY += y;
+      break;
+    case "right":
+      if ( chart.areaX2 - x < bbox.width + 2*keepAway ) {
+        transX += x + bbox.width/2 + keepAway;
+      } else {
+        transX += chart.areaX2 - bbox.width/2 - keepAway;
+      }
+      transY += y;
+      break;
+  }
+
+  group.setAttribute("transform", `translate(${transX}, ${transY})`);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function removeInfoBox() {
+  let existing = document.getElementById("info-box");
+  if (existing) {
+    existing.parentNode.removeChild(existing);
+  }
+}
+
+function createInfoBox(pointId, x, y, anchor) {
+  removeInfoBox();
+
+  const item = chart.data[pointId];
+
+  // Create a group (<g>) to hold the box and text
+  const group = document.createElementNS(SVG_NS, "g");
+  group.setAttribute("id", "info-box");
+  group.setAttribute("font-weight", "bold")
+  group.setAttribute("style", "pointer-events: none;")
+  group.setAttribute("fill", chart.infoBoxLineColor);
+  group.setAttribute("stroke", "none");
+
+  // Define font sizes and line heights
+  const valueFontSize = 12;
+  const valueLineHeight = 14;
+  const padding = 6;
+  const keepAway = 24;
+
+  let startX = keepAway + padding;
+  let startY = keepAway + padding;
+
+  {
+    startY += valueLineHeight;
+    let text = document.createElementNS(SVG_NS, "text");
+    text.setAttribute("x", startX);
+    text.setAttribute("y", startY);
+    text.setAttribute("font-size", valueFontSize);
+    text.textContent = "X: " + (chart.axisSwap ? item.y : item.x);
+    group.appendChild(text);
+  }
+
+  {
+    startY += valueLineHeight;
+    let text = document.createElementNS(SVG_NS, "text");
+    text.setAttribute("x", startX);
+    text.setAttribute("y", startY);
+    text.setAttribute("font-size", valueFontSize);
+    text.textContent = "Y: " + (chart.axisSwap ? item.x : item.y);
+    group.appendChild(text);
+  }
+
+  svg.appendChild(group);
+  let bbox = group.getBBox();
+
+  {
+    let rect = document.createElementNS(SVG_NS, "rect");
+    rect.setAttribute("x", bbox.x - padding);
+    rect.setAttribute("y", bbox.y - padding);
+    rect.setAttribute("width", bbox.width + 2 * padding);
+    rect.setAttribute("height", bbox.height + 2 * padding);
+    rect.setAttribute("rx", padding);
+    rect.setAttribute("fill", chart.infoBoxFillColor);
+    rect.setAttribute("stroke-width", 2)
+    rect.setAttribute("stroke", chart.infoBoxLineColor);
+    group.insertBefore(rect, group.firstChild);
+  }
+
+  let transX = x - anchor.anchorX * (bbox.width + 2*(padding + keepAway));
+  let transY = y - anchor.anchorY * (bbox.height + 2*(padding + keepAway));
+
+  group.setAttribute("transform", `translate(${transX}, ${transY})`);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function getMouseSVGPoint(event) {
+  const pt = svg.createSVGPoint();
+  pt.x = event.clientX;
+  pt.y = event.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+svg.addEventListener("mousemove", (event) => {
+  const svgPoint = getMouseSVGPoint(event);
+  const mouseX = svgPoint.x;
+  const mouseY = svgPoint.y;
+
+  if (
+    mouseX >= chart.areaX1 && mouseX <= chart.areaX2 &&
+    mouseY >= chart.areaY1 && mouseY <= chart.areaY2
+  ) {
+    const elems = document.elementsFromPoint(event.clientX, event.clientY);
+    const snapCandidates =
+      elems.filter(el => el.parentNode.id === 'snapPoints');
+
+    let x = mouseX;
+    let y = mouseY;
+    let minDist = Infinity;
+    let minId = Infinity;
+    let atPoint = false;
+
+    if (snapCandidates.length > 0) {
+      snapCandidates.forEach(circle => {
+        const cx = parseFloat(circle.getAttribute("cx"));
+        const cy = parseFloat(circle.getAttribute("cy"));
+        const dx = mouseX - cx;
+        const dy = mouseY - cy;
+        const dist = dx * dx + dy * dy;
+        if (dist < minDist) {
+          minDist = dist;
+          minId = parseInt(circle.getAttribute("id"));
+          x = cx;
+          y = cy;
+          atPoint = true;
+        }
+      });
+      let anchor = { anchorX : 0, anchorY : 0 };
+      if (x > (chart.areaX2 + chart.areaX1)/2) anchor.anchorX = 1;
+      if (y > (chart.areaY2 + chart.areaY1)/2) anchor.anchorY = 1;
+      createInfoBox(minId, x, y, anchor);
+    } else {
+      removeInfoBox();
+    }
+
+    createCrosshair(x, y, atPoint);
+    createAxisBox("axisX_0", x, y, chart.axisX[0], "top");
+    createAxisBox("axisX_1", x, y, chart.axisX[1], "bottom");
+    createAxisBox("axisY_0", x, y, chart.axisY[0], "left");
+    createAxisBox("axisY_1", x, y, chart.axisY[1], "right");
+  } else {
+    removeAxisBox("axisX_0");
+    removeAxisBox("axisX_1");
+    removeAxisBox("axisY_0");
+    removeAxisBox("axisY_1");
+    removeCrosshair();
+    removeInfoBox();
+  }
+});
+
+svg.addEventListener("mouseleave", () => {
+  removeAxisBox("axisX_0");
+  removeAxisBox("axisX_1");
+  removeAxisBox("axisY_0");
+  removeAxisBox("axisY_1");
+  removeCrosshair();
+  removeInfoBox();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+</script>
+
+</body>
+</html>
