@@ -304,10 +304,11 @@ function createCrosshair(x, y, atPoint) {
     circle.setAttribute("r", dotSize/2);
     circle.setAttribute("stroke-dasharray", "none")
     group.appendChild(circle);
+  } else {
+    svg.classList.add('hide-cursor');
   }
 
   svg.appendChild(group);
-  svg.classList.add('hide-cursor');
 }
 
 ////////////////////////////////////////////////////////////////////////////////
