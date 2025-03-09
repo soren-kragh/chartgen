@@ -196,16 +196,16 @@ function buildAxisLabel(num, axis, id) {
   group.setAttribute("style", "pointer-events: none;")
   group.setAttribute("fill", chart.infoBoxLineColor);
   group.setAttribute("stroke", "none");
+  group.setAttribute("font-size", chart.valueFontSize);
+  svg.appendChild(group);
 
   if (axis.isCategory) {
     let i = Math.round(num);
     i = Math.max( i, 0 );
     i = Math.min( i, chart.categories.length - 1 );
     const text = document.createElementNS(SVG_NS, "text");
-    text.setAttribute("font-size", chart.valueFontSize);
     text.textContent = chart.categories[i];
     group.appendChild(text);
-    svg.appendChild(group);
   } else {
     const parts = numTxt.split(/e/i);
     if (parts.length === 2) {
@@ -214,7 +214,6 @@ function buildAxisLabel(num, axis, id) {
       baseElem.setAttribute("font-size", chart.valueFontSize);
       baseElem.textContent = base + "×10";
       group.appendChild(baseElem);
-      svg.appendChild(group);
       let bbox = group.getBBox();
       const expElem = document.createElementNS(SVG_NS, "text");
       expElem.setAttribute("font-size", chart.valueFontSize * 0.8);
@@ -224,10 +223,8 @@ function buildAxisLabel(num, axis, id) {
       group.appendChild(expElem);
     } else {
       const text = document.createElementNS(SVG_NS, "text");
-      text.setAttribute("font-size", chart.valueFontSize);
       text.textContent = numTxt;
       group.appendChild(text);
-      svg.appendChild(group);
     }
   }
 
