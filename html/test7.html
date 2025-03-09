@@ -66,41 +66,36 @@ const chart = {
   axisX : [
     { show : true,
       isCategory : true,
-      areaVal1 : -6,
-      areaVal2 : 6,
-      legalVal1 : -5,
-      legalVal2 : 5
+      areaVal1 : -1,
+      areaVal2 : 5
     },
     { show : true,
-      isCategory : true,
       logarithmic : true,
       areaVal1 : 1,
-      areaVal2 : 100,
-      legalVal1 : -10e99,
-      legalVal2 : +10e99
+      areaVal2 : 100
     }
   ],
 
   axisY : [
     { show : true,
-      isCategory : false,
       areaVal1 : 50,
-      areaVal2 : 0,
-      legalVal1 : 50,
-      legalVal2 : 0
+      areaVal2 : 0
     },
     { show : true,
-      isCategory : false,
       areaVal1 : 100000,
-      areaVal2 : 0,
-      legalVal1 : 100000,
-      legalVal2 : 0
+      areaVal2 : 0
     }
   ],
 
   axisSwap : false,
 
-  categories : [],
+  categories : [
+    "Anders And",
+    "Andersine",
+    "Fætter Højben",
+    "Fedtmule",
+    "Onkel Joakim"
+  ],
 
   series : [
     { svgId : "c0s0"
@@ -122,7 +117,7 @@ const chart = {
 const keepAwayFromAxis = 12;
 const keepAwayFromCursor = 24;
 const lineWidth = 1;
-const dotSize = 8;
+const dotSize = 5;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -176,7 +171,7 @@ function determineAxisNumberFormat( axis ) {
   }
 }
 
-function buildAxisNumber(num, axis, id) {
+function buildAxisLabel(num, axis, id) {
   if ( axis.rounding ) {
     num = Math.round( num / axis.rounding ) * axis.rounding;
   }
@@ -202,27 +197,38 @@ function buildAxisNumber(num, axis, id) {
   group.setAttribute("fill", chart.infoBoxLineColor);
   group.setAttribute("stroke", "none");
 
-  const parts = numTxt.split(/e/i);
-  if (parts.length === 2) {
-    const [base, exp] = parts;
-    const baseElem = document.createElementNS(SVG_NS, "text");
-    baseElem.setAttribute("font-size", chart.valueFontSize);
-    baseElem.textContent = base + "×10";
-    group.appendChild(baseElem);
-    svg.appendChild(group);
-    let bbox = group.getBBox();
-    const expElem = document.createElementNS(SVG_NS, "text");
-    expElem.setAttribute("font-size", chart.valueFontSize * 0.8);
-    expElem.setAttribute("x", bbox.x + bbox.width);
-    expElem.setAttribute("y", bbox.y + chart.valueFontSize * 0.5);
-    expElem.textContent = exp;
-    group.appendChild(expElem);
-  } else {
+  if (axis.isCategory) {
+    let i = Math.round(num);
+    i = Math.max( i, 0 );
+    i = Math.min( i, chart.categories.length - 1 );
     const text = document.createElementNS(SVG_NS, "text");
     text.setAttribute("font-size", chart.valueFontSize);
-    text.textContent = numTxt;
+    text.textContent = chart.categories[i];
     group.appendChild(text);
     svg.appendChild(group);
+  } else {
+    const parts = numTxt.split(/e/i);
+    if (parts.length === 2) {
+      const [base, exp] = parts;
+      const baseElem = document.createElementNS(SVG_NS, "text");
+      baseElem.setAttribute("font-size", chart.valueFontSize);
+      baseElem.textContent = base + "×10";
+      group.appendChild(baseElem);
+      svg.appendChild(group);
+      let bbox = group.getBBox();
+      const expElem = document.createElementNS(SVG_NS, "text");
+      expElem.setAttribute("font-size", chart.valueFontSize * 0.8);
+      expElem.setAttribute("x", bbox.x + bbox.width);
+      expElem.setAttribute("y", bbox.y + chart.valueFontSize * 0.5);
+      expElem.textContent = exp;
+      group.appendChild(expElem);
+    } else {
+      const text = document.createElementNS(SVG_NS, "text");
+      text.setAttribute("font-size", chart.valueFontSize);
+      text.textContent = numTxt;
+      group.appendChild(text);
+      svg.appendChild(group);
+    }
   }
 
   return group;
@@ -343,13 +349,7 @@ function createAxisBox(id, x, y, axis, pos) {
       );
   }
 
-  if (
-    (val < axis.legalVal1 && val < axis.legalVal2) ||
-    (val > axis.legalVal1 && val > axis.legalVal2)
-  )
-    return;
-
-  const group = buildAxisNumber(val, axis, id);
+  const  group = buildAxisLabel(val, axis, id);
   let bbox = group.getBBox();
 
   const padX = chart.valueFontSize / 2;
