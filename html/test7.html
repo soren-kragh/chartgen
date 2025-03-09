@@ -9,6 +9,10 @@
       font-family: "Noto Mono", "Lucida Sans Typewriter", "Courier New", monospace;
       font-size: 12;
     }
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
   </style>
 </head>
 <body>
@@ -124,51 +128,101 @@ const svg = document.getElementById("svgCanvas");
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function formatBeautifulExponential(numStr) {
-  const superscriptMap = {
-    '-': '⁻',
-    '+': '⁺',
-    '0': '⁰',
-    '1': '¹',
-    '2': '²',
-    '3': '³',
-    '4': '⁴',
-    '5': '⁵',
-    '6': '⁶',
-    '7': '⁷',
-    '8': '⁸',
-    '9': '⁹'
-  };
-
-  const parts = numStr.split(/e/i);
-  if (parts.length !== 2) return numStr;
-
-  const [base, exponent] = parts;
-
-  const superscriptExponent = exponent
-    .split('')
-    .map(c => superscriptMap[c] || c)
-    .join('');
-
-  return `${base}×10${superscriptExponent}`;
+function determineAxisNumberFormat( axis ) {
+  axis.decimals = 3;
+  axis.scientific = axis.logarithmic;
+  if ( !axis.logarithmic ) {
+    const max = Math.max(Math.abs(axis.areaVal1), Math.abs(axis.areaVal2));
+    if ( max < 1 ) {
+      if ( x >= 0.1 ) {
+        axis.decimals = 4;
+      } else
+      if ( x >= 0.01 ) {
+        axis.decimals = 5;
+      } else
+      if ( x >= 0.001 ) {
+        axis.decimals = 6;
+      } else {
+        axis.scientific = true;
+      }
+    } else {
+      if ( max < 10 ) {
+        axis.decimals = 3;
+      } else
+      if ( max < 100 ) {
+        axis.decimals = 2;
+      } else
+      if ( max < 1000 ) {
+        axis.decimals = 1;
+      } else
+      if ( max < 1e6 ) {
+        let x = max;
+        axis.rounding = 1;
+        while (x > 10 * Math.abs(axis.coor1 - axis.coor2)) {
+          x = x / 10;
+          axis.rounding = axis.rounding * 10;
+        }
+        axis.decimals = 0;
+      } else {
+        axis.scientific = true;
+      }
+    }
+  }
+  if (Math.abs(axis.coor1 - axis.coor2) < 1000 && axis.decimals > 0) {
+    axis.decimals--;
+  }
 }
 
-function formatNumber(num, scientific, decimals, sign) {
-  let formatted;
+function buildAxisNumber(num, axis, id) {
+  if ( axis.rounding ) {
+    num = Math.round( num / axis.rounding ) * axis.rounding;
+  }
 
-  if (scientific) {
-    formatted = num.toExponential(decimals);
+  let numTxt;
+  if (axis.scientific) {
+    numTxt = num.toExponential(axis.decimals);
   } else {
-    formatted = num.toFixed(decimals);
+    numTxt = num.toFixed(axis.decimals);
   }
-  formatted = formatBeautifulExponential(formatted);
-
-  // Ensure the sign is always shown.
-  if (sign && num >= 0) {
-    formatted = '+' + formatted;
+  const hasDigits = /[1-9]/.test(numTxt);
+  if (hasDigits) {
+    if (num >= 0) {
+      numTxt = '+' + numTxt;
+    }
+  } else {
+    numTxt = "0";
   }
 
-  return formatted;
+  const group = document.createElementNS(SVG_NS, "g");
+  group.setAttribute("id", id);
+  group.setAttribute("style", "pointer-events: none;")
+  group.setAttribute("fill", chart.infoBoxLineColor);
+  group.setAttribute("stroke", "none");
+
+  const parts = numTxt.split(/e/i);
+  if (parts.length === 2) {
+    const [base, exp] = parts;
+    const baseElem = document.createElementNS(SVG_NS, "text");
+    baseElem.setAttribute("font-size", chart.valueFontSize);
+    baseElem.textContent = base + "×10";
+    group.appendChild(baseElem);
+    svg.appendChild(group);
+    let bbox = group.getBBox();
+    const expElem = document.createElementNS(SVG_NS, "text");
+    expElem.setAttribute("font-size", chart.valueFontSize * 0.8);
+    expElem.setAttribute("x", bbox.x + bbox.width);
+    expElem.setAttribute("y", bbox.y + chart.valueFontSize * 0.5);
+    expElem.textContent = exp;
+    group.appendChild(expElem);
+  } else {
+    const text = document.createElementNS(SVG_NS, "text");
+    text.setAttribute("font-size", chart.valueFontSize);
+    text.textContent = numTxt;
+    group.appendChild(text);
+    svg.appendChild(group);
+  }
+
+  return group;
 }
 
 //------------------------------------------------------------------------------
@@ -266,19 +320,21 @@ function createAxisBox(id, x, y, axis, pos) {
   if (!axis.show) return;
 
   let coor = x;
-  let coorMin = chart.areaX1;
-  let coorMax = chart.areaX2;
   if (pos === "left" || pos === "right") {
     coor = y;
-    coorMin = chart.areaY1;
-    coorMax = chart.areaY2;
   }
 
   let val;
   if ( axis.logarithmic ) {
-    val = getLogAxisValue(coor, coorMin, coorMax, axis.areaVal1, axis.areaVal2);
+    val =
+      getLogAxisValue(
+        coor, axis.coor1, axis.coor2, axis.areaVal1, axis.areaVal2
+      );
   } else {
-    val = getLinAxisValue(coor, coorMin, coorMax, axis.areaVal1, axis.areaVal2);
+    val =
+      getLinAxisValue(
+        coor, axis.coor1, axis.coor2, axis.areaVal1, axis.areaVal2
+      );
   }
 
   if (
@@ -287,20 +343,7 @@ function createAxisBox(id, x, y, axis, pos) {
   )
     return;
 
-  const group = document.createElementNS(SVG_NS, "g");
-  group.setAttribute("id", id);
-  group.setAttribute("style", "pointer-events: none;")
-
-  {
-    let text = document.createElementNS(SVG_NS, "text");
-    text.setAttribute("font-size", chart.valueFontSize);
-    text.setAttribute("fill", chart.infoBoxLineColor);
-    text.setAttribute("stroke", "none");
-    text.textContent = formatNumber(val, true, 3, true);
-    group.appendChild(text);
-  }
-
-  svg.appendChild(group);
+  const group = buildAxisNumber(val, axis, id);
   let bbox = group.getBBox();
 
   const padX = chart.valueFontSize / 2;
@@ -512,6 +555,22 @@ svg.addEventListener("mouseleave", () => {
   removeCrosshair();
   removeInfoBox();
 });
+
+////////////////////////////////////////////////////////////////////////////////
+// Main.
+
+{
+  chart.axisX.forEach(axis => {
+    axis.coor1 = chart.areaX1;
+    axis.coor2 = chart.areaX2;
+    determineAxisNumberFormat( axis );
+  });
+  chart.axisY.forEach(axis => {
+    axis.coor1 = chart.areaY1;
+    axis.coor2 = chart.areaY2;
+    determineAxisNumberFormat( axis );
+  });
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 </script>
