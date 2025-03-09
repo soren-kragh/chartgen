@@ -13,6 +13,9 @@
       margin: 0;
       padding: 0;
     }
+    .hide-cursor {
+      cursor: none;
+    }
   </style>
 </head>
 <body>
@@ -246,6 +249,7 @@ function removeCrosshair() {
   if (existing) {
     existing.parentNode.removeChild(existing);
   }
+  svg.classList.remove('hide-cursor');
 }
 
 function createCrosshair(x, y, atPoint) {
@@ -303,6 +307,7 @@ function createCrosshair(x, y, atPoint) {
   }
 
   svg.appendChild(group);
+  svg.classList.add('hide-cursor');
 }
 
 ////////////////////////////////////////////////////////////////////////////////
