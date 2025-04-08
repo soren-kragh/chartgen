@@ -18,7 +18,7 @@ Axis.Y.GridStyle: Solid
 
 Series.Type: StackedBar
 
-Series.LineWidth: 0.5
+Series.LineWidth: 1
 
 Series.New: Positive A
 Series.LineColor: white
@@ -46,7 +46,7 @@ Series.FillColor: red 0.6
 
 Series.Type: Lollipop
 Series.New: Sum
-Series.LineColor: black
+Series.LineColor: black 0.1
 Series.LineWidth: 5
 Series.MarkerShape: LineX
 Series.MarkerSize: 15
