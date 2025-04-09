@@ -76,6 +76,7 @@ for SVG_FILE in "${SVG[@]}"; do
   if [[ ! -w "$DF" && ( -e "$DF" || ! -w "$(dirname "$DF")" ) ]]; then
     show_err "File not writable: $DF"
   fi
+  rm -f "$DF"
 
   if [[ $PIPE != 1 ]]; then
     >&2 echo "$DF"
@@ -87,6 +88,10 @@ for SVG_FILE in "${SVG[@]}"; do
 
   # Cannot trust error code from inkscape.
   inkscape "${ARGS[@]}" 2> >(grep -vP '^(Background|Area) ' >&2) || :
+
+  if [[ ! -f "$DF" || ! -r "$DF" ]]; then
+    show_err "Image generation failed"
+  fi
 
   if [[ $PIPE == 1 && $PNG == "" ]]; then
     cat "$DF"
