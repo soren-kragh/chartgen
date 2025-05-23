@@ -68,6 +68,9 @@ chartgen-v0.10.0
         Added SharedLegendSize
         Added SharedLegendColor
         Added Series.SharedLegend
+        Added MacroDef
+        Added MacroEnd
+        Added Macro
 
 chartgen-v0.9.0
         Added the following specifiers:
