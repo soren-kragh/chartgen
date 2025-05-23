@@ -105,4 +105,7 @@ Series.Data :
 # Series.TagFillColor: lightyellow 0 0.3
 # Series.TagLineColor: black
 # Series.Data:
+# MacroDef: MyMacro
+# MacroEnd: MyMacro
+# Macro: MyMacro
 )EOF";

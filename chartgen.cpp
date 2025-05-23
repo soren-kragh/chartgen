@@ -16,9 +16,10 @@
 #include <cfenv>
 #include <fstream>
 #include <unordered_map>
+#include <stack>
 #include <functional>
-#include <chart_ensemble.h>
 #include <random>
+#include <chart_ensemble.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -230,20 +231,41 @@ struct LineRec {
   std::string line;
   size_t      line_number;
   uint32_t    file_name_idx;
+  bool        macro = false;
+  bool        macro_end = false;
 };
 
-std::vector< LineRec >           lines;
-std::vector< LineRec >::iterator cur_line;
-size_t                           cur_col;
+using LineRecIter = std::vector< LineRec >::iterator;
 
-void next_line( void )
+std::vector< LineRec > lines;
+LineRecIter            cur_line;
+size_t                 cur_col;
+
+std::map< std::string, size_t > macros;
+
+std::vector< LineRecIter > macro_stack;
+
+void next_line( void );
+
+std::vector< LineRecIter > saved_macro_stack;
+LineRecIter                saved_line;
+
+void save_line_pos( void )
 {
-  cur_line++;
+  saved_line = cur_line;
+  saved_macro_stack = macro_stack;
+}
+
+void restore_line_pos( void )
+{
+  cur_line = saved_line;
   cur_col = 0;
+  macro_stack = saved_macro_stack;
 }
 
 // Start column of last parsed identifier.
-size_t id_col;
+size_t id_col = 0;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool at_eof( void )
@@ -276,18 +298,28 @@ void skip_ws( bool multi_line = false )
   }
 }
 
-void parse_err( const std::string msg, bool revert_col = false )
+void parse_err( const std::string& msg, bool revert_col = false )
 {
+  auto show_pos = [&]( LineRecIter lri, size_t col, bool stack = false )
+  {
+    std::cerr
+      << file_names[ lri->file_name_idx ] << " ("
+      << lri->line_number << ','
+      << col << ')'
+      << (stack ? '>' : ':')
+      << '\n';
+  };
+
   if ( revert_col ) cur_col = id_col;
   std::cerr << "*** PARSE ERROR: " << msg << "\n";
+  for ( auto lri : macro_stack ) {
+    show_pos( lri, 0, true );
+  }
   if ( at_eof() ) {
     std::cerr << "at EOF";
   } else {
     if ( cur_col > cur_line->line.length() ) cur_col = cur_line->line.length();
-    std::cerr
-      << file_names[ cur_line->file_name_idx ] << " ("
-      << cur_line->line_number << ','
-      << cur_col << "):\n";
+    show_pos( cur_line, cur_col );
     std::cerr << cur_line->line << '\n';
     for ( size_t i = 0; i < cur_col; i++ ) {
       std::cerr << ' ';
@@ -446,7 +478,7 @@ void get_text( std::string& txt, bool multi_line )
   trunc_ws( txt );
   if ( txt != "" || !multi_line ) return;
   next_line();
-  auto txt_line = cur_line;
+  save_line_pos();
   size_t indent = 0;
   while ( !at_eof() ) {
     while ( at_ws() ) cur_col++;
@@ -456,7 +488,7 @@ void get_text( std::string& txt, bool multi_line )
     }
     next_line();
   }
-  cur_line = txt_line;
+  restore_line_pos();
   if ( indent < 1 ) return;
   while ( !at_eof() ) {
     if ( txt != "" ) txt.push_back( '\n' );
@@ -487,6 +519,53 @@ void expect_ws( const std::string err_msg_if_eol = "" )
   if ( cur_col > old_col && !at_eol() ) return;
   if ( at_eol() && err_msg_if_eol != "" ) parse_err( err_msg_if_eol );
   if ( !(old_col < cur_col) ) parse_err( "whitespace expected" );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void next_line( void )
+{
+  ++cur_line;
+
+  while ( true ) {
+    while ( cur_line != lines.end() && macro_stack.empty() && cur_line->macro ) {
+      ++cur_line;
+    }
+    if ( cur_line == lines.end() ) break;
+
+    if (
+      cur_line->line.size() >= 6 &&
+      cur_line->line.compare( 0, 6, "Macro:" ) == 0
+    ) {
+      cur_col = 6;
+      skip_ws();
+      std::string macro_name = get_identifier();
+      expect_eol();
+      auto it = macros.find( macro_name );
+      if ( it == macros.end() ) {
+        parse_err( "macro '" + macro_name + "' is undefined", true );
+      }
+      for ( auto lri : macro_stack ) {
+        if ( lri == cur_line ) {
+          parse_err( "circular macro call", true );
+        }
+      }
+      macro_stack.push_back( cur_line );
+      cur_line = lines.begin() + it->second + 1;
+      continue;
+    }
+
+    if ( cur_line->macro_end ) {
+      cur_line = ++macro_stack.back();
+      macro_stack.pop_back();
+      continue;
+    }
+
+    break;
+  }
+
+  cur_col = 0;
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1851,7 +1930,7 @@ void parse_series_data( bool anonymous_snap = false )
 
   // Do a pre-scan of all the data.
   {
-    auto org_line = cur_line;
+    save_line_pos();
     cur_col = 0;
     bool x_is_text = false;
     while ( !at_eof() ) {
@@ -1914,8 +1993,7 @@ void parse_series_data( bool anonymous_snap = false )
       state.series_type = x_is_text ? Chart::SeriesType::Line : Chart::SeriesType::XY;
       state.series_type_defined = true;
     }
-    cur_line = org_line;
-    cur_col = 0;
+    restore_line_pos();
   }
 
   // Auto-add new series if needed.
@@ -2145,6 +2223,9 @@ bool parse_spec( void )
 void parse_lines( void )
 {
   cur_line = lines.begin();
+  while ( cur_line != lines.end() && cur_line->macro ) {
+    ++cur_line;
+  }
   cur_col = 0;
 
   // Support delivering nothing but data (implicit Series.Data).
@@ -2154,6 +2235,52 @@ void parse_lines( void )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+std::string in_macro_name;
+
+void process_line(
+  const std::string& line, size_t line_number, uint32_t file_name_idx
+)
+{
+  bool macro_def = false;
+  bool macro_end = false;
+  if ( line.size() >= 9 && line.compare( 0, 5, "Macro" ) == 0 ) {
+    macro_def = line.compare( 5, 4, "Def:" ) == 0;
+    macro_end = line.compare( 5, 4, "End:" ) == 0;
+  }
+  bool macro = macro_def || !in_macro_name.empty();;
+  lines.push_back( { line, line_number, file_name_idx, macro, macro_end } );
+  if ( macro_def || macro_end ) {
+    cur_line = lines.end() - 1;
+    cur_col = 9;
+    skip_ws();
+    std::string macro_name = get_identifier();
+    expect_eol();
+    if ( macro_name.empty() ) {
+      parse_err( "macro name expected", true );
+    }
+    if ( macro_def ) {
+      if ( !in_macro_name.empty() ) {
+        cur_col = 0;
+        parse_err( "nested macro definitions not allowed" );
+      }
+      if ( macros.count( macro_name ) ) {
+        parse_err( "macro '" + macro_name + "' already defined", true );
+      }
+      macros[ macro_name ] = lines.size() - 1;
+      in_macro_name = macro_name;
+    } else {
+      if ( in_macro_name.empty() ) {
+        cur_col = 0;
+        parse_err( "not defining macro" );
+      }
+      if ( macro_name != in_macro_name ) {
+        parse_err( "macro name mismatch", true );
+      }
+      in_macro_name.clear();
+    }
+  }
+}
 
 void process_files( const std::vector< std::string >& file_list )
 {
@@ -2165,7 +2292,7 @@ void process_files( const std::vector< std::string >& file_list )
       std::string line;
       while ( std::getline( std::cin, line ) ) {
         trunc_nl( line );
-        lines.push_back( { line, ++line_number, file_name_idx } );
+        process_line( line, ++line_number, file_name_idx );
       }
     } else {
       std::ifstream file( file_name );
@@ -2173,13 +2300,18 @@ void process_files( const std::vector< std::string >& file_list )
         std::string line;
         while ( std::getline( file, line ) ) {
           trunc_nl( line );
-          lines.push_back( { line, ++line_number, file_name_idx } );
+          process_line( line, ++line_number, file_name_idx );
         }
         file.close();
       } else {
         ERR( "Unable to open file '" << file_name << "'" );
       }
     }
+  }
+  if ( !in_macro_name.empty() ) {
+    cur_line = lines.end();
+    cur_col = 0;
+    parse_err( "macro '" + in_macro_name + "' not ended" );
   }
   parse_lines();
 }
@@ -2213,7 +2345,6 @@ int main( int argc, char* argv[] )
   }
   signal( SIGFPE, sigfpe_handler );
   feenableexcept( FE_DIVBYZERO | FE_INVALID );
-
 
   std::vector< std::string > file_list;
 

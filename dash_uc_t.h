@@ -574,4 +574,12 @@ Series.Data:
         8               22              5e3
         30              3               18e3
         80              14              2e3
+
+# A macro is defined with MacroDef and must end with MacroEnd; the macro name
+# must match. The macro is called with Macro; a macro can call other macros but
+# cannot itself define a macro.
+#MacroDef: MyMacro
+# Lines in macro
+#MacroEnd: MyMacro
+#Macro: MyMacro
 )EOF";
