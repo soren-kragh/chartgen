@@ -17,8 +17,47 @@
 #include <fstream>
 #include <unordered_map>
 #include <functional>
-#include <chart_main.h>
+#include <chart_ensemble.h>
 #include <random>
+
+////////////////////////////////////////////////////////////////////////////////
+
+Chart::Ensemble ensemble;
+
+bool grid_max_defined = false;
+uint32_t grid_max_row = 0;
+uint32_t grid_max_col = 0;
+
+struct state_t {
+  std::vector< Chart::Series* > series_list;
+  std::vector< Chart::SeriesType > type_list;
+
+  bool defining_series = false;
+  bool series_type_defined = false;
+  Chart::SeriesType series_type = Chart::SeriesType::XY;
+  int32_t category_idx = 0;
+  bool shared_legend = false;
+  bool legend_outline = true;
+  int axis_y_n = 0;
+  double series_base = 0;
+  int64_t style = 0;
+  Chart::MarkerShape marker_shape = Chart::MarkerShape::Circle;
+  double marker_size = -1;
+  double line_width = -1;
+  double line_dash = -1;
+  double line_hole = -1;
+  double lighten = 0.0;
+  double fill_transparency = -1;
+  bool tag_enable = false;
+  Chart::Pos tag_pos = Chart::Pos::Auto;
+  double tag_size = 1.0;
+  bool tag_box = false;
+  SVG::Color tag_text_color;
+  SVG::Color tag_fill_color;
+  SVG::Color tag_line_color;
+};
+
+state_t state;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -185,36 +224,6 @@ void trunc_nl( std::string& s )
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Chart::Main chart;
-
-std::vector< Chart::Series* > series_list;
-std::vector< Chart::SeriesType > type_list;
-
-bool defining_series = false;
-bool series_type_defined = false;
-Chart::SeriesType series_type = Chart::SeriesType::XY;
-int32_t category_idx = 0;
-int axis_y_n = 0;
-double series_base = 0;
-
-int64_t style = 0;
-Chart::MarkerShape marker_shape = Chart::MarkerShape::Circle;
-double marker_size = -1;
-double line_width = -1;
-double line_dash = -1;
-double line_hole = -1;
-double lighten = 0.0;
-double fill_transparency = -1;
-bool tag_enable = false;
-Chart::Pos tag_pos = Chart::Pos::Auto;
-double tag_size = 1.0;
-bool tag_box = false;
-SVG::Color tag_text_color;
-SVG::Color tag_fill_color;
-SVG::Color tag_line_color;
-
-//------------------------------------------------------------------------------
-
 std::vector< std::string > file_names;
 
 struct LineRec {
@@ -235,7 +244,6 @@ void next_line( void )
 
 // Start column of last parsed identifier.
 size_t id_col;
-
 ////////////////////////////////////////////////////////////////////////////////
 
 bool at_eof( void )
@@ -326,7 +334,7 @@ std::string get_identifier( bool all_non_ws = false )
 // successful the function returns true and the current position is advanced,
 // otherwise the function returns false and the current position is left
 // unchanged.
-bool get_int64( int64_t& i )
+bool get_int64( int64_t& i, bool ws_or_eol_after = true )
 {
   id_col = cur_col;
   try {
@@ -335,6 +343,10 @@ bool get_int64( int64_t& i )
     std::istringstream iss( str );
     if ( !(iss >> i).fail() ) {
       cur_col += iss.tellg();
+      if ( ws_or_eol_after && !at_eol() && !at_ws() ) {
+        cur_col = id_col;
+        return false;
+      }
       return true;
     }
     return false;
@@ -588,105 +600,189 @@ void do_Color(
   expect_eol();
 }
 
-//------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-void do_BorderWidth( void )
+Chart::Main* CurChart( void )
 {
-  int64_t m;
-  skip_ws();
-  if ( at_eol() ) parse_err( "border width expected" );
-  if ( !get_int64( m ) ) parse_err( "malformed border width" );
-  if ( m < 0 || m > 1000 ) {
-    parse_err( "border width out of range [0;1000]", true );
+  if ( ensemble.Empty() ) {
+    ensemble.NewChart( 0, 0, 0, 0 );
   }
-  expect_eol();
-  chart.SetBorderWidth( m );
+  return ensemble.LastChart();
 }
+
+void do_New( void )
+{
+  bool grid_given = false;
+  int64_t row1 = 0;
+  int64_t col1 = 0;
+  int64_t row2 = 0;
+  int64_t col2 = 0;
+  Chart::Pos align_hor = Chart::Pos::Auto;
+  Chart::Pos align_ver = Chart::Pos::Auto;
+
+  skip_ws();
+
+  if ( get_int64( row1 ) ) {
+    if ( row1 < 0 || row1 > 99 ) {
+      parse_err( "grid row out of range [0;99]", true );
+    }
+
+    expect_ws( "column expected" );
+    if ( !get_int64( col1 ) ) parse_err( "malformed column" );
+    if ( col1 < 0 || col1 > 99 ) {
+      parse_err( "grid column out of range [0;99]", true );
+    }
+
+    expect_ws( "row expected" );
+    if ( !get_int64( row2 ) ) parse_err( "malformed row" );
+    if ( row2 < 0 || row2 > 99 ) {
+      parse_err( "grid row out of range [0;99]", true );
+    }
+
+    expect_ws( "column expected" );
+    if ( !get_int64( col2 ) ) parse_err( "malformed column" );
+    if ( col2 < 0 || col2 > 99 ) {
+      parse_err( "grid column out of range [0;99]", true );
+    }
+
+    grid_given = true;
+  }
+
+  skip_ws();
+  if ( !at_eol() ) {
+    do_Pos( align_hor );
+    expect_ws( "vertical position expected" );
+    do_Pos( align_ver );
+  }
+
+  expect_eol();
+
+  if ( !grid_given && grid_max_defined ) {
+    row1 = grid_max_row + 1;
+    row2 = row1;
+    col1 = 0;
+    col2 = grid_max_col;
+  }
+
+  if ( row1 > row2 || col1 > col2 ) {
+    parse_err( "malformed grid location" );
+  }
+
+  if ( !ensemble.NewChart( row1, col1, row2, col2, align_hor, align_ver ) ) {
+    parse_err( "grid collision" );
+  }
+
+  grid_max_row = std::max( grid_max_row, static_cast<uint32_t>( row2 ) );
+  grid_max_col = std::max( grid_max_col, static_cast<uint32_t>( col2 ) );
+  grid_max_defined = true;
+
+  state = {};
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 void do_Margin( void )
 {
-  int64_t m;
+  double m;
   skip_ws();
   if ( at_eol() ) parse_err( "margin expected" );
-  if ( !get_int64( m ) ) parse_err( "malformed margin" );
+  if ( !get_double( m ) ) parse_err( "malformed margin" );
   if ( m < 0 || m > 1000 ) {
     parse_err( "margin out of range [0;1000]", true );
   }
   expect_eol();
-  chart.SetMargin( m );
+  ensemble.SetMargin( m );
 }
-
-void do_ChartArea( void )
-{
-  int64_t w;
-  int64_t h;
-
-  skip_ws();
-  if ( at_eol() ) parse_err( "width expected" );
-  if ( !get_int64( w ) ) parse_err( "malformed width" );
-  if ( w < 100 || w > 100000 ) {
-    parse_err( "width out of range [100;100000]", true );
-  }
-
-  expect_ws( "height expected" );
-  if ( !get_int64( h ) ) parse_err( "malformed height" );
-  if ( h < 100 || h > 100000 ) {
-    parse_err( "height out of range [100;100000]", true );
-  }
-
-  expect_eol();
-  chart.SetChartArea( w, h );
-}
-
-void do_ChartBox( void )
-{
-  bool chart_box;
-  do_Switch( chart_box );
-  expect_eol();
-  chart.SetChartBox( chart_box );
-}
-
-//------------------------------------------------------------------------------
 
 void do_BorderColor( void )
 {
-  do_Color( chart.BorderColor() );
+  do_Color( ensemble.BorderColor() );
 }
 
-void do_BackgroundColor( void )
+void do_BorderWidth( void )
 {
-  do_Color( chart.BackgroundColor() );
-}
-
-void do_ChartAreaColor( void )
-{
-  do_Color( chart.ChartAreaColor() );
-}
-
-void do_AxisColor( void )
-{
-  do_Color( chart.AxisColor() );
-}
-
-void do_GridColor( void )
-{
-  do_Color( chart.AxisX()->GridColor() );
-  for ( auto n : { 0, 1 } ) {
-    chart.AxisY( n )->GridColor()->Set( chart.AxisX()->GridColor() );
+  double m;
+  skip_ws();
+  if ( at_eol() ) parse_err( "border width expected" );
+  if ( !get_double( m ) ) parse_err( "malformed border width" );
+  if ( m < 0 || m > 1000 ) {
+    parse_err( "border width out of range [0;1000]", true );
   }
+  expect_eol();
+  ensemble.SetBorderWidth( m );
 }
 
-void do_TextColor( void )
+void do_Padding( void )
 {
-  do_Color( chart.TextColor() );
+  double m;
+  skip_ws();
+  if ( at_eol() ) parse_err( "padding expected" );
+  if ( !get_double( m ) ) parse_err( "malformed padding" );
+  if ( m < 0 || m > 1000 ) {
+    parse_err( "padding out of range [0;1000]", true );
+  }
+  expect_eol();
+  ensemble.SetPadding( m );
 }
 
-void do_FrameColor( void )
+void do_GridPadding( void )
 {
-  do_Color( chart.FrameColor() );
+  double m;
+  skip_ws();
+  if ( at_eol() ) parse_err( "grid padding expected" );
+  if ( !get_double( m ) ) parse_err( "malformed grid padding" );
+  if ( m > 1000 ) {
+    parse_err( "grid padding out of range [-inf;1000]", true );
+  }
+  expect_eol();
+  ensemble.SetGridPadding( m );
 }
 
 //------------------------------------------------------------------------------
+
+void do_SharedLegendHeading( void )
+{
+  std::string txt;
+  get_text( txt, true );
+  ensemble.SetLegendHeading( txt );
+}
+
+void do_SharedLegendFrame( void )
+{
+  bool frame;
+  do_Switch( frame );
+  expect_eol();
+  ensemble.SetLegendFrame( frame );
+}
+
+void do_SharedLegendPos( void )
+{
+  Chart::Pos pos;
+  skip_ws();
+  do_Pos( pos );
+  expect_eol();
+  ensemble.SetLegendPos( pos );
+}
+
+void do_SharedLegendSize( void )
+{
+  double size;
+  skip_ws();
+  if ( at_eol() ) parse_err( "legend size value expected" );
+  if ( !get_double( size ) ) {
+    parse_err( "malformed Legend size value" );
+  }
+  if ( size < 0.01 || size > 100 ) {
+    parse_err( "legend size value out of range", true );
+  }
+  expect_eol();
+  ensemble.SetLegendSize( size );
+}
+
+void do_SharedLegendColor( void )
+{
+  do_Color( ensemble.LegendColor() );
+}
 
 void do_LetterSpacing( void )
 {
@@ -729,28 +825,157 @@ void do_LetterSpacing( void )
 
   expect_eol();
 
-  chart.SetLetterSpacing( width_adj, height_adj, baseline_adj );
+  ensemble.SetLetterSpacing( width_adj, height_adj, baseline_adj );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void do_ChartArea( void )
+{
+  int64_t w;
+  int64_t h;
+
+  skip_ws();
+  if ( at_eol() ) parse_err( "width expected" );
+  if ( !get_int64( w ) ) parse_err( "malformed width" );
+  if ( w < 10 || w > 100000 ) {
+    parse_err( "width out of range [10;100000]", true );
+  }
+
+  expect_ws( "height expected" );
+  if ( !get_int64( h ) ) parse_err( "malformed height" );
+  if ( h < 10 || h > 100000 ) {
+    parse_err( "height out of range [10;100000]", true );
+  }
+
+  expect_eol();
+  CurChart()->SetChartArea( w, h );
+}
+
+void do_ChartBox( void )
+{
+  bool chart_box;
+  do_Switch( chart_box );
+  expect_eol();
+  CurChart()->SetChartBox( chart_box );
+}
+
+//------------------------------------------------------------------------------
+
+void do_ForegroundColor( void )
+{
+  do_Color( ensemble.ForegroundColor() );
+}
+
+void do_BackgroundColor( void )
+{
+  do_Color( ensemble.BackgroundColor() );
+}
+
+void do_ChartAreaColor( void )
+{
+  do_Color( CurChart()->ChartAreaColor() );
+}
+
+void do_AxisColor( void )
+{
+  do_Color( CurChart()->AxisColor() );
+}
+
+void do_GridColor( void )
+{
+  do_Color( CurChart()->AxisX()->GridColor() );
+  for ( auto n : { 0, 1 } ) {
+    CurChart()->AxisY( n )->GridColor()->Set( CurChart()->AxisX()->GridColor() );
+  }
+}
+
+void do_TextColor( void )
+{
+  do_Color( CurChart()->TextColor() );
+}
+
+void do_FrameColor( void )
+{
+  do_Color( CurChart()->FrameColor() );
+}
+
+//------------------------------------------------------------------------------
+
+void do_Heading( void )
+{
+  std::string txt;
+  get_text( txt, true );
+  ensemble.SetHeading( txt );
+}
+
+void do_SubHeading( void )
+{
+  std::string txt;
+  get_text( txt, true );
+  ensemble.SetSubHeading( txt );
+}
+
+void do_SubSubHeading( void )
+{
+  std::string txt;
+  get_text( txt, true );
+  ensemble.SetSubSubHeading( txt );
+}
+
+void do_HeadingPos( void )
+{
+  Chart::Pos pos;
+  skip_ws();
+  do_Pos( pos );
+  expect_eol();
+  ensemble.SetHeadingPos( pos );
+}
+
+void do_HeadingSize( void )
+{
+  double size;
+  skip_ws();
+  if ( at_eol() ) parse_err( "heading size value expected" );
+  if ( !get_double( size ) ) {
+    parse_err( "malformed heading size value" );
+  }
+  if ( size < 0.01 || size > 100 ) {
+    parse_err( "heading size value out of range", true );
+  }
+  expect_eol();
+  ensemble.SetHeadingSize( size );
+}
+
+void do_HeadingLine( void )
+{
+  bool heading_line;
+  do_Switch( heading_line );
+  expect_eol();
+  ensemble.SetHeadingLine( heading_line );
+}
+
+//------------------------------------------------------------------------------
 
 void do_Title( void )
 {
   std::string txt;
   get_text( txt, true );
-  chart.SetTitle( txt );
+  CurChart()->SetTitle( txt );
 }
 
 void do_SubTitle( void )
 {
   std::string txt;
   get_text( txt, true );
-  chart.SetSubTitle( txt );
+  CurChart()->SetSubTitle( txt );
 }
 
 void do_SubSubTitle( void )
 {
   std::string txt;
   get_text( txt, true );
-  chart.SetSubSubTitle( txt );
+  CurChart()->SetSubSubTitle( txt );
 }
 
 void do_TitleFrame( void )
@@ -758,7 +983,7 @@ void do_TitleFrame( void )
   bool frame;
   do_Switch( frame );
   expect_eol();
-  chart.SetTitleFrame( frame );
+  CurChart()->SetTitleFrame( frame );
 }
 
 void do_TitlePos( void )
@@ -777,7 +1002,7 @@ void do_TitlePos( void )
   }
 
   expect_eol();
-  chart.SetTitlePos( pos_x, pos_y );
+  CurChart()->SetTitlePos( pos_x, pos_y );
 }
 
 void do_TitleInside( void )
@@ -785,7 +1010,7 @@ void do_TitleInside( void )
   bool inside;
   do_Switch( inside );
   expect_eol();
-  chart.SetTitleInside( inside );
+  CurChart()->SetTitleInside( inside );
 }
 
 void do_TitleSize( void )
@@ -800,14 +1025,16 @@ void do_TitleSize( void )
     parse_err( "title size value out of range", true );
   }
   expect_eol();
-  chart.SetTitleSize( size );
+  CurChart()->SetTitleSize( size );
 }
+
+//------------------------------------------------------------------------------
 
 void do_Footnote( void )
 {
   std::string txt;
   get_text( txt, true );
-  chart.AddFootnote( txt );
+  ensemble.AddFootnote( txt );
 }
 
 void do_FootnotePos( void )
@@ -816,7 +1043,7 @@ void do_FootnotePos( void )
   skip_ws();
   do_Pos( pos );
   expect_eol();
-  chart.SetFootnotePos( pos );
+  ensemble.SetFootnotePos( pos );
 }
 
 void do_FootnoteLine( void )
@@ -824,7 +1051,7 @@ void do_FootnoteLine( void )
   bool footnote_line;
   do_Switch( footnote_line );
   expect_eol();
-  chart.SetFootnoteLine( footnote_line );
+  ensemble.SetFootnoteLine( footnote_line );
 }
 
 void do_FootnoteSize( void )
@@ -839,7 +1066,7 @@ void do_FootnoteSize( void )
     parse_err( "footnote size value out of range", true );
   }
   expect_eol();
-  chart.SetFootnoteSize( size );
+  ensemble.SetFootnoteSize( size );
 }
 
 //------------------------------------------------------------------------------
@@ -856,10 +1083,10 @@ void do_Axis_Orientation( Chart::Axis* axis )
   parse_err( "unknown axis orientation '" + id + "'", true );
   expect_eol();
 
-  vertical = (axis == chart.AxisX()) ? vertical : !vertical;
-  chart.AxisX(   )->SetAngle( vertical ? 90 :  0 );
-  chart.AxisY( 0 )->SetAngle( vertical ?  0 : 90 );
-  chart.AxisY( 1 )->SetAngle( vertical ?  0 : 90 );
+  vertical = (axis == CurChart()->AxisX()) ? vertical : !vertical;
+  CurChart()->AxisX(   )->SetAngle( vertical ? 90 :  0 );
+  CurChart()->AxisY( 0 )->SetAngle( vertical ?  0 : 90 );
+  CurChart()->AxisY( 1 )->SetAngle( vertical ?  0 : 90 );
 }
 
 //------------------------------------------------------------------------------
@@ -1031,6 +1258,9 @@ void do_Axis_TickSpacing( Chart::Axis* axis )
   skip_ws();
   if ( at_eol() ) parse_err( "start expected" );
   if ( !get_int64( start ) ) parse_err( "malformed start" );
+  if ( start < 0 ) {
+    parse_err( "invalid start position", true );
+  }
 
   expect_ws( "stride expected" );
   if ( !get_int64( stride ) ) parse_err( "malformed stride" );
@@ -1175,7 +1405,7 @@ void do_LegendHeading( void )
 {
   std::string txt;
   get_text( txt, true );
-  chart.SetLegendHeading( txt );
+  CurChart()->SetLegendHeading( txt );
 }
 
 void do_LegendFrame( void )
@@ -1183,7 +1413,7 @@ void do_LegendFrame( void )
   bool frame;
   do_Switch( frame );
   expect_eol();
-  chart.SetLegendFrame( frame );
+  CurChart()->SetLegendFrame( frame );
 }
 
 void do_LegendPos( void )
@@ -1192,30 +1422,22 @@ void do_LegendPos( void )
   skip_ws();
   do_Pos( pos );
   expect_eol();
-  chart.SetLegendPos( pos );
-}
-
-void do_LegendOutline( void )
-{
-  bool outline;
-  do_Switch( outline );
-  expect_eol();
-  chart.SetLegendOutline( outline );
+  CurChart()->SetLegendPos( pos );
 }
 
 void do_LegendSize( void )
 {
   double size;
   skip_ws();
-  if ( at_eol() ) parse_err( "Legend size value expected" );
+  if ( at_eol() ) parse_err( "legend size value expected" );
   if ( !get_double( size ) ) {
     parse_err( "malformed Legend size value" );
   }
   if ( size < 0.01 || size > 100 ) {
-    parse_err( "Legend size value out of range", true );
+    parse_err( "legend size value out of range", true );
   }
   expect_eol();
-  chart.SetLegendSize( size );
+  CurChart()->SetLegendSize( size );
 }
 
 //------------------------------------------------------------------------------
@@ -1241,7 +1463,7 @@ void do_BarWidth( void )
 
   expect_eol();
 
-  chart.SetBarWidth( one_width, all_width );
+  CurChart()->SetBarWidth( one_width, all_width );
 }
 
 void do_BarMargin( void )
@@ -1255,66 +1477,68 @@ void do_BarMargin( void )
 
   expect_eol();
 
-  chart.SetBarMargin( margin );
+  CurChart()->SetBarMargin( margin );
 }
 
 //------------------------------------------------------------------------------
 
 void NextSeriesStyle( void )
 {
-  style = (style + 1) % 80;
+  state.style = (state.style + 1) % 80;
 }
 
 void ApplyMarkerSize( Chart::Series* series )
 {
-  if ( marker_size >= 0 ) {
+  if ( state.marker_size >= 0 ) {
     if (
-      marker_size == 0 &&
-      ( series_type == Chart::SeriesType::Scatter ||
-        series_type == Chart::SeriesType::Point
+      state.marker_size == 0 &&
+      ( state.series_type == Chart::SeriesType::Scatter ||
+        state.series_type == Chart::SeriesType::Point
       )
     ) {
-      series_list.back()->SetMarkerSize( 12 );
+      state.series_list.back()->SetMarkerSize( 12 );
     } else {
-      series_list.back()->SetMarkerSize( marker_size );
+      state.series_list.back()->SetMarkerSize( state.marker_size );
     }
   }
 }
 
 void AddSeries( std::string name = "", bool anonymous_snap = false )
 {
-  if ( !series_type_defined ) {
+  if ( !state.series_type_defined ) {
     parse_err( "undefined SeriesType" );
   }
-  type_list.push_back( series_type );
-  series_list.push_back( chart.AddSeries( series_type ) );
-  series_list.back()->SetName( name );
-  series_list.back()->SetAnonymousSnap( anonymous_snap );
-  series_list.back()->SetAxisY( axis_y_n );
-  series_list.back()->SetBase( series_base );
-  series_list.back()->SetStyle( style );
+  state.type_list.push_back( state.series_type );
+  state.series_list.push_back( CurChart()->AddSeries( state.series_type ) );
+  state.series_list.back()->SetName( name );
+  state.series_list.back()->SetAnonymousSnap( anonymous_snap );
+  state.series_list.back()->SetSharedLegend( state.shared_legend );
+  state.series_list.back()->SetLegendOutline( state.legend_outline );
+  state.series_list.back()->SetAxisY( state.axis_y_n );
+  state.series_list.back()->SetBase( state.series_base );
+  state.series_list.back()->SetStyle( state.style );
   NextSeriesStyle();
-  series_list.back()->SetMarkerShape( marker_shape );
-  ApplyMarkerSize( series_list.back() );
-  if ( line_width >= 0 ) {
-    series_list.back()->SetLineWidth( line_width );
+  state.series_list.back()->SetMarkerShape( state.marker_shape );
+  ApplyMarkerSize( state.series_list.back() );
+  if ( state.line_width >= 0 ) {
+    state.series_list.back()->SetLineWidth( state.line_width );
   }
-  if ( line_dash >= 0 ) {
-    series_list.back()->SetLineDash( line_dash, line_hole );
+  if ( state.line_dash >= 0 ) {
+    state.series_list.back()->SetLineDash( state.line_dash, state.line_hole );
   }
-  if ( fill_transparency >= 0 ) {
-    series_list.back()->FillColor()->SetTransparency( fill_transparency );
+  if ( state.fill_transparency >= 0 ) {
+    state.series_list.back()->FillColor()->SetTransparency( state.fill_transparency );
   }
-  series_list.back()->LineColor()->Lighten( lighten );
-  series_list.back()->FillColor()->Lighten( lighten );
-  series_list.back()->SetTagEnable( tag_enable );
-  series_list.back()->SetTagPos( tag_pos );
-  series_list.back()->SetTagSize( tag_size );
-  series_list.back()->SetTagBox( tag_box );
-  series_list.back()->TagTextColor()->Set( &tag_text_color );
-  series_list.back()->TagFillColor()->Set( &tag_fill_color );
-  series_list.back()->TagLineColor()->Set( &tag_line_color );
-  defining_series = true;
+  state.series_list.back()->LineColor()->Lighten( state.lighten );
+  state.series_list.back()->FillColor()->Lighten( state.lighten );
+  state.series_list.back()->SetTagEnable( state.tag_enable );
+  state.series_list.back()->SetTagPos( state.tag_pos );
+  state.series_list.back()->SetTagSize( state.tag_size );
+  state.series_list.back()->SetTagBox( state.tag_box );
+  state.series_list.back()->TagTextColor()->Set( &state.tag_text_color );
+  state.series_list.back()->TagFillColor()->Set( &state.tag_fill_color );
+  state.series_list.back()->TagLineColor()->Set( &state.tag_line_color );
+  state.defining_series = true;
 }
 
 void do_Series_New( void )
@@ -1324,36 +1548,54 @@ void do_Series_New( void )
   AddSeries( txt );
 }
 
+void do_Series_SharedLegend( void )
+{
+  do_Switch( state.shared_legend );
+  expect_eol();
+  if ( state.defining_series ) {
+    state.series_list.back()->SetSharedLegend( state.shared_legend );
+  }
+}
+
+void do_Series_LegendOutline( void )
+{
+  do_Switch( state.legend_outline );
+  expect_eol();
+  if ( state.defining_series ) {
+    state.series_list.back()->SetLegendOutline( state.legend_outline );
+  }
+}
+
 void do_Series_Type( void )
 {
   skip_ws();
   std::string id = get_identifier( true );
-  if ( id == "XY"          ) series_type = Chart::SeriesType::XY         ; else
-  if ( id == "Scatter"     ) series_type = Chart::SeriesType::Scatter    ; else
-  if ( id == "Line"        ) series_type = Chart::SeriesType::Line       ; else
-  if ( id == "Point"       ) series_type = Chart::SeriesType::Point      ; else
-  if ( id == "Lollipop"    ) series_type = Chart::SeriesType::Lollipop   ; else
-  if ( id == "Bar"         ) series_type = Chart::SeriesType::Bar        ; else
-  if ( id == "StackedBar"  ) series_type = Chart::SeriesType::StackedBar ; else
-  if ( id == "Area"        ) series_type = Chart::SeriesType::Area       ; else
-  if ( id == "StackedArea" ) series_type = Chart::SeriesType::StackedArea; else
+  if ( id == "XY"          ) state.series_type = Chart::SeriesType::XY         ; else
+  if ( id == "Scatter"     ) state.series_type = Chart::SeriesType::Scatter    ; else
+  if ( id == "Line"        ) state.series_type = Chart::SeriesType::Line       ; else
+  if ( id == "Point"       ) state.series_type = Chart::SeriesType::Point      ; else
+  if ( id == "Lollipop"    ) state.series_type = Chart::SeriesType::Lollipop   ; else
+  if ( id == "Bar"         ) state.series_type = Chart::SeriesType::Bar        ; else
+  if ( id == "StackedBar"  ) state.series_type = Chart::SeriesType::StackedBar ; else
+  if ( id == "Area"        ) state.series_type = Chart::SeriesType::Area       ; else
+  if ( id == "StackedArea" ) state.series_type = Chart::SeriesType::StackedArea; else
   if ( id == "" ) parse_err( "series type expected" ); else
   parse_err( "unknown series type '" + id + "'", true );
   expect_eol();
-  series_type_defined = true;
+  state.series_type_defined = true;
 }
 
 void do_Series_AxisY( void )
 {
   skip_ws();
   std::string id = get_identifier( true );
-  if ( id == "Primary"   ) axis_y_n = 0; else
-  if ( id == "Secondary" ) axis_y_n = 1; else
+  if ( id == "Primary"   ) state.axis_y_n = 0; else
+  if ( id == "Secondary" ) state.axis_y_n = 1; else
   if ( id == "" ) parse_err( "Primary or Secondary expected" ); else
   parse_err( "unknown axis '" + id + "'", true );
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetAxisY( axis_y_n );
+  if ( state.defining_series ) {
+    state.series_list.back()->SetAxisY( state.axis_y_n );
   }
 }
 
@@ -1361,10 +1603,10 @@ void do_Series_Base( void )
 {
   skip_ws();
   if ( at_eol() ) parse_err( "base expected" );
-  if ( !get_double( series_base ) ) parse_err( "malformed base" );
+  if ( !get_double( state.series_base ) ) parse_err( "malformed base" );
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetBase( series_base );
+  if ( state.defining_series ) {
+    state.series_list.back()->SetBase( state.series_base );
   }
 }
 
@@ -1372,47 +1614,47 @@ void do_Series_Style( void )
 {
   skip_ws();
   if ( at_eol() ) parse_err( "style expected" );
-  if ( !get_int64( style ) ) parse_err( "malformed style" );
-  if ( style < 0 || style > 79 ) {
+  if ( !get_int64( state.style ) ) parse_err( "malformed style" );
+  if ( state.style < 0 || state.style > 79 ) {
     parse_err( "style out of range [0;79]", true );
   }
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetStyle( style );
+  if ( state.defining_series ) {
+    state.series_list.back()->SetStyle( state.style );
     NextSeriesStyle();
-    series_list.back()->LineColor()->Lighten( lighten );
-    series_list.back()->FillColor()->Lighten( lighten );
-    series_list.back()->TagTextColor()->Undef();
-    series_list.back()->TagFillColor()->Undef();
-    series_list.back()->TagLineColor()->Undef();
+    state.series_list.back()->LineColor()->Lighten( state.lighten );
+    state.series_list.back()->FillColor()->Lighten( state.lighten );
+    state.series_list.back()->TagTextColor()->Undef();
+    state.series_list.back()->TagFillColor()->Undef();
+    state.series_list.back()->TagLineColor()->Undef();
   }
-  marker_size = -1;
-  line_width = -1;
-  line_dash = -1;
-  line_hole = -1;
-  fill_transparency = -1;
-  tag_text_color.Undef();
-  tag_fill_color.Undef();
-  tag_line_color.Undef();
+  state.marker_size = -1;
+  state.line_width = -1;
+  state.line_dash = -1;
+  state.line_hole = -1;
+  state.fill_transparency = -1;
+  state.tag_text_color.Undef();
+  state.tag_fill_color.Undef();
+  state.tag_line_color.Undef();
 }
 
 void do_Series_MarkerShape( void )
 {
   skip_ws();
   std::string id = get_identifier( true );
-  if ( id == "Circle"      ) marker_shape = Chart::MarkerShape::Circle     ; else
-  if ( id == "Square"      ) marker_shape = Chart::MarkerShape::Square     ; else
-  if ( id == "Triangle"    ) marker_shape = Chart::MarkerShape::Triangle   ; else
-  if ( id == "InvTriangle" ) marker_shape = Chart::MarkerShape::InvTriangle; else
-  if ( id == "Diamond"     ) marker_shape = Chart::MarkerShape::Diamond    ; else
-  if ( id == "Cross"       ) marker_shape = Chart::MarkerShape::Cross      ; else
-  if ( id == "LineX"       ) marker_shape = Chart::MarkerShape::LineX      ; else
-  if ( id == "LineY"       ) marker_shape = Chart::MarkerShape::LineY      ; else
+  if ( id == "Circle"      ) state.marker_shape = Chart::MarkerShape::Circle     ; else
+  if ( id == "Square"      ) state.marker_shape = Chart::MarkerShape::Square     ; else
+  if ( id == "Triangle"    ) state.marker_shape = Chart::MarkerShape::Triangle   ; else
+  if ( id == "InvTriangle" ) state.marker_shape = Chart::MarkerShape::InvTriangle; else
+  if ( id == "Diamond"     ) state.marker_shape = Chart::MarkerShape::Diamond    ; else
+  if ( id == "Cross"       ) state.marker_shape = Chart::MarkerShape::Cross      ; else
+  if ( id == "LineX"       ) state.marker_shape = Chart::MarkerShape::LineX      ; else
+  if ( id == "LineY"       ) state.marker_shape = Chart::MarkerShape::LineY      ; else
   if ( id == "" ) parse_err( "marker shape expected" ); else
   parse_err( "unknown marker shape '" + id + "'", true );
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetMarkerShape( marker_shape );
+  if ( state.defining_series ) {
+    state.series_list.back()->SetMarkerShape( state.marker_shape );
   }
 }
 
@@ -1420,13 +1662,13 @@ void do_Series_MarkerSize( void )
 {
   skip_ws();
   if ( at_eol() ) parse_err( "marker size expected" );
-  if ( !get_double( marker_size ) ) parse_err( "malformed marker size" );
-  if ( marker_size < 0 || marker_size > 100 ) {
+  if ( !get_double( state.marker_size ) ) parse_err( "malformed marker size" );
+  if ( state.marker_size < 0 || state.marker_size > 100 ) {
     parse_err( "marker size out of range [0;100]", true );
   }
   expect_eol();
-  if ( defining_series ) {
-    ApplyMarkerSize( series_list.back() );
+  if ( state.defining_series ) {
+    ApplyMarkerSize( state.series_list.back() );
   }
 }
 
@@ -1434,42 +1676,42 @@ void do_Series_LineWidth( void )
 {
   skip_ws();
   if ( at_eol() ) parse_err( "line width expected" );
-  if ( !get_double( line_width ) ) parse_err( "malformed line width" );
-  if ( line_width < 0 || line_width > 100 ) {
+  if ( !get_double( state.line_width ) ) parse_err( "malformed line width" );
+  if ( state.line_width < 0 || state.line_width > 100 ) {
     parse_err( "line width out of range [0;100]", true );
   }
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetLineWidth( line_width );
+  if ( state.defining_series ) {
+    state.series_list.back()->SetLineWidth( state.line_width );
   }
 }
 
 void do_Series_LineDash( void )
 {
-  line_dash = 0;
+  state.line_dash = 0;
   skip_ws();
   if ( at_eol() ) parse_err( "line dash expected" );
-  if ( !get_double( line_dash ) ) {
+  if ( !get_double( state.line_dash ) ) {
     parse_err( "malformed line dash" );
   }
-  if ( line_dash < 0 || line_dash > 100 ) {
+  if ( state.line_dash < 0 || state.line_dash > 100 ) {
     parse_err( "line dash out of range [0;100]", true );
   }
-  line_hole = line_dash;
+  state.line_hole = state.line_dash;
   if ( !at_eol() ) {
     expect_ws();
     if ( !at_eol() ) {
-      if ( !get_double( line_hole ) ) {
+      if ( !get_double( state.line_hole ) ) {
         parse_err( "malformed line hole" );
       }
-      if ( line_hole < 0 || line_hole > 100 ) {
+      if ( state.line_hole < 0 || state.line_hole > 100 ) {
         parse_err( "line hole out of range [0;100]", true );
       }
     }
   }
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetLineDash( line_dash, line_hole );
+  if ( state.defining_series ) {
+    state.series_list.back()->SetLineDash( state.line_dash, state.line_hole );
   }
 }
 
@@ -1477,16 +1719,16 @@ void do_Series_Lighten( void )
 {
   skip_ws();
   if ( at_eol() ) parse_err( "lighten value expected" );
-  if ( !get_double( lighten ) ) {
+  if ( !get_double( state.lighten ) ) {
     parse_err( "malformed lighten value" );
   }
-  if ( lighten < -1.0 || lighten > +1.0 ) {
+  if ( state.lighten < -1.0 || state.lighten > +1.0 ) {
     parse_err( "lighten value out of range [-1.0;1.0]", true );
   }
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->LineColor()->Lighten( lighten );
-    series_list.back()->FillColor()->Lighten( lighten );
+  if ( state.defining_series ) {
+    state.series_list.back()->LineColor()->Lighten( state.lighten );
+    state.series_list.back()->FillColor()->Lighten( state.lighten );
   }
 }
 
@@ -1494,36 +1736,36 @@ void do_Series_FillTransparency( void )
 {
   skip_ws();
   if ( at_eol() ) parse_err( "transparency value expected" );
-  if ( !get_double( fill_transparency ) ) {
+  if ( !get_double( state.fill_transparency ) ) {
     parse_err( "malformed transparency value" );
   }
-  if ( fill_transparency < 0.0 || fill_transparency > 1.0 ) {
+  if ( state.fill_transparency < 0.0 || state.fill_transparency > 1.0 ) {
     parse_err( "transparency value out of range [-1.0;1.0]", true );
   }
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->FillColor()->SetTransparency( fill_transparency );
+  if ( state.defining_series ) {
+    state.series_list.back()->FillColor()->SetTransparency( state.fill_transparency );
   }
 }
 
 void do_Series_LineColor( void )
 {
-  if ( !defining_series ) {
+  if ( !state.defining_series ) {
     parse_err( "LineColor outside defining series" );
   }
-  do_Color( series_list.back()->LineColor() );
-  series_list.back()->LineColor()->Lighten( lighten );
+  do_Color( state.series_list.back()->LineColor() );
+  state.series_list.back()->LineColor()->Lighten( state.lighten );
 }
 
 void do_Series_FillColor( void )
 {
-  if ( !defining_series ) {
+  if ( !state.defining_series ) {
     parse_err( "FillColor outside defining series" );
   }
-  do_Color( series_list.back()->FillColor() );
-  series_list.back()->FillColor()->Lighten( lighten );
-  if ( fill_transparency >= 0 ) {
-    series_list.back()->FillColor()->SetTransparency( fill_transparency );
+  do_Color( state.series_list.back()->FillColor() );
+  state.series_list.back()->FillColor()->Lighten( state.lighten );
+  if ( state.fill_transparency >= 0 ) {
+    state.series_list.back()->FillColor()->SetTransparency( state.fill_transparency );
   }
 }
 
@@ -1531,20 +1773,20 @@ void do_Series_FillColor( void )
 
 void do_Series_Tag( void )
 {
-  do_Switch( tag_enable );
+  do_Switch( state.tag_enable );
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetTagEnable( tag_enable );
+  if ( state.defining_series ) {
+    state.series_list.back()->SetTagEnable( state.tag_enable );
   }
 }
 
 void do_Series_TagPos( void )
 {
   skip_ws();
-  do_Pos( tag_pos );
+  do_Pos( state.tag_pos );
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetTagPos( tag_pos );
+  if ( state.defining_series ) {
+    state.series_list.back()->SetTagPos( state.tag_pos );
   }
 }
 
@@ -1552,48 +1794,48 @@ void do_Series_TagSize( void )
 {
   skip_ws();
   if ( at_eol() ) parse_err( "tag size value expected" );
-  if ( !get_double( tag_size ) ) {
+  if ( !get_double( state.tag_size ) ) {
     parse_err( "malformed tag size value" );
   }
-  if ( tag_size < 0.01 || tag_size > 100 ) {
+  if ( state.tag_size < 0.01 || state.tag_size > 100 ) {
     parse_err( "tag size value out of range", true );
   }
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetTagSize( tag_size );
+  if ( state.defining_series ) {
+    state.series_list.back()->SetTagSize( state.tag_size );
   }
 }
 
 void do_Series_TagBox( void )
 {
-  do_Switch( tag_box );
+  do_Switch( state.tag_box );
   expect_eol();
-  if ( defining_series ) {
-    series_list.back()->SetTagBox( tag_box );
+  if ( state.defining_series ) {
+    state.series_list.back()->SetTagBox( state.tag_box );
   }
 }
 
 void do_Series_TagTextColor( void )
 {
-  do_Color( &tag_text_color );
-  if ( defining_series ) {
-    series_list.back()->TagTextColor()->Set( &tag_text_color );
+  do_Color( &state.tag_text_color );
+  if ( state.defining_series ) {
+    state.series_list.back()->TagTextColor()->Set( &state.tag_text_color );
   }
 }
 
 void do_Series_TagFillColor( void )
 {
-  do_Color( &tag_fill_color );
-  if ( defining_series ) {
-    series_list.back()->TagFillColor()->Set( &tag_fill_color );
+  do_Color( &state.tag_fill_color );
+  if ( state.defining_series ) {
+    state.series_list.back()->TagFillColor()->Set( &state.tag_fill_color );
   }
 }
 
 void do_Series_TagLineColor( void )
 {
-  do_Color( &tag_line_color );
-  if ( defining_series ) {
-    series_list.back()->TagLineColor()->Set( &tag_line_color );
+  do_Color( &state.tag_line_color );
+  if ( state.defining_series ) {
+    state.series_list.back()->TagLineColor()->Set( &state.tag_line_color );
   }
 }
 
@@ -1601,7 +1843,7 @@ void do_Series_TagLineColor( void )
 
 void parse_series_data( bool anonymous_snap = false )
 {
-  defining_series = false;
+  state.defining_series = false;
 
   uint32_t y_values = 0;
   uint32_t rows = 0;
@@ -1658,9 +1900,9 @@ void parse_series_data( bool anonymous_snap = false )
     }
     if (
       !x_is_text && y_values == 0 &&
-      ( !series_type_defined ||
-        ( series_type != Chart::SeriesType::XY &&
-          series_type != Chart::SeriesType::Scatter
+      ( !state.series_type_defined ||
+        ( state.series_type != Chart::SeriesType::XY &&
+          state.series_type != Chart::SeriesType::Scatter
         )
       )
     ) {
@@ -1668,9 +1910,9 @@ void parse_series_data( bool anonymous_snap = false )
       no_x_value = true;
     }
     if ( y_values == 0 ) y_values = 1;
-    if ( !series_type_defined ) {
-      series_type = x_is_text ? Chart::SeriesType::Line : Chart::SeriesType::XY;
-      series_type_defined = true;
+    if ( !state.series_type_defined ) {
+      state.series_type = x_is_text ? Chart::SeriesType::Line : Chart::SeriesType::XY;
+      state.series_type_defined = true;
     }
     cur_line = org_line;
     cur_col = 0;
@@ -1679,8 +1921,8 @@ void parse_series_data( bool anonymous_snap = false )
   // Auto-add new series if needed.
   for ( uint32_t i = 0; i < y_values; i++ ) {
     if (
-      series_list.size() == i ||
-      series_list[ series_list.size() - i - 1 ]->Size() > 0
+      state.series_list.size() == i ||
+      state.series_list[ state.series_list.size() - i - 1 ]->Size() > 0
     )
       AddSeries( "", anonymous_snap );
   }
@@ -1689,7 +1931,7 @@ void parse_series_data( bool anonymous_snap = false )
   bool x_is_num = false;
   bool x_is_txt = false;
   for ( uint32_t i = 0; i < y_values; i++ ) {
-    auto t = type_list[ type_list.size() - i - 1 ];
+    auto t = state.type_list[ state.type_list.size() - i - 1 ];
     if (
       t == Chart::SeriesType::XY ||
       t == Chart::SeriesType::Scatter
@@ -1716,9 +1958,9 @@ void parse_series_data( bool anonymous_snap = false )
           parse_err( "unmatched quote", true );
         }
       }
-      chart.AddCategory( category );
-      x = category_idx;
-      category_idx++;
+      CurChart()->AddCategory( category );
+      x = state.category_idx;
+      state.category_idx++;
     } else {
       if ( !get_double( x, true ) ) parse_err( "malformed X-value" );
     }
@@ -1730,17 +1972,17 @@ void parse_series_data( bool anonymous_snap = false )
         cur_line->line
       ).substr( id_col, cur_col - id_col );
     for ( uint32_t n = 0; n < y_values; ++n ) {
-      uint32_t series_idx = series_list.size() - y_values + n;
+      uint32_t series_idx = state.series_list.size() - y_values + n;
       skip_ws();
       double y;
       if ( at_eol() && x_is_txt ) {
         y = Chart::num_skip;
-        series_list[ series_idx ]->Add( x, y );
+        state.series_list[ series_idx ]->Add( x, y );
       } else {
         if ( at_eol() ) parse_err( "Y-value expected" );
         if ( !get_double( y, true ) ) parse_err( "malformed Y-value" );
         if ( !at_eol() && !at_ws() ) parse_err( "syntax error" );
-        series_list[ series_idx ]->Add(
+        state.series_list[ series_idx ]->Add(
           x, y,
           tag_x,
           std::string_view(
@@ -1767,18 +2009,33 @@ void do_Series_Data( void )
 using ChartAction = std::function< void() >;
 
 std::unordered_map< std::string, ChartAction > chart_actions = {
-  { "BorderWidth"            , do_BorderWidth             },
   { "Margin"                 , do_Margin                  },
+  { "BorderColor"            , do_BorderColor             },
+  { "BorderWidth"            , do_BorderWidth             },
+  { "Padding"                , do_Padding                 },
+  { "GridPadding"            , do_GridPadding             },
+  { "SharedLegendHeading"    , do_SharedLegendHeading     },
+  { "SharedLegendFrame"      , do_SharedLegendFrame       },
+  { "SharedLegendPos"        , do_SharedLegendPos         },
+  { "SharedLegendSize"       , do_SharedLegendSize        },
+  { "SharedLegendColor"      , do_SharedLegendColor       },
+  { "LetterSpacing"          , do_LetterSpacing           },
+  { "New"                    , do_New                     },
   { "ChartArea"              , do_ChartArea               },
   { "ChartBox"               , do_ChartBox                },
-  { "BorderColor"            , do_BorderColor             },
+  { "ForegroundColor"        , do_ForegroundColor         },
   { "BackgroundColor"        , do_BackgroundColor         },
   { "ChartAreaColor"         , do_ChartAreaColor          },
   { "AxisColor"              , do_AxisColor               },
   { "GridColor"              , do_GridColor               },
   { "TextColor"              , do_TextColor               },
   { "FrameColor"             , do_FrameColor              },
-  { "LetterSpacing"          , do_LetterSpacing           },
+  { "Heading"                , do_Heading                 },
+  { "SubHeading"             , do_SubHeading              },
+  { "SubSubHeading"          , do_SubSubHeading           },
+  { "HeadingPos"             , do_HeadingPos              },
+  { "HeadingSize"            , do_HeadingSize             },
+  { "HeadingLine"            , do_HeadingLine             },
   { "Title"                  , do_Title                   },
   { "SubTitle"               , do_SubTitle                },
   { "SubSubTitle"            , do_SubSubTitle             },
@@ -1788,16 +2045,17 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "TitleSize"              , do_TitleSize               },
   { "Footnote"               , do_Footnote                },
   { "FootnotePos"            , do_FootnotePos             },
-  { "FootnoteLine"           , do_FootnoteLine            },
   { "FootnoteSize"           , do_FootnoteSize            },
+  { "FootnoteLine"           , do_FootnoteLine            },
   { "LegendHeading"          , do_LegendHeading           },
   { "LegendFrame"            , do_LegendFrame             },
   { "LegendPos"              , do_LegendPos               },
-  { "LegendOutline"          , do_LegendOutline           },
   { "LegendSize"             , do_LegendSize              },
   { "BarWidth"               , do_BarWidth                },
   { "BarMargin"              , do_BarMargin               },
   { "Series.New"             , do_Series_New              },
+  { "Series.SharedLegend"    , do_Series_SharedLegend     },
+  { "Series.LegendOutline"   , do_Series_LegendOutline    },
   { "Series.Type"            , do_Series_Type             },
   { "Series.AxisY"           , do_Series_AxisY            },
   { "Series.Base"            , do_Series_Base             },
@@ -1860,10 +2118,10 @@ bool parse_spec( void )
       if ( i == std::string::npos ) break;
       std::string axis_id = key.substr( 5, i - 5 );
       Chart::Axis* axis = nullptr;
-      if ( axis_id == "X"    ) axis = chart.AxisX(   ); else
-      if ( axis_id == "Y"    ) axis = chart.AxisY(   ); else
-      if ( axis_id == "PriY" ) axis = chart.AxisY( 0 ); else
-      if ( axis_id == "SecY" ) axis = chart.AxisY( 1 ); else
+      if ( axis_id == "X"    ) axis = CurChart()->AxisX(   ); else
+      if ( axis_id == "Y"    ) axis = CurChart()->AxisY(   ); else
+      if ( axis_id == "PriY" ) axis = CurChart()->AxisY( 0 ); else
+      if ( axis_id == "SecY" ) axis = CurChart()->AxisY( 1 ); else
       break;
       auto it = axis_actions.find( key.substr( i + 1 ) );
       if ( it == axis_actions.end() ) break;
@@ -1877,7 +2135,7 @@ bool parse_spec( void )
     }
   } while ( false );
 
-  if ( !ok ) parse_err( "Unknown KEY '" + key + "'", true );
+  if ( !ok ) parse_err( "unknown KEY '" + key + "'", true );
 
   return true;
 }
@@ -1956,6 +2214,7 @@ int main( int argc, char* argv[] )
   signal( SIGFPE, sigfpe_handler );
   feenableexcept( FE_DIVBYZERO | FE_INVALID );
 
+
   std::vector< std::string > file_list;
 
   bool out_of_options = false;
@@ -1967,7 +2226,7 @@ int main( int argc, char* argv[] )
     }
     if ( !out_of_options ) {
       if ( a == "-H" ) {
-        chart.EnableHTML( true );
+        ensemble.EnableHTML( true );
         continue;
       }
       if ( a == "-v" || a == "--version" ) {
@@ -2013,13 +2272,22 @@ int main( int argc, char* argv[] )
     file_list.push_back( a );
   }
 
+/*
+// TBD
+  if ( 1 ) {
+    Chart::Grid grid;
+    grid.Test();
+    return 0;
+  }
+*/
+
   if ( file_list.size() == 0 ) {
     file_list.push_back( "-" );
   }
 
   process_files( file_list );
 
-  std::cout << chart.Build();
+  std::cout << ensemble.Build();
 
   return 0;
 }

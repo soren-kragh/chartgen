@@ -16,18 +16,33 @@ Series.Data :
         97      14
 
 # Summary of all available specifiers (see -T template for details):
-# BorderWidth: 5
-# BorderColor: black
 # Margin: 5
+# BorderWidth: 5
+# BorderColor: navy
+# Padding: 10
+# GridPadding: 5
+# Heading: Heading
+# SubHeading: Smaller Heading
+# SubSubHeading: Even Smaller Heading
+# HeadingPos: Left
+# HeadingSize: 1.0
+# HeadingLine: On
+# SharedLegendHeading: Metals
+# SharedLegendFrame: On
+# SharedLegendPos: Bottom
+# SharedLegendSize: 1.0
+# SharedLegendColor: lavender
+# LetterSpacing: 1.8 1.1 0.8
+# New: 0 0 3 0 Center Bottom
 # ChartArea: 1000 600
 # ChartBox: On
+# ForegroundColor: skyblue
 # BackgroundColor: darkslategray
 # ChartAreaColor: dimgray
 # AxisColor: white
 # GridColor: green
 # TextColor: lightyellow
 # FrameColor: aqua 0 0.5
-# LetterSpacing: 1.8 1.1 0.8
 # Title:
 # SubTitle:
 # SubSubTitle:
@@ -64,12 +79,13 @@ Series.Data :
 # LegendHeading: Countries
 # LegendFrame: On
 # LegendPos: Below
-# LegendOutline: Off
 # LegendSize: 1.0
 # BarWidth: 0.8 0.7
 # BarMargin: 0
 # Series.Type: XY
 # Series.New: Name of series
+# Series.SharedLegend: On
+# Series.LegendOutline: Off
 # Series.AxisY: Secondary
 # Series.Base: 0
 # Series.Style: 32

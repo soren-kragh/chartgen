@@ -1,16 +1,17 @@
 std::cout << R"EOF(
 
+BorderWidth: 5
+BorderColor: midnightblue 0.4
+ForegroundColor: white
+BackgroundColor: midnightblue -0.4
+
 ChartArea: 1000 500
 
 Title: Programming Language Performance
 SubSubTitle: (source: Rui Pereira et al., 2020)
 
-BorderWidth: 5
-BorderColor: midnightblue 0.4
-BackgroundColor: midnightblue -0.4
 AxisColor: skyblue
 GridColor: skyblue
-TextColor: white
 
 # Try it.
 #Axis.X.NumberSize: 0.9
@@ -23,10 +24,14 @@ Axis.Y.NumberFormat: Fixed
 
 Series.FillTransparency: 0.6
 
+LegendHeading:
+  Performance Metric
+     (normalized)
+LegendSize: 1.2
+
 Series.Type: Bar
 Series.New:
-  Execution Time
-  (normalized)
+  Execution time
 # Change bar starting base as the default base
 # of zero does not map well to logarithmic Y-axis.
 Series.Base: 0.5
@@ -38,8 +43,7 @@ Series.TagTextColor: white
 
 Series.Type: Line
 Series.New:
-  Memory Usage
-  (normalized)
+  Memory usage
 Series.MarkerSize: 10
 Series.Tag: On
 Series.TagBox: Off

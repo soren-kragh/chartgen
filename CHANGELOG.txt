@@ -51,6 +51,23 @@ chartgen-v0.10.0
         Added TitleFrame
         Added Axis.X.TickSpacing
         Add HTML support
+        Add support for multiple charts in a grid
+        Added New
+        Added Padding
+        Added GridPadding
+        Added ForegroundColor
+        Added Heading
+        Added SubHeading
+        Added SubSubHeading
+        Added HeadingPos
+        Added HeadingSize
+        Added HeadingLine
+        Added SharedLegendHeading
+        Added SharedLegendFrame
+        Added SharedLegendPos
+        Added SharedLegendSize
+        Added SharedLegendColor
+        Added Series.SharedLegend
 
 chartgen-v0.9.0
         Added the following specifiers:

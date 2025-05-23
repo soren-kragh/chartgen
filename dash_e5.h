@@ -16,6 +16,7 @@ Axis.Y.Pos: Top
 Axis.Y.Style: Edge
 Axis.Y.GridStyle: Solid
 
+# Also try StackedArea
 Series.Type: StackedBar
 
 Series.LineWidth: 1

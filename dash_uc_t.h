@@ -1,8 +1,8 @@
 std::cout << R"EOF(
 # This file documents the input format for the chartgen program. This file is
 # not intended to be used directly; use the simple template as a starting point
-# and pick relevant specifies from this file as needed. It is strongly
-# recommended to let chartgen determine things automatically when possible.
+# and pick relevant specifies from this file as needed. It is recommended to let
+# chartgen determine things automatically when possible.
 #
 # The UTF-8 character encoding standard is used.
 #
@@ -46,12 +46,99 @@ std::cout << R"EOF(
 # (0.0 to 1.0).
 #
 
-# Border width around entire chart in points; default is no border (0).
-#BorderWidth: 5
-#BorderColor: black
+# Margin in points; default is 0.
+#Margin: 0
 
-# Margin around entire chart in points; default is 5.
-#Margin: 5
+# Border in points; default is no border (0).
+#BorderWidth: 5
+#BorderColor: maroon
+
+# Padding around everything in points; default is 8.
+#Padding: 8
+
+# Padding (in points) around individual charts in grid; default is 4. This
+# setting only has any effect when having multiple charts. A negative value
+# means that only the core chart areas are considered when placing the charts
+# in a grid.
+#GridPadding: 4
+
+# See Title, which is normally what should be used for single charts. Headings
+# are placed at the top and are typically used for when multiple charts are
+# organized in a grid (see New).
+#Heading: Heading
+#SubHeading: Smaller Heading
+#SubSubHeading: Even Smaller Heading
+#HeadingPos: Left
+#HeadingSize: 1.0
+#HeadingLine: On
+
+# An optional heading for the shared legends (see Series.SharedLegend).
+#SharedLegendHeading: Metals
+
+# Draw a frame around shared legends; may be On or Off; default is Auto.
+#SharedLegendFrame: On
+
+# Specify the position of shared series legends.
+#SharedLegendPos: Bottom
+
+# Set the relative size of shared legend box texts.
+#SharedLegendSize: 1.0
+
+# The background color of the shared legend box.
+#SharedLegendColor: darkseagreen
+
+# The spacing and positioning of letters are based on mono-spaced ASCII letters.
+# If different letters are used, the LetterSpacing may be used to adjust the
+# spacing by the given factor. The first number is the width adjustment factor,
+# the second optional number is the height adjustment factor, and the third
+# optional number is the baseline adjustment factor.
+#LetterSpacing: 1.8 1.1 0.8
+
+# Start creation of of new chart (optional). When having multiple charts, these
+# are organized in a grid as specified. The first two numbers specify the row
+# and column of the upper left corner, and the second two numbers specify the
+# row and column of the lower right corner; the mew chart may span multiple grid
+# cells in either direction. If no grid location is given, the new chart is just
+# added below any existing charts in the grid. After the optional grid location
+# follows the optional horizontal/vertical alignment within the allocated grid
+# cell(s); the default alignment will push charts located at a grid edge towards
+# that edge.
+# The chart edges of the same row/column will be aligned if possible, empty
+# rows/columns can however be inserted to avoid this, for example:
+# New: 0 0 0 0
+# ChartArea: 200 200
+# New: 0 1 0 1
+# ChartArea: 200 200
+# New: 1 0 1 1
+# ChartArea: 600 200
+# Will give:
+# +----+      +----+
+# |    |      |    |
+# |    |      |    |
+# +----+      +----+
+# +----------------+
+# |                |
+# |                |
+# +----------------+
+# Whereas:
+# New: 0 1 0 1
+# ChartArea: 200 200
+# New: 0 2 0 2
+# ChartArea: 200 200
+# New: 1 0 1 3
+# ChartArea: 600 200
+# Will give:
+#   +----+  +----+
+#   |    |  |    |
+#   |    |  |    |
+#   +----+  +----+
+# +----------------+
+# |                |
+# |                |
+# +----------------+
+# When using New, all state is reset as if a new blank file is started; use
+# macros to easily repeat specifiers shared among multiple charts in the grid.
+#New: 0 0 1 1 Right Top
 
 # Specifies the dimensions of the core chart area where the data is graphed.
 # The values are in points and should typically be around 1000. Since SVG is
@@ -63,8 +150,10 @@ std::cout << R"EOF(
 # Draw a box around chart area; may be On or Off.
 #ChartBox: On
 
-# The background color also determines the chart area color, unless the chart
-# area color is also given.
+# The foreground color is primarily used as the default color for texts. The
+# background color also determines the chart area color, unless the chart area
+# color is also given.
+#ForegroundColor: brown
 #BackgroundColor: darkslategray
 #ChartAreaColor: dimgray
 #AxisColor: white
@@ -73,13 +162,6 @@ std::cout << R"EOF(
 
 # The background color of legend box and title box (when these are shown).
 #FrameColor: aqua 0 0.5
-
-# The spacing and positioning of letters are based on mono-spaced ASCII letters.
-# If different letters are used, the LetterSpacing may be used to adjust the
-# spacing by the given factor. The first number is the width adjustment factor,
-# the second optional number is the height adjustment factor, and the third
-# optional number is the baseline adjustment factor.
-#LetterSpacing: 1.8 1.1 0.8
 
 # Titles are placed at the top of the chart.
 Title: This is the title of the chart
@@ -210,6 +292,9 @@ Axis.SecY.LogScale: On
 # is shown, for example, if the texts represent years, showing only every 10th
 # year can be appealing. The first number is the starting position to show, and
 # the second number is the stride after that.
+# When stacking charts (see New) sharing the same textual X-axis, a trick to
+# not show the categories for the stacked charts, is to set the TickSpacing
+# start position really high.
 #Axis.X.TickSpacing: 0 10
 
 # Turn grid lines on/off for major and minor ticks; may be On or Off. Unless
@@ -276,11 +361,6 @@ Axis.SecY.NumberUnit: Ω
 # this gets too cluttered you may place the series legends outside the core
 # chart area.
 #LegendPos: Bottom
-
-# Specify if line style legends are shown with an outline around the legend text
-# (On), or with a small line segment in front of the legend text (Off); default
-# is On. Note that the outline is suppressed for thick lines no matter what.
-#LegendOutline: Off
 
 # Set the relative size of legend box texts.
 #LegendSize: 1.0
@@ -351,6 +431,20 @@ Series.Type: XY
 Series.New: Name of series
 
 # The following Series specifiers associate to the above newly created series.
+
+# When several charts are organized in a grid (see New), the series legend can
+# be shared for multiple charts and placed externally outside the grid. For
+# sharing to occur, the name and style of the series must be the same. This
+# attribute applies to the current series and all subsequent series, or until it
+# is redefined.
+#Series.SharedLegend: Off
+
+# Specify if line style legends are shown with an outline around the legend text
+# (On), or with a small line segment in front of the legend text (Off); default
+# is On. Note that the outline is suppressed for thick lines no matter what.
+# This attribute applies to the current series and all subsequent series, or
+# until it is redefined.
+#Series.LegendOutline: Off
 
 # Associated Y-axis may be Primary or Secondary; the default is Primary. This
 # attribute applies to the current series and all subsequent series, or until it

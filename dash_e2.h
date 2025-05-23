@@ -8,17 +8,19 @@ TitlePos: Left Top
 TitleInside: On
 TitleFrame: On
 
+ForegroundColor: yellow
 BackgroundColor: darkslategray
 ChartAreaColor: dimgray
+GridColor: black
 AxisColor: white
-TextColor: lightyellow
+TextColor: yellow 0.8
 FrameColor: darkslategray 0 0.5
 
 LegendFrame: On
 LegendPos: Auto
 
 # Disables outlining individual legends.
-LegendOutline: Off
+Series.LegendOutline: Off
 
 Axis.X.Label: Year
 Axis.X.Grid: On
