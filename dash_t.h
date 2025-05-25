@@ -86,7 +86,7 @@ Series.Data :
 # Series.New: Name of series
 # Series.SharedLegend: On
 # Series.LegendOutline: Off
-# Series.AxisY: Secondary
+# Series.AxisY: Y2
 # Series.Base: 0
 # Series.Style: 32
 # Series.MarkerShape: Circle

@@ -26,16 +26,16 @@ Axis.X.Label: Year
 Axis.X.Grid: On
 Axis.X.GridStyle: Solid
 
-Axis.PriY.Style: Edge
-Axis.PriY.NumberUnit: _TWh
-Axis.PriY.Tick: 20000 2
-Axis.PriY.GridStyle: Solid
+Axis.Y1.Style: Edge
+Axis.Y1.NumberUnit: _TWh
+Axis.Y1.Tick: 20000 2
+Axis.Y1.GridStyle: Solid
 
-Axis.SecY.Style: Edge
-Axis.SecY.Label: Population
-Axis.SecY.SubLabel:
+Axis.Y2.Style: Edge
+Axis.Y2.Label: Population
+Axis.Y2.SubLabel:
   (billion people)
-Axis.SecY.MinorNumber: On
+Axis.Y2.MinorNumber: On
 
 # Also try Line or Point instead of StackedArea
 Series.Type: StackedArea
@@ -52,7 +52,7 @@ Series.New: Traditional biomass
 
 Series.Type: Line
 Series.New: Global population
-Series.AxisY: Secondary
+Series.AxisY: Y2
 Series.LineWidth: 10
 Series.LineDash: 0
 Series.LineColor: black

@@ -204,10 +204,9 @@ FootnotePos: Right
 # Set the relative size of footnote texts.
 #FootnoteSize: 1.0
 
-# In the following Axis.Y is an alias for the primary Y-axis, which is also
-# identified as Axis.PriY. A secondary Y-axis is also possible and is identified
-# as Axis.SecY. All specifies for the primary Y-axis also apply to the secondary
-# Y-axis.
+# In the following Axis.Y, Axis.Y1, and Axis.PriY refers to the primary Y-axis.
+# A secondary Y-axis is also possible and is identified as Axis.Y1 or Axis.SecY.
+# All specifies for the primary Y-axis also apply to the secondary Y-axis.
 
 # The orientation of the X-axis may be Horizontal or Vertical, the Y-axis
 # orientation cannot be specified directly as it is always orthogonal to the
@@ -251,7 +250,7 @@ Axis.Y.Unit:
 # Turn logarithmic scale on/off; may be On or Off.
 #Axis.X.LogScale: On
 #Axis.Y.LogScale: On
-Axis.SecY.LogScale: On
+Axis.Y2.LogScale: On
 
 # Min, max, and optionally where the other orthogonal axis crosses this axis.
 # Auto ranging is applied if no Range specifier is given (recommended). If the
@@ -262,12 +261,12 @@ Axis.SecY.LogScale: On
 #Axis.X.Range: 0 100 90
 #Axis.Y.Range: -5 25
 
-# May be Auto/Top/Bottom for the X-axis, and Auto/Left/Right for the Y-axis;
-# default is Auto. Overrides any orthogonal axis cross defined by the Range
-# specifier. If both a primary and a secondary Y-axis is used, then the primary
-# Y-axis is always to the left, and the secondary Y-axis is always to the right.
-# For the X-axis, the special positions BasePri/BaseSec may be used to indicate
-# the Bar/Area base (usually zero, see Series.Base).
+# Position of axis; default is Auto. Overrides any orthogonal axis cross defined
+# by the Range specifier. If both a primary and a secondary Y-axis is used, then
+# the primary Y-axis is always to the left/bottom, and the secondary Y-axis is
+# always to the right/top. For the X-axis, the special positions BasePri/BaseY1
+# and BaseSec/BaseY2 may be used to indicate the Bar/Area base (usually zero,
+# see Series.Base).
 #Axis.X.Pos: Top
 #Axis.Y.Pos: Right
 
@@ -319,7 +318,7 @@ Axis.SecY.LogScale: On
 # e.g. "10k" instead of "10000" etc.
 #Axis.X.NumberFormat: Fixed
 #Axis.Y.NumberFormat: Fixed
-Axis.SecY.NumberFormat: Magnitude
+Axis.Y2.NumberFormat: Magnitude
 
 # Forces the sign to be shown also for positive numbers; may be On or Off.
 #Axis.X.NumberSign: On
@@ -330,7 +329,7 @@ Axis.SecY.NumberFormat: Magnitude
 # space.
 #Axis.X.NumberUnit: s
 #Axis.Y.NumberUnit: _Volts
-Axis.SecY.NumberUnit: Ω
+Axis.Y2.NumberUnit: Ω
 
 # Specify if numbers are shown for minor ticks, default for linear scale is
 # Off, while default for logarithmic scale is On; may be On or Off.
@@ -446,9 +445,9 @@ Series.New: Name of series
 # until it is redefined.
 #Series.LegendOutline: Off
 
-# Associated Y-axis may be Primary or Secondary; the default is Primary. This
-# attribute applies to the current series and all subsequent series, or until it
-# is redefined.
+# Associated Y-axis may be Primary/Y1 or Secondary/Y2; the default is Primary.
+# This attribute applies to the current series and all subsequent series, or
+# until it is redefined.
 Series.AxisY: Primary
 
 # Select the base for bar and area type plots; default is 0. This attribute

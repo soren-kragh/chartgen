@@ -2,8 +2,8 @@ std::cout << R"EOF(
 Title: Climate Data
 SubSubTitle: (source: www.woodfortrees.org)
 
-Axis.PriY.Label: Temperature Anomaly (°C)
-Axis.SecY.Label: Parts per Million CO₂
+Axis.Y1.Label: Temperature Anomaly (°C)
+Axis.Y2.Label: Parts per Million CO₂
 
 # Show + for positive temperature anomaly.
 Axis.PriY.NumberSign: On
@@ -44,7 +44,7 @@ Series.New:
   Mauna Loa atmospheric CO₂
 Series.LineColor: deepskyblue
 Series.LineWidth: 3
-Series.AxisY: Secondary
+Series.AxisY: Y2
 
 # Manually control what years are shown (every 5th, staring with the first data
 # point, which is the year 1850).

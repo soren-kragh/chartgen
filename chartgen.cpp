@@ -584,7 +584,9 @@ void do_Pos(
   if ( id == "Above"   ) pos = Chart::Pos::Top   ; else
   if ( id == "Below"   ) pos = Chart::Pos::Bottom; else
   if ( id == "Base"    ) { pos = Chart::Pos::Base; axis_y_n = 0; } else
+  if ( id == "BaseY1"  ) { pos = Chart::Pos::Base; axis_y_n = 0; } else
   if ( id == "BasePri" ) { pos = Chart::Pos::Base; axis_y_n = 0; } else
+  if ( id == "BaseY2"  ) { pos = Chart::Pos::Base; axis_y_n = 1; } else
   if ( id == "BaseSec" ) { pos = Chart::Pos::Base; axis_y_n = 1; } else
   if ( id == "End"     ) pos = Chart::Pos::End   ; else
   if ( id == "Beyond"  ) pos = Chart::Pos::Beyond; else
@@ -1669,8 +1671,10 @@ void do_Series_AxisY( void )
   skip_ws();
   std::string id = get_identifier( true );
   if ( id == "Primary"   ) state.axis_y_n = 0; else
+  if ( id == "Y1"        ) state.axis_y_n = 0; else
   if ( id == "Secondary" ) state.axis_y_n = 1; else
-  if ( id == "" ) parse_err( "Primary or Secondary expected" ); else
+  if ( id == "Y2"        ) state.axis_y_n = 1; else
+  if ( id == "" ) parse_err( "Primary/Y1 or Secondary/Y2 expected" ); else
   parse_err( "unknown axis '" + id + "'", true );
   expect_eol();
   if ( state.defining_series ) {
@@ -2198,7 +2202,9 @@ bool parse_spec( void )
       Chart::Axis* axis = nullptr;
       if ( axis_id == "X"    ) axis = CurChart()->AxisX(   ); else
       if ( axis_id == "Y"    ) axis = CurChart()->AxisY(   ); else
+      if ( axis_id == "Y1"   ) axis = CurChart()->AxisY( 0 ); else
       if ( axis_id == "PriY" ) axis = CurChart()->AxisY( 0 ); else
+      if ( axis_id == "Y2"   ) axis = CurChart()->AxisY( 1 ); else
       if ( axis_id == "SecY" ) axis = CurChart()->AxisY( 1 ); else
       break;
       auto it = axis_actions.find( key.substr( i + 1 ) );
