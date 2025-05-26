@@ -1,19 +1,27 @@
 std::cout << R"EOF(
 Footnote: https://github.com/soren-kragh/chartgen
 FootnotePos: Right
+FootnoteLine: On
+
+# Use negative grid padding to force abutted chart areas.
+GridPadding: -1
+
+# Place the shared legend for the side panels to the right.
+SharedLegendPos: Right
 
 ChartArea: 600 600
 ChartBox: On
 
-Title:
-  Normal Distributed Samples
-SubSubTitle:
+Heading:
+  2D Sample Distribution
+SubSubHeading:
   This plot has many data points, so it may be a good idea to convert it to
   bitmap before sharing or using in documents etc., e.g.:
 
   ⟫ chartgen -e3 | chartgen | svg2png >example3.png
 
-TitlePos: Left
+HeadingPos: Left
+HeadingLine: On
 
 Axis.X.Range: -1.25 +1.25
 Axis.Y.Range: -1.25 +1.25

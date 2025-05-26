@@ -137,9 +137,14 @@ void gen_example( int N )
     {
       std::normal_distribution< double > md{ 0.0, 1.0 };
       std::uniform_real_distribution< double > ad{ 0.0, 2 * M_PI };
-      #include <dash_e3.h>
+      #include <dash_e3_part1.h>
       std::cout << std::showpos << std::fixed << std::setprecision( 6 );
-      int samples = 10000;
+      double min = -1.25;
+      double max = +1.25;
+      int bins = 100;
+      std::vector< uint32_t > bin_x( bins, 0 );
+      std::vector< uint32_t > bin_y( bins, 0 );
+      int samples = 12000;
       while ( samples > 0 ) {
         double m = md( gen ) / 2;
         double a = ad( gen );
@@ -147,7 +152,33 @@ void gen_example( int N )
         double y = m * std::sin( a );
         if ( std::abs( m ) <= 1.0 ) {
           std::cout << ' ' << x << ' ' << y << '\n';
+          ++bin_x[ static_cast< size_t >( bins * (x - min) / (max - min) ) ];
+          ++bin_y[ static_cast< size_t >( bins * (y - min) / (max - min) ) ];
           samples--;
+        }
+      }
+      #include <dash_e3_part2.h>
+      {
+        std::cout << '\n' << "New: 1 0 1 0" << '\n';
+        std::cout << "Title: X" << '\n';
+        std::cout << "ChartArea: 600 100" << '\n';
+        std::cout << "Macro: SidePanel" << '\n';
+        std::cout << "Axis.Y.Reverse: On" << '\n';
+        std::cout << "Series.Data:" << '\n';
+        for ( auto n : bin_x ) {
+          std::cout << " - " << n << '\n';
+        }
+      }
+      {
+        std::cout << '\n' << "New: 0 1 0 1" << '\n';
+        std::cout << "Title: Y" << '\n';
+        std::cout << "ChartArea: 100 600" << '\n';
+        std::cout << "Macro: SidePanel" << '\n';
+        std::cout << "Axis.X.Orientation: Vertical" << '\n';
+        std::cout << "Axis.Y.Pos: Top" << '\n';
+        std::cout << "Series.Data:" << '\n';
+        for ( auto n : bin_y ) {
+          std::cout << " - " << n << '\n';
         }
       }
       break;
