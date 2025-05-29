@@ -290,10 +290,10 @@ Axis.Y2.LogScale: On
 # texts will have to be dropped. The TickSpacing allows user control over what
 # is shown, for example, if the texts represent years, showing only every 10th
 # year can be appealing. The first number is the starting position to show, and
-# the second number is the stride after that.
+# the second optional number is the stride after that (default stride is 1).
 # When stacking charts (see New) sharing the same textual X-axis, a trick to
 # not show the categories for the stacked charts, is to set the TickSpacing
-# start position really high.
+# start position really high for all but the bottom chart.
 #Axis.X.TickSpacing: 0 10
 
 # Turn grid lines on/off for major and minor ticks; may be On or Off. Unless

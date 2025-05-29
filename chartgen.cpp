@@ -1373,8 +1373,8 @@ void do_Axis_Tick( Chart::Axis* axis )
 
 void do_Axis_TickSpacing( Chart::Axis* axis )
 {
-  int64_t start;
-  int64_t stride;
+  int64_t start = 0;
+  int64_t stride = 1;
 
   skip_ws();
   if ( at_eol() ) parse_err( "start expected" );
@@ -1383,10 +1383,11 @@ void do_Axis_TickSpacing( Chart::Axis* axis )
     parse_err( "invalid start position", true );
   }
 
-  expect_ws( "stride expected" );
-  if ( !get_int64( stride ) ) parse_err( "malformed stride" );
-  if ( stride < 1 ) {
-    parse_err( "stride must be greater than zero", true );
+  skip_ws();
+  if ( get_int64( stride ) ) {
+    if ( stride < 1 ) {
+      parse_err( "stride must be greater than zero", true );
+    }
   }
 
   expect_eol();
