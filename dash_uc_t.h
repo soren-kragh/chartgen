@@ -96,18 +96,18 @@ std::cout << R"EOF(
 
 # Start creation of of new chart (optional). When having multiple charts, these
 # are organized in a grid as specified. The first two numbers specify the row
-# and column of the upper left corner, and the second two numbers specify the
-# row and column of the lower right corner; the mew chart may span multiple grid
-# cells in either direction. If no grid location is given, the new chart is just
-# added below any existing charts in the grid. After the optional grid location
-# follows the optional horizontal/vertical alignment within the allocated grid
-# cell(s); the default alignment will push charts located at a grid edge towards
-# that edge.
+# and column of the upper left corner, and the second optional two numbers
+# specify the row and column of the lower right corner; the mew chart may span
+# multiple grid cells in either direction. If no grid location is given, the new
+# chart is just added below any existing charts in the grid. After the optional
+# grid location follows the optional horizontal/vertical alignment within the
+# allocated grid cell(s); the default alignment will push charts located at a
+# grid edge towards that edge.
 # The chart edges of the same row/column will be aligned if possible, empty
 # rows/columns can however be inserted to avoid this, for example:
-# New: 0 0 0 0
+# New: 0 0
 # ChartArea: 200 200
-# New: 0 1 0 1
+# New: 0 1
 # ChartArea: 200 200
 # New: 1 0 1 1
 # ChartArea: 600 200
@@ -121,9 +121,9 @@ std::cout << R"EOF(
 # |                |
 # +----------------+
 # Whereas:
-# New: 0 1 0 1
+# New: 0 1
 # ChartArea: 200 200
-# New: 0 2 0 2
+# New: 0 2
 # ChartArea: 200 200
 # New: 1 0 1 3
 # ChartArea: 600 200

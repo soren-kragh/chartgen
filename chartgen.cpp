@@ -159,7 +159,7 @@ void gen_example( int N )
       }
       #include <dash_e3_part2.h>
       {
-        std::cout << '\n' << "New: 1 0 1 0" << '\n';
+        std::cout << '\n' << "New: 1 0" << '\n';
         std::cout << "Title: X" << '\n';
         std::cout << "ChartArea: 600 100" << '\n';
         std::cout << "Macro: SidePanel" << '\n';
@@ -170,7 +170,7 @@ void gen_example( int N )
         }
       }
       {
-        std::cout << '\n' << "New: 0 1 0 1" << '\n';
+        std::cout << '\n' << "New: 0 1" << '\n';
         std::cout << "Title: Y" << '\n';
         std::cout << "ChartArea: 100 600" << '\n';
         std::cout << "Macro: SidePanel" << '\n';
@@ -397,58 +397,62 @@ std::string get_identifier( bool all_non_ws = false )
 // successful the function returns true and the current position is advanced,
 // otherwise the function returns false and the current position is left
 // unchanged.
-bool get_int64( int64_t& i, bool ws_or_eol_after = true )
+bool get_int64( int64_t& i )
 {
   id_col = cur_col;
   try {
     std::string str = cur_line->line.substr( cur_col );
     str.push_back( ' ' );
     std::istringstream iss( str );
-    if ( !(iss >> i).fail() ) {
+    int64_t num;
+    if ( !(iss >> num).fail() ) {
       cur_col += iss.tellg();
-      if ( ws_or_eol_after && !at_eol() && !at_ws() ) {
+      if ( !at_eol() && !at_ws() ) {
         cur_col = id_col;
         return false;
       }
-      return true;
+      i = num;
+    } else {
+      return false;
     }
-    return false;
   } catch ( const std::exception& e ) {
     return false;
   }
+  return true;
 }
 bool get_double( double& d, bool none_allowed = false )
 {
   id_col = cur_col;
   if ( none_allowed ) {
     char c = get_char();
-    if ( c == '-' || c == '!' ) {
-      char nc = get_char( false );
-      if ( is_ws( nc ) ) {
-        d = (c == '!') ? Chart::num_invalid : Chart::num_skip;
-        return true;
-      }
+    if ( (c == '-' || c == '!') && (at_eol() || at_ws()) ) {
+      d = (c == '!') ? Chart::num_invalid : Chart::num_skip;
+      return true;
     }
   }
   cur_col = id_col;
-  bool success = false;
   try {
     std::string str = cur_line->line.substr( cur_col );
     str.push_back( ' ' );
     std::istringstream iss( str );
-    if ( !(iss >> d).fail() ) {
+    double num;
+    if ( !(iss >> num).fail() ) {
       cur_col += iss.tellg();
-      success = true;
+      if ( !at_eol() && !at_ws() ) {
+        cur_col = id_col;
+        return false;
+      }
+      d = num;
+    } else {
+      return false;
     }
   } catch ( const std::exception& e ) {
-    success = false;
+    return false;
   }
-  if ( success ) {
-    if ( std::abs( d ) > Chart::num_hi ) {
-      parse_err( "number too big", true );
-    }
+  if ( std::abs( d ) > Chart::num_hi ) {
+    parse_err( "number too big", true );
   }
-  return success;
+  return true;
 }
 
 // Read in a text based X-value which defines a category for the series.
@@ -549,7 +553,7 @@ void expect_ws( const std::string err_msg_if_eol = "" )
   skip_ws();
   if ( cur_col > old_col && !at_eol() ) return;
   if ( at_eol() && err_msg_if_eol != "" ) parse_err( err_msg_if_eol );
-  if ( !(old_col < cur_col) ) parse_err( "whitespace expected" );
+  if ( cur_col == old_col ) parse_err( "whitespace expected" );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -745,16 +749,21 @@ void do_New( void )
       parse_err( "grid column out of range [0;99]", true );
     }
 
-    expect_ws( "row expected" );
-    if ( !get_int64( row2 ) ) parse_err( "malformed row" );
-    if ( row2 < 0 || row2 > 99 ) {
-      parse_err( "grid row out of range [0;99]", true );
-    }
+    row2 = row1;
+    col2 = col1;
 
-    expect_ws( "column expected" );
-    if ( !get_int64( col2 ) ) parse_err( "malformed column" );
-    if ( col2 < 0 || col2 > 99 ) {
-      parse_err( "grid column out of range [0;99]", true );
+    skip_ws();
+
+    if ( get_int64( row2 ) ) {
+      if ( row2 < 0 || row2 > 99 ) {
+        parse_err( "grid row out of range [0;99]", true );
+      }
+
+      expect_ws( "column expected" );
+      if ( !get_int64( col2 ) ) parse_err( "malformed column" );
+      if ( col2 < 0 || col2 > 99 ) {
+        parse_err( "grid column out of range [0;99]", true );
+      }
     }
 
     grid_given = true;
