@@ -1628,6 +1628,7 @@ void ApplyMarkerSize( Chart::Series* series )
 void AddSeries( std::string name = "", bool anonymous_snap = false )
 {
   if ( !state.series_type_defined ) {
+    cur_col = 0;
     parse_err( "undefined SeriesType" );
   }
   state.type_list.push_back( state.series_type );

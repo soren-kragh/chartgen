@@ -3,10 +3,12 @@ std::cout << R"EOF(
 # Use a macro for the side panels.
 MacroDef: SidePanel
 ChartBox: On
-Series.Type: Area
+Series.Type: Bar
 Series.New: Samples
 Series.SharedLegend: On
-Series.Style: 7
+Series.FillColor: green
+Series.LineWidth: 0
+Axis.Y.Range: 0 1000
 Axis.Y.NumberFormat: None
 Axis.Y.Grid: Off
 TitleSize: 1.2
