@@ -1,16 +1,11 @@
 std::cout << R"EOF(
-Footnote: https://github.com/soren-kragh/chartgen
-FootnotePos: Right
-FootnoteLine: On
+# This is an example of multiple charts arranged i a grid.
 
 # Use negative grid padding to force abutted chart areas.
 GridPadding: -1
 
 # Place the shared legend for the side panels to the right.
 SharedLegendPos: Right
-
-ChartArea: 600 600
-ChartBox: On
 
 Heading:
   2D Sample Distribution
@@ -22,6 +17,12 @@ SubSubHeading:
 
 HeadingPos: Left
 HeadingLine: On
+
+# Grid position of the main chart.
+New: 0 0
+
+ChartArea: 600 600
+ChartBox: On
 
 Axis.X.Range: -1.25 +1.25
 Axis.Y.Range: -1.25 +1.25
@@ -59,5 +60,48 @@ Series.LineWidth: 5
 Series.LineColor: blue -0.5 0.9
 Series.FillColor: yellow 0 0.9
 
+# The actual data values are stored in a macro.
 Series.Data:
+Macro: 2d_data
+
+# Use a macro for the side panel layout.
+MacroDef: SidePanel
+ChartBox: On
+Series.Type: Bar
+Series.New: Samples
+Series.SharedLegend: On
+Series.FillColor: green
+Series.LineWidth: 0
+Axis.Y.Range: 0 1000
+Axis.Y.NumberFormat: None
+Axis.Y.Grid: Off
+TitleSize: 1.2
+TitleInside: On
+TitleFrame: Off
+TitlePos: Right Bottom
+MacroEnd: SidePanel
+
+# Define grid position of new chart for the X side panel.
+New: 1 0
+Title: X
+ChartArea: 600 100
+Macro: SidePanel
+Axis.Y.Reverse: On
+Series.Data:
+Macro: x_data
+
+# Define grid position of new chart for the Y side panel.
+New: 0 1
+Title: Y
+ChartArea: 100 600
+Macro: SidePanel
+Axis.X.Orientation: Vertical
+Axis.Y.Pos: Top
+Series.Data:
+Macro: y_data
+
+Footnote: https://github.com/soren-kragh/chartgen
+FootnotePos: Right
+FootnoteLine: On
+
 )EOF";
