@@ -138,13 +138,23 @@ void gen_example( int N )
       std::normal_distribution< double > md{ 0.0, 1.0 };
       std::uniform_real_distribution< double > ad{ 0.0, 2 * M_PI };
       #include <dash_e3.h>
-      std::cout << std::showpos << std::fixed << std::setprecision( 6 );
+      std::cout << std::showpos << std::fixed << std::setprecision( 3 );
       double min = -1.25;
       double max = +1.25;
-      int bins = 100;
+      int bins = 49;
+      auto ValToBin =
+        [&]( double v )
+        {
+          return std::lround( (bins + 1) * (v - min) / (max - min) - 1 );
+        };
+      auto BinToVal =
+        [&]( int32_t b )
+        {
+          return min + (max - min) * (b + 1) / (bins + 1);
+        };
       std::vector< uint32_t > bin_x( bins, 0 );
       std::vector< uint32_t > bin_y( bins, 0 );
-      int samples = 12000;
+      int samples = 10000;
       std::cout << "MacroDef: 2d_data" << '\n';
       while ( samples > 0 ) {
         double m = md( gen ) / 2;
@@ -153,23 +163,36 @@ void gen_example( int N )
         double y = m * std::sin( a );
         if ( std::abs( m ) <= 1.0 ) {
           std::cout << ' ' << x << ' ' << y << '\n';
-          ++bin_x[ static_cast< size_t >( bins * (x - min) / (max - min) ) ];
-          ++bin_y[ static_cast< size_t >( bins * (y - min) / (max - min) ) ];
+          ++bin_x[ ValToBin( x ) ];
+          ++bin_y[ ValToBin( y ) ];
           samples--;
         }
       }
       std::cout << "MacroEnd: 2d_data" << '\n';
+      auto BinData =
+        [&]( int32_t& bin, uint32_t n )
+        {
+          double a = BinToVal( bin - 1 );
+          double b = BinToVal( bin     );
+          double c = BinToVal( bin + 1 );
+          double p = (a + b) / 2;
+          double q = (b + c) / 2;
+          std::cout << " [" << p << ':' << q << "] " << n << '\n';
+          ++bin;
+        };
       {
         std::cout << "MacroDef: x_data" << '\n';
+        int32_t bin = 0;
         for ( auto n : bin_x ) {
-          std::cout << " - " << n << '\n';
+          BinData( bin, n );
         }
         std::cout << "MacroEnd: x_data" << '\n';
       }
       {
         std::cout << "MacroDef: y_data" << '\n';
+        int32_t bin = 0;
         for ( auto n : bin_y ) {
-          std::cout << " - " << n << '\n';
+          BinData( bin, n );
         }
         std::cout << "MacroEnd: y_data" << '\n';
       }

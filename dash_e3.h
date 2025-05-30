@@ -1,8 +1,18 @@
 std::cout << R"EOF(
-# This is an example of multiple charts arranged i a grid.
-
-# Use negative grid padding to force abutted chart areas.
-GridPadding: -1
+# This is an example of multiple charts arranged in a 2-by-2 grid:
+#
+#            Col 0    Col 1
+#       +------------++---+
+#       |            || S |
+#       |            || i |
+# Row 0 |    Main    || d |
+#       |            || e |
+#       |            ||   |
+#       |            || Y |
+#       +------------++---+
+#       +------------+
+# Row 1 |   Side X   |
+#       +------------+
 
 # Place the shared legend for the side panels to the right.
 SharedLegendPos: Right
@@ -67,14 +77,19 @@ Macro: 2d_data
 # Use a macro for the side panel layout.
 MacroDef: SidePanel
 ChartBox: On
+# Adjust so the center of the bars are placed exactly at "whole" fractional
+# numbers (0.25, 0.5 etc.) as opposed to being placed between them:
+BarMargin: 0.5
+# Also try Lollipop:
 Series.Type: Bar
 Series.New: Samples
 Series.SharedLegend: On
-Series.FillColor: green
-Series.LineWidth: 0
-Axis.Y.Range: 0 1000
-Axis.Y.NumberFormat: None
-Axis.Y.Grid: Off
+Series.Style: 7
+Axis.Y.Range: 0 1500
+Axis.Y.GridStyle: Solid
+# Hide the bin ranges, which is achieved by selecting the first one to "show"
+# way past the number of bins. Also try removing TickSpacing to show bins:
+Axis.X.TickSpacing: 999
 TitleSize: 1.2
 TitleInside: On
 TitleFrame: Off
@@ -84,19 +99,24 @@ MacroEnd: SidePanel
 # Define grid position of new chart for the X side panel.
 New: 1 0
 Title: X
-ChartArea: 600 100
+ChartArea: 600 120
 Macro: SidePanel
 Axis.Y.Reverse: On
+Axis.Y.NumberPos: Right
 Series.Data:
 Macro: x_data
 
 # Define grid position of new chart for the Y side panel.
 New: 0 1
 Title: Y
-ChartArea: 100 600
+ChartArea: 120 600
 Macro: SidePanel
+# Normally a textual X-axis goes from top to bottom, but we want the bins to
+# follow the mathematical Y coordinates:
+Axis.X.Reverse: On
 Axis.X.Orientation: Vertical
 Axis.Y.Pos: Top
+Axis.Y.NumberPos: Below
 Series.Data:
 Macro: y_data
 
