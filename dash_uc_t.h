@@ -79,7 +79,9 @@ std::cout << R"EOF(
 # Draw a frame around shared legends; may be On or Off; default is Auto.
 #SharedLegendFrame: On
 
-# Specify the position of shared series legends.
+# Specify the position of shared series legends. If Auto (the default) the
+# shared legends will be placed in a free chart grid location if possible,
+# alternatively a grid location can be specified explicitly (see New).
 #SharedLegendPos: Bottom
 
 # Set the relative size of shared legend box texts.
