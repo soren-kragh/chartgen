@@ -733,23 +733,12 @@ void do_Color(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Chart::Main* CurChart( void )
+bool do_GridPos(
+  int64_t& row1, int64_t& col1,
+  int64_t& row2, int64_t& col2
+)
 {
-  if ( ensemble.Empty() ) {
-    ensemble.NewChart( 0, 0, 0, 0 );
-  }
-  return ensemble.LastChart();
-}
-
-void do_New( void )
-{
-  bool grid_given = false;
-  int64_t row1 = 0;
-  int64_t col1 = 0;
-  int64_t row2 = 0;
-  int64_t col2 = 0;
-  Chart::Pos align_hor = Chart::Pos::Auto;
-  Chart::Pos align_ver = Chart::Pos::Auto;
+  bool got_pos = false;
 
   skip_ws();
 
@@ -781,8 +770,32 @@ void do_New( void )
       }
     }
 
-    grid_given = true;
+    got_pos = true;
   }
+
+  return got_pos;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Chart::Main* CurChart( void )
+{
+  if ( ensemble.Empty() ) {
+    ensemble.NewChart( 0, 0, 0, 0 );
+  }
+  return ensemble.LastChart();
+}
+
+void do_New( void )
+{
+  Chart::Pos align_hor = Chart::Pos::Auto;
+  Chart::Pos align_ver = Chart::Pos::Auto;
+
+  int64_t row1;
+  int64_t col1;
+  int64_t row2;
+  int64_t col2;
+  bool grid_given = do_GridPos( row1, col1, row2, col2 );
 
   skip_ws();
   if ( !at_eol() ) {
@@ -863,15 +876,25 @@ void do_Padding( void )
 
 void do_GridPadding( void )
 {
-  double m;
+  double grid_padding;
+  double area_padding = 0;
+
   skip_ws();
   if ( at_eol() ) parse_err( "grid padding expected" );
-  if ( !get_double( m ) ) parse_err( "malformed grid padding" );
-  if ( m > 1000 ) {
+  if ( !get_double( grid_padding ) ) parse_err( "malformed grid padding" );
+  if ( grid_padding > 1000 ) {
     parse_err( "grid padding out of range [-inf;1000]", true );
   }
+
+  skip_ws();
+  if ( get_double( area_padding ) ) {
+    if ( area_padding < 0 || area_padding > 1000 ) {
+      parse_err( "chart area padding out of range [0;1000]", true );
+    }
+  }
+
   expect_eol();
-  ensemble.SetGridPadding( m );
+  ensemble.SetGridPadding( grid_padding, area_padding );
 }
 
 //------------------------------------------------------------------------------
@@ -893,11 +916,32 @@ void do_SharedLegendFrame( void )
 
 void do_SharedLegendPos( void )
 {
+  int64_t row1;
+  int64_t col1;
+  int64_t row2;
+  int64_t col2;
   Chart::Pos pos;
   skip_ws();
-  do_Pos( pos );
-  expect_eol();
-  ensemble.SetLegendPos( pos );
+  if ( do_GridPos( row1, col1, row2, col2 ) ) {
+    Chart::Pos align_hor = Chart::Pos::Auto;
+    Chart::Pos align_ver = Chart::Pos::Auto;
+    skip_ws();
+    if ( !at_eol() ) {
+      do_Pos( align_hor );
+      expect_ws( "vertical position expected" );
+      do_Pos( align_ver );
+    }
+    expect_eol();
+    if (
+      !ensemble.SetLegendPos( row1, col1, row2, col2, align_hor, align_ver
+    ) ) {
+      parse_err( "grid collision" );
+    }
+  } else {
+    do_Pos( pos );
+    expect_eol();
+    ensemble.SetLegendPos( pos );
+  }
 }
 
 void do_SharedLegendSize( void )

@@ -58,8 +58,9 @@ std::cout << R"EOF(
 
 # Padding (in points) around individual charts in grid; default is 4. This
 # setting only has any effect when having multiple charts. A negative value
-# means that only the core chart areas are considered when placing the charts
-# in a grid.
+# means that only the core chart areas are considered when placing the charts in
+# a grid. The optional second number specify the padding around the core chart
+# areas.
 #GridPadding: 4
 
 # See Title, which is normally what should be used for single charts. Headings
@@ -78,7 +79,10 @@ std::cout << R"EOF(
 # Draw a frame around shared legends; may be On or Off; default is Auto.
 #SharedLegendFrame: On
 
-# Specify the position of shared series legends.
+# Specify the position of shared series legends. If Auto (the default) the
+# shared legends will be placed in a free chart grid location if possible,
+# alternatively a grid location (with optional alignment) can be specified
+# explicitly (see New).
 #SharedLegendPos: Bottom
 
 # Set the relative size of shared legend box texts.

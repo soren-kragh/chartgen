@@ -14,8 +14,22 @@ std::cout << R"EOF(
 # Row 1 |   Side X   |
 #       +------------+
 
-# Place the shared legend for the side panels to the right.
-SharedLegendPos: Right
+# Select to only let the actual core chart areas determine the distance between
+# the charts. This gives equal gap between the chart boxes, but you must ensure
+# that decorations do not collide since -1 disables collision check for
+# decorations, i.e. labels, numbers, titles, etc. In this example we have
+# ensured that there are no decorations between the main chart and the side
+# panels.
+GridPadding: -1 4
+
+# The side panels share the legend as they are the same. You can of course
+# remove this heading, it's just an example.
+SharedLegendHeading:
+  Shared
+  Legend
+
+# You can place the shared legend for the side panels manually.
+#SharedLegendPos: Bottom
 
 Heading:
   2D Sample Distribution
@@ -83,6 +97,7 @@ BarMargin: 0.5
 # Also try Lollipop:
 Series.Type: Bar
 Series.New: Samples
+# The side panels share the same legend:
 Series.SharedLegend: On
 Series.Style: 7
 Axis.Y.Range: 0 1500
@@ -101,8 +116,13 @@ New: 1 0
 Title: X
 ChartArea: 600 120
 Macro: SidePanel
+# In case the bin ranges are shown (see TickSpacing above), make sure to show
+# them where they don't collide with the main plot, remember, we disabled
+# collision check for decorations (see GridPadding earlier).
+Axis.X.Pos: Bottom
 Axis.Y.Reverse: On
-Axis.Y.NumberPos: Right
+# Move Y-axis numbers into the chart area like so:
+#Axis.Y.NumberPos: Right
 Series.Data:
 Macro: x_data
 
@@ -111,12 +131,15 @@ New: 0 1
 Title: Y
 ChartArea: 120 600
 Macro: SidePanel
+# See comment for Axis.X.Pos above.
+Axis.X.Pos: Right
 # Normally a textual X-axis goes from top to bottom, but we want the bins to
 # follow the mathematical Y coordinates:
 Axis.X.Reverse: On
 Axis.X.Orientation: Vertical
 Axis.Y.Pos: Top
-Axis.Y.NumberPos: Below
+# Move Y-axis numbers into the chart area like so:
+#Axis.Y.NumberPos: Below
 Series.Data:
 Macro: y_data
 
