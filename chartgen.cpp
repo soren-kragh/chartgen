@@ -863,15 +863,25 @@ void do_Padding( void )
 
 void do_GridPadding( void )
 {
-  double m;
+  double grid_padding;
+  double area_padding = 0;
+
   skip_ws();
   if ( at_eol() ) parse_err( "grid padding expected" );
-  if ( !get_double( m ) ) parse_err( "malformed grid padding" );
-  if ( m > 1000 ) {
+  if ( !get_double( grid_padding ) ) parse_err( "malformed grid padding" );
+  if ( grid_padding > 1000 ) {
     parse_err( "grid padding out of range [-inf;1000]", true );
   }
+
+  skip_ws();
+  if ( get_double( area_padding ) ) {
+    if ( area_padding > 1000 ) {
+      parse_err( "chart area padding out of range [-inf;1000]", true );
+    }
+  }
+
   expect_eol();
-  ensemble.SetGridPadding( m );
+  ensemble.SetGridPadding( grid_padding, area_padding );
 }
 
 //------------------------------------------------------------------------------

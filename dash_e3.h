@@ -14,8 +14,17 @@ std::cout << R"EOF(
 # Row 1 |   Side X   |
 #       +------------+
 
-# Place the shared legend for the side panels to the right.
-SharedLegendPos: Right
+# You may fully abut the chart areas like so:
+#GridPadding: -1
+
+# The side panels share the legend as they are the same. You can of course
+# remove this heading, it's just an example.
+SharedLegendHeading:
+  Shared
+  Legend
+
+# You can place the shared legend for the side panels manually.
+#SharedLegendPos: Bottom
 
 Heading:
   2D Sample Distribution
@@ -83,6 +92,7 @@ BarMargin: 0.5
 # Also try Lollipop:
 Series.Type: Bar
 Series.New: Samples
+# The side panels share the same legend:
 Series.SharedLegend: On
 Series.Style: 7
 Axis.Y.Range: 0 1500

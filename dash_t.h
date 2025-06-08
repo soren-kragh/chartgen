@@ -20,7 +20,7 @@ Series.Data :
 # BorderWidth: 5
 # BorderColor: navy
 # Padding: 10
-# GridPadding: 5
+# GridPadding: 0 12
 # Heading: Heading
 # SubHeading: Smaller Heading
 # SubSubHeading: Even Smaller Heading

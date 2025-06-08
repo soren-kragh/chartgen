@@ -58,8 +58,9 @@ std::cout << R"EOF(
 
 # Padding (in points) around individual charts in grid; default is 4. This
 # setting only has any effect when having multiple charts. A negative value
-# means that only the core chart areas are considered when placing the charts
-# in a grid.
+# means that only the core chart areas are considered when placing the charts in
+# a grid. The optional second number specify the padding around the core chart
+# areas.
 #GridPadding: 4
 
 # See Title, which is normally what should be used for single charts. Headings
