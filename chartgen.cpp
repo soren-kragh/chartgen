@@ -888,8 +888,8 @@ void do_GridPadding( void )
 
   skip_ws();
   if ( get_double( area_padding ) ) {
-    if ( area_padding > 1000 ) {
-      parse_err( "chart area padding out of range [-inf;1000]", true );
+    if ( area_padding < 0 || area_padding > 1000 ) {
+      parse_err( "chart area padding out of range [0;1000]", true );
     }
   }
 
