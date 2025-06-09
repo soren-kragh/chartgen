@@ -923,8 +923,18 @@ void do_SharedLegendPos( void )
   Chart::Pos pos;
   skip_ws();
   if ( do_GridPos( row1, col1, row2, col2 ) ) {
+    Chart::Pos align_hor = Chart::Pos::Auto;
+    Chart::Pos align_ver = Chart::Pos::Auto;
+    skip_ws();
+    if ( !at_eol() ) {
+      do_Pos( align_hor );
+      expect_ws( "vertical position expected" );
+      do_Pos( align_ver );
+    }
     expect_eol();
-    if ( !ensemble.SetLegendPos( row1, col1, row2, col2 ) ) {
+    if (
+      !ensemble.SetLegendPos( row1, col1, row2, col2, align_hor, align_ver
+    ) ) {
       parse_err( "grid collision" );
     }
   } else {

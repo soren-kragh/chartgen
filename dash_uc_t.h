@@ -81,7 +81,8 @@ std::cout << R"EOF(
 
 # Specify the position of shared series legends. If Auto (the default) the
 # shared legends will be placed in a free chart grid location if possible,
-# alternatively a grid location can be specified explicitly (see New).
+# alternatively a grid location (with optional alignment) can be specified
+# explicitly (see New).
 #SharedLegendPos: Bottom
 
 # Set the relative size of shared legend box texts.
