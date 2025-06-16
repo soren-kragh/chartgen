@@ -20,24 +20,28 @@ Series.Data :
 # BorderWidth: 5
 # BorderColor: navy
 # Padding: 10
-# GridPadding: 0 12
-# Heading: Heading
-# SubHeading: Smaller Heading
-# SubSubHeading: Even Smaller Heading
-# HeadingPos: Left
-# HeadingSize: 1.0
-# HeadingLine: On
+# ForegroundColor: skyblue
+# BackgroundColor: darkslategray
+# GlobalTitle: Global Title
+# GlobalSubTitle: Smaller Global Title
+# GlobalSubSubTitle: Even Smaller Global Title
+# GlobalTitlePos: Left
+# GlobalTitleSize: 1.0
+# GlobalTitleLine: On
 # GlobalLegendHeading: Metals
 # GlobalLegendFrame: On
 # GlobalLegendPos: Bottom
 # GlobalLegendSize: 1.0
 # GlobalLegendColor: lavender
+# Footnote:
+# FootnotePos: Center
+# FootnoteLine: On
+# FootnoteSize: 1.0
 # LetterSpacing: 1.8 1.1 0.8
+# GridPadding: 0 12
 # New: 0 0 3 0 Center Bottom
 # ChartArea: 1000 600
 # ChartBox: On
-# ForegroundColor: skyblue
-# BackgroundColor: darkslategray
 # ChartAreaColor: dimgray
 # AxisColor: white
 # GridColor: green
@@ -50,10 +54,6 @@ Series.Data :
 # TitlePos: Left
 # TitleInside: On
 # TitleSize: 1.0
-# Footnote:
-# FootnotePos: Center
-# FootnoteLine: On
-# FootnoteSize: 1.0
 # Axis.X.Orientation: Vertical
 # Axis.*.Reverse: Off
 # Axis.*.Style: Auto

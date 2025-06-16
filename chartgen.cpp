@@ -1082,57 +1082,57 @@ void do_FrameColor( void )
 
 //------------------------------------------------------------------------------
 
-void do_Heading( void )
+void do_GlobalTitle( void )
 {
   std::string txt;
   get_text( txt, true );
-  ensemble.SetHeading( txt );
+  ensemble.SetTitle( txt );
 }
 
-void do_SubHeading( void )
+void do_GlobalSubTitle( void )
 {
   std::string txt;
   get_text( txt, true );
-  ensemble.SetSubHeading( txt );
+  ensemble.SetSubTitle( txt );
 }
 
-void do_SubSubHeading( void )
+void do_GlobalSubSubTitle( void )
 {
   std::string txt;
   get_text( txt, true );
-  ensemble.SetSubSubHeading( txt );
+  ensemble.SetSubSubTitle( txt );
 }
 
-void do_HeadingPos( void )
+void do_GlobalTitlePos( void )
 {
   Chart::Pos pos;
   skip_ws();
   do_Pos( pos );
   expect_eol();
-  ensemble.SetHeadingPos( pos );
+  ensemble.SetTitlePos( pos );
 }
 
-void do_HeadingSize( void )
+void do_GlobalTitleSize( void )
 {
   double size;
   skip_ws();
-  if ( at_eol() ) parse_err( "heading size value expected" );
+  if ( at_eol() ) parse_err( "title size value expected" );
   if ( !get_double( size ) ) {
-    parse_err( "malformed heading size value" );
+    parse_err( "malformed title size value" );
   }
   if ( size < 0.01 || size > 100 ) {
-    parse_err( "heading size value out of range", true );
+    parse_err( "title size value out of range", true );
   }
   expect_eol();
-  ensemble.SetHeadingSize( size );
+  ensemble.SetTitleSize( size );
 }
 
-void do_HeadingLine( void )
+void do_GlobalTitleLine( void )
 {
-  bool heading_line;
-  do_Switch( heading_line );
+  bool title_line;
+  do_Switch( title_line );
   expect_eol();
-  ensemble.SetHeadingLine( heading_line );
+  ensemble.SetTitleLine( title_line );
 }
 
 //------------------------------------------------------------------------------
@@ -2213,12 +2213,12 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "GridColor"              , do_GridColor               },
   { "TextColor"              , do_TextColor               },
   { "FrameColor"             , do_FrameColor              },
-  { "Heading"                , do_Heading                 },
-  { "SubHeading"             , do_SubHeading              },
-  { "SubSubHeading"          , do_SubSubHeading           },
-  { "HeadingPos"             , do_HeadingPos              },
-  { "HeadingSize"            , do_HeadingSize             },
-  { "HeadingLine"            , do_HeadingLine             },
+  { "GlobalTitle"            , do_GlobalTitle             },
+  { "GlobalSubTitle"         , do_GlobalSubTitle          },
+  { "GlobalSubSubTitle"      , do_GlobalSubSubTitle       },
+  { "GlobalTitlePos"         , do_GlobalTitlePos          },
+  { "GlobalTitleSize"        , do_GlobalTitleSize         },
+  { "GlobalTitleLine"        , do_GlobalTitleLine         },
   { "Title"                  , do_Title                   },
   { "SubTitle"               , do_SubTitle                },
   { "SubSubTitle"            , do_SubSubTitle             },

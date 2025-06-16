@@ -17,9 +17,9 @@ std::cout << R"EOF(
 # Select to only let the actual core chart areas determine the distance between
 # the charts. This gives equal gap between the chart boxes, but you must ensure
 # that decorations do not collide since -1 disables collision check for
-# decorations, i.e. labels, numbers, titles, etc. In this example we have
-# ensured that there are no decorations between the main chart and the side
-# panels.
+# decorations, i.e. labels, numbers, titles, etc. that are external to the core
+# chart area. In this example we have ensured that there are no decorations
+# between the main chart and the side panels.
 GridPadding: -1 4
 
 # The side panels share the legend as they are the same. You can of course
@@ -32,16 +32,16 @@ GlobalLegendHeading:
 # You can also place the shared legend for the side panels manually.
 #GlobalLegendPos: Bottom
 
-Heading:
+GlobalTitle:
   2D Sample Distribution
-SubSubHeading:
+GlobalSubSubTitle:
   This plot has many data points, so it may be a good idea to convert it to
   bitmap before sharing or using in documents etc., e.g.:
 
   ⟫ chartgen -e3 | chartgen | svg2png >example3.png
 
-HeadingPos: Left
-HeadingLine: On
+GlobalTitlePos: Left
+GlobalTitleLine: On
 
 # Grid position of the main chart.
 New: 0 0

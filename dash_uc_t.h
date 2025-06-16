@@ -56,22 +56,21 @@ std::cout << R"EOF(
 # Padding around everything in points; default is 8.
 #Padding: 8
 
-# Padding (in points) around individual charts in grid; default is 4. This
-# setting only has any effect when having multiple charts. A negative value
-# means that only the core chart areas are considered when placing the charts in
-# a grid. The optional second number specify the padding around the core chart
-# areas.
-#GridPadding: 4
+# The foreground color is primarily used as the default color for texts. The
+# background color also determines the chart area color, unless the chart area
+# color is also given (see ChartAreaColor).
+#ForegroundColor: brown
+#BackgroundColor: darkslategray
 
-# See Title, which is normally what should be used for single charts. Headings
-# are placed at the top and are typically used for when multiple charts are
-# organized in a grid (see New).
-#Heading: Heading
-#SubHeading: Smaller Heading
-#SubSubHeading: Even Smaller Heading
-#HeadingPos: Left
-#HeadingSize: 1.0
-#HeadingLine: On
+# See Title, which is normally what should be used for single charts. Global
+# titles are placed at the top and are typically used for when multiple charts
+# are organized in a grid (see New).
+#GlobalTitle: Title
+#GlobalSubTitle: Smaller Title
+#GlobalSubSubTitle: Even Smaller Title
+#GlobalTitlePos: Left
+#GlobalTitleSize: 1.0
+#GlobalTitleLine: On
 
 # An optional heading for the global legends (see Series.GlobalLegend).
 #GlobalLegendHeading: Metals
@@ -79,10 +78,10 @@ std::cout << R"EOF(
 # Draw a frame around global legends; may be On or Off; default is Auto.
 #GlobalLegendFrame: On
 
-# Specify the position of global series legends. If Auto (the default) the
-# global legends will be placed in a free chart grid location if possible,
-# alternatively a grid location (with optional alignment) can be specified
-# explicitly (see New).
+# Specify the position of global series legends. If Auto (the default), the
+# global legends will be placed in a free chart grid location if possible, or
+# otherwise below all the charts. Alternatively a grid location (with optional
+# alignment) can be specified explicitly using same syntax as for New (see New).
 #GlobalLegendPos: Bottom
 
 # Set the relative size of global legend box texts.
@@ -98,10 +97,17 @@ std::cout << R"EOF(
 # optional number is the baseline adjustment factor.
 #LetterSpacing: 1.8 1.1 0.8
 
+# Padding (in points) around individual charts in grid; default is 4. This
+# setting only has any effect when having multiple charts. A negative value
+# means that only the core chart areas are considered when placing the charts in
+# a grid. An optional second number specify the padding around the core chart
+# areas.
+#GridPadding: 4
+
 # Start creation of of new chart (optional). When having multiple charts, these
 # are organized in a grid as specified. The first two numbers specify the row
 # and column of the upper left corner, and the second optional two numbers
-# specify the row and column of the lower right corner; the mew chart may span
+# specify the row and column of the lower right corner; the new chart may span
 # multiple grid cells in either direction. If no grid location is given, the new
 # chart is just added below any existing charts in the grid. After the optional
 # grid location follows the optional horizontal/vertical alignment within the
@@ -140,7 +146,7 @@ std::cout << R"EOF(
 # |                |
 # |                |
 # +----------------+
-# When using New, all state is reset as if a new blank file is started; use
+# When using New, most state is reset as if a new blank file is started; use
 # macros to easily repeat specifiers shared among multiple charts in the grid.
 #New: 0 0 1 1 Right Top
 
@@ -154,11 +160,7 @@ std::cout << R"EOF(
 # Draw a box around chart area; may be On or Off.
 #ChartBox: On
 
-# The foreground color is primarily used as the default color for texts. The
-# background color also determines the chart area color, unless the chart area
-# color is also given.
-#ForegroundColor: brown
-#BackgroundColor: darkslategray
+# Change color of various chart elements.
 #ChartAreaColor: dimgray
 #AxisColor: white
 #GridColor: green
@@ -194,7 +196,7 @@ SubSubTitle:
 # Set the relative size of titles.
 #TitleSize: 1.0
 
-# Adds a footnote. Footnotes are placed at the bottom of the chart.
+# Adds a footnote. Footnotes are placed below everything.
 Footnote:
   https://github.com/soren-kragh/chartgen
 
