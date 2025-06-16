@@ -2083,22 +2083,23 @@ void parse_series_data( bool anonymous_snap = false )
       cur_col = 0;
       return;
     }
-    if (
-      !x_is_text && y_values == 0 &&
-      ( !state.series_type_defined ||
-        ( state.series_type != Chart::SeriesType::XY &&
-          state.series_type != Chart::SeriesType::Scatter
-        )
-      )
-    ) {
-      x_is_text = true;
-      no_x_value = true;
-    }
-    if ( y_values == 0 ) y_values = 1;
-    if ( !state.series_type_defined ) {
-      state.series_type = x_is_text ? Chart::SeriesType::Line : Chart::SeriesType::XY;
+    if ( state.series_type_defined ) {
+      if (
+        !x_is_text && y_values == 0 &&
+        state.series_type != Chart::SeriesType::XY &&
+        state.series_type != Chart::SeriesType::Scatter
+      ) {
+        no_x_value = true;
+      }
+    } else {
+      if ( !x_is_text ) {
+        no_x_value = true;
+        ++y_values;
+      }
+      state.series_type = Chart::SeriesType::Line;
       state.series_type_defined = true;
     }
+    if ( y_values == 0 ) y_values = 1;
     restore_line_pos();
   }
 
