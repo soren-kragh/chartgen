@@ -28,6 +28,7 @@ Chart::Ensemble ensemble;
 bool grid_max_defined = false;
 uint32_t grid_max_row = 0;
 uint32_t grid_max_col = 0;
+Chart::Pos footnote_pos = Chart::Pos::Auto;
 
 struct state_t {
   std::vector< Chart::Series* > series_list;
@@ -1215,15 +1216,15 @@ void do_Footnote( void )
   std::string txt;
   get_text( txt, true );
   ensemble.AddFootnote( txt );
+  ensemble.SetFootnotePos( footnote_pos );
 }
 
 void do_FootnotePos( void )
 {
-  Chart::Pos pos;
   skip_ws();
-  do_Pos( pos );
+  do_Pos( footnote_pos );
   expect_eol();
-  ensemble.SetFootnotePos( pos );
+  ensemble.SetFootnotePos( footnote_pos );
 }
 
 void do_FootnoteLine( void )

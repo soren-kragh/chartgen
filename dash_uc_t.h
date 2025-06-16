@@ -200,8 +200,8 @@ SubSubTitle:
 Footnote:
   https://github.com/soren-kragh/chartgen
 
-# May be Left, Right, or Center; default is Left. Applies to most recently
-# added footnote.
+# May be Left, Right, or Center; default is Left. Applies to the most recently
+# added footnote and any additional footnotes that may follow.
 FootnotePos: Right
 
 # Enables a line above the footnotes.
