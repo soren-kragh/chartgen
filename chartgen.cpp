@@ -37,7 +37,7 @@ struct state_t {
   bool series_type_defined = false;
   Chart::SeriesType series_type = Chart::SeriesType::XY;
   int32_t category_idx = 0;
-  bool shared_legend = false;
+  bool global_legend = false;
   bool legend_outline = true;
   int axis_y_n = 0;
   double series_base = 0;
@@ -899,14 +899,14 @@ void do_GridPadding( void )
 
 //------------------------------------------------------------------------------
 
-void do_SharedLegendHeading( void )
+void do_GlobalLegendHeading( void )
 {
   std::string txt;
   get_text( txt, true );
   ensemble.SetLegendHeading( txt );
 }
 
-void do_SharedLegendFrame( void )
+void do_GlobalLegendFrame( void )
 {
   bool frame;
   do_Switch( frame );
@@ -914,7 +914,7 @@ void do_SharedLegendFrame( void )
   ensemble.SetLegendFrame( frame );
 }
 
-void do_SharedLegendPos( void )
+void do_GlobalLegendPos( void )
 {
   int64_t row1;
   int64_t col1;
@@ -944,7 +944,7 @@ void do_SharedLegendPos( void )
   }
 }
 
-void do_SharedLegendSize( void )
+void do_GlobalLegendSize( void )
 {
   double size;
   skip_ws();
@@ -959,7 +959,7 @@ void do_SharedLegendSize( void )
   ensemble.SetLegendSize( size );
 }
 
-void do_SharedLegendColor( void )
+void do_GlobalLegendColor( void )
 {
   do_Color( ensemble.LegendColor() );
 }
@@ -1694,7 +1694,7 @@ void AddSeries( std::string name = "", bool anonymous_snap = false )
   state.series_list.push_back( CurChart()->AddSeries( state.series_type ) );
   state.series_list.back()->SetName( name );
   state.series_list.back()->SetAnonymousSnap( anonymous_snap );
-  state.series_list.back()->SetSharedLegend( state.shared_legend );
+  state.series_list.back()->SetGlobalLegend( state.global_legend );
   state.series_list.back()->SetLegendOutline( state.legend_outline );
   state.series_list.back()->SetAxisY( state.axis_y_n );
   state.series_list.back()->SetBase( state.series_base );
@@ -1730,12 +1730,12 @@ void do_Series_New( void )
   AddSeries( txt );
 }
 
-void do_Series_SharedLegend( void )
+void do_Series_GlobalLegend( void )
 {
-  do_Switch( state.shared_legend );
+  do_Switch( state.global_legend );
   expect_eol();
   if ( state.defining_series ) {
-    state.series_list.back()->SetSharedLegend( state.shared_legend );
+    state.series_list.back()->SetGlobalLegend( state.global_legend );
   }
 }
 
@@ -2197,11 +2197,11 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "BorderWidth"            , do_BorderWidth             },
   { "Padding"                , do_Padding                 },
   { "GridPadding"            , do_GridPadding             },
-  { "SharedLegendHeading"    , do_SharedLegendHeading     },
-  { "SharedLegendFrame"      , do_SharedLegendFrame       },
-  { "SharedLegendPos"        , do_SharedLegendPos         },
-  { "SharedLegendSize"       , do_SharedLegendSize        },
-  { "SharedLegendColor"      , do_SharedLegendColor       },
+  { "GlobalLegendHeading"    , do_GlobalLegendHeading     },
+  { "GlobalLegendFrame"      , do_GlobalLegendFrame       },
+  { "GlobalLegendPos"        , do_GlobalLegendPos         },
+  { "GlobalLegendSize"       , do_GlobalLegendSize        },
+  { "GlobalLegendColor"      , do_GlobalLegendColor       },
   { "LetterSpacing"          , do_LetterSpacing           },
   { "New"                    , do_New                     },
   { "ChartArea"              , do_ChartArea               },
@@ -2237,7 +2237,7 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "BarWidth"               , do_BarWidth                },
   { "BarMargin"              , do_BarMargin               },
   { "Series.New"             , do_Series_New              },
-  { "Series.SharedLegend"    , do_Series_SharedLegend     },
+  { "Series.GlobalLegend"    , do_Series_GlobalLegend     },
   { "Series.LegendOutline"   , do_Series_LegendOutline    },
   { "Series.Type"            , do_Series_Type             },
   { "Series.AxisY"           , do_Series_AxisY            },

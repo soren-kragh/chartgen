@@ -27,11 +27,11 @@ Series.Data :
 # HeadingPos: Left
 # HeadingSize: 1.0
 # HeadingLine: On
-# SharedLegendHeading: Metals
-# SharedLegendFrame: On
-# SharedLegendPos: Bottom
-# SharedLegendSize: 1.0
-# SharedLegendColor: lavender
+# GlobalLegendHeading: Metals
+# GlobalLegendFrame: On
+# GlobalLegendPos: Bottom
+# GlobalLegendSize: 1.0
+# GlobalLegendColor: lavender
 # LetterSpacing: 1.8 1.1 0.8
 # New: 0 0 3 0 Center Bottom
 # ChartArea: 1000 600
@@ -84,7 +84,7 @@ Series.Data :
 # BarMargin: 0
 # Series.Type: XY
 # Series.New: Name of series
-# Series.SharedLegend: On
+# Series.GlobalLegend: On
 # Series.LegendOutline: Off
 # Series.AxisY: Y2
 # Series.Base: 0

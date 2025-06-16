@@ -73,23 +73,23 @@ std::cout << R"EOF(
 #HeadingSize: 1.0
 #HeadingLine: On
 
-# An optional heading for the shared legends (see Series.SharedLegend).
-#SharedLegendHeading: Metals
+# An optional heading for the global legends (see Series.GlobalLegend).
+#GlobalLegendHeading: Metals
 
-# Draw a frame around shared legends; may be On or Off; default is Auto.
-#SharedLegendFrame: On
+# Draw a frame around global legends; may be On or Off; default is Auto.
+#GlobalLegendFrame: On
 
-# Specify the position of shared series legends. If Auto (the default) the
-# shared legends will be placed in a free chart grid location if possible,
+# Specify the position of global series legends. If Auto (the default) the
+# global legends will be placed in a free chart grid location if possible,
 # alternatively a grid location (with optional alignment) can be specified
 # explicitly (see New).
-#SharedLegendPos: Bottom
+#GlobalLegendPos: Bottom
 
-# Set the relative size of shared legend box texts.
-#SharedLegendSize: 1.0
+# Set the relative size of global legend box texts.
+#GlobalLegendSize: 1.0
 
-# The background color of the shared legend box.
-#SharedLegendColor: darkseagreen
+# The background color of the global legend box.
+#GlobalLegendColor: darkseagreen
 
 # The spacing and positioning of letters are based on mono-spaced ASCII letters.
 # If different letters are used, the LetterSpacing may be used to adjust the
@@ -435,12 +435,14 @@ Series.New: Name of series
 
 # The following Series specifiers associate to the above newly created series.
 
-# When several charts are organized in a grid (see New), the series legend can
-# be shared for multiple charts and placed externally outside the grid. For
-# sharing to occur, the name and style of the series must be the same. This
-# attribute applies to the current series and all subsequent series, or until it
-# is redefined.
-#Series.SharedLegend: Off
+# Set the series legend to be global; may be On or Off, default is Off. Global
+# legends are relevant when multiple charts are organized in a grid, in which
+# case the legends are shown outside the charts. Global legends may be shared,
+# i.e. shown only once despite several series having that legend. For sharing to
+# occur, the name and style of the series must be the same. This attribute
+# applies to the current series and all subsequent series, or until it is
+# redefined.
+#Series.GlobalLegend: Off
 
 # Specify if line style legends are shown with an outline around the legend text
 # (On), or with a small line segment in front of the legend text (Off); default

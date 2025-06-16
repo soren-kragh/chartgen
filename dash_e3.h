@@ -24,12 +24,13 @@ GridPadding: -1 4
 
 # The side panels share the legend as they are the same. You can of course
 # remove this heading, it's just an example.
-SharedLegendHeading:
+GlobalLegendHeading:
+  Global
   Shared
   Legend
 
-# You can place the shared legend for the side panels manually.
-#SharedLegendPos: Bottom
+# You can also place the shared legend for the side panels manually.
+#GlobalLegendPos: Bottom
 
 Heading:
   2D Sample Distribution
@@ -97,8 +98,8 @@ BarMargin: 0.5
 # Also try Lollipop:
 Series.Type: Bar
 Series.New: Samples
-# The side panels share the same legend:
-Series.SharedLegend: On
+# The side panels share the same legend, so make it global:
+Series.GlobalLegend: On
 Series.Style: 7
 Axis.Y.Range: 0 1500
 Axis.Y.GridStyle: Solid
