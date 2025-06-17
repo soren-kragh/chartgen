@@ -294,20 +294,20 @@ std::vector< LineRecIter > macro_stack;
 
 void next_line( void );
 
-std::vector< LineRecIter > saved_macro_stack;
-LineRecIter                saved_line;
+std::vector< LineRecIter > saved_macro_stack[ 2 ];
+LineRecIter                saved_line[ 2 ];
 
-void save_line_pos( void )
+void save_line_pos( uint32_t context = 0 )
 {
-  saved_line = cur_line;
-  saved_macro_stack = macro_stack;
+  saved_line[ context ] = cur_line;
+  saved_macro_stack[ context ] = macro_stack;
 }
 
-void restore_line_pos( void )
+void restore_line_pos( uint32_t context = 0 )
 {
-  cur_line = saved_line;
+  cur_line = saved_line[ context ];
   cur_col = 0;
-  macro_stack = saved_macro_stack;
+  macro_stack = saved_macro_stack[ context ];
 }
 
 // Start column of last parsed identifier.
@@ -779,9 +779,14 @@ bool do_GridPos(
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Indicates if a chart has been started without a preceding New.
+bool non_newed_chart = false;
+
 Chart::Main* CurChart( void )
 {
   if ( ensemble.Empty() ) {
+    non_newed_chart = true;
+    save_line_pos( 1 );
     ensemble.NewChart( 0, 0, 0, 0 );
   }
   return ensemble.LastChart();
@@ -816,6 +821,13 @@ void do_New( void )
 
   if ( row1 > row2 || col1 > col2 ) {
     parse_err( "malformed grid location" );
+  }
+
+  if ( non_newed_chart ) {
+    restore_line_pos( 1 );
+    parse_err(
+      "chart specifies must be preceded by New for multi chart plots"
+    );
   }
 
   if ( !ensemble.NewChart( row1, col1, row2, col2, align_hor, align_ver ) ) {
