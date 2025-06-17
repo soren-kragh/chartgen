@@ -18,7 +18,7 @@ show_err () {
   exit 1
 }
 
-command -v inkscape >/dev/null 2>&1 || show_err "inkscape command not found"
+command -v rsvg-convert >/dev/null 2>&1 || show_err "rsvg-convert command not found"
 
 PIPE=
 SVG=()
@@ -82,12 +82,11 @@ for SVG_FILE in "${SVG[@]}"; do
     >&2 echo "$DF"
   fi
 
-  ARGS=("$SF")
-  ARGS+=(--export-filename="$DF")
-  [[ $WIDTH != "" ]] && ARGS+=(--export-width="$WIDTH")
+  ARGS=(-o "$DF")
+  [[ $WIDTH != "" ]] && ARGS+=(-w "$WIDTH")
+  ARGS+=("$SF")
 
-  # Cannot trust error code from inkscape.
-  inkscape "${ARGS[@]}" 2> >(grep -vP '^(Background|Area) ' >&2) || :
+  rsvg-convert "${ARGS[@]}"
 
   if [[ ! -f "$DF" || ! -r "$DF" ]]; then
     show_err "Image generation failed"
