@@ -71,6 +71,7 @@ chartgen-v0.10.0
         Added MacroDef
         Added MacroEnd
         Added Macro
+        Added Series.Prune
 
 chartgen-v0.9.0
         Added the following specifiers:

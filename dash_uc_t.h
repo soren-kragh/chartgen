@@ -398,11 +398,13 @@ Axis.Y2.NumberUnit: Ω
 #   Point       Text        Like Scatter, but regard X-values as text.
 #   Lollipop    Text        Lollipop plot. Regard X-values as text and draw
 #                           lines from data points to Base; default with point
-#                           markers.
+#                           markers. Do not use for very large data sets.
 #   Bar         Text        Bar plot. Regard X-values as text and draw bars
-#                           from data points to Base (usually zero).
+#                           from data points to Base (usually zero). Do not use
+#                           for very large data sets.
 #   StackedBar  Text        Like Bar, but stack on top of (or below if negative
-#                           relative to Base) the previous bar.
+#                           relative to Base) the previous bar. Do not use for
+#                           very large data sets.
 #   Area        Text        Area plot. Regard X-values as text and draw an area
 #                           polygon between data points and the Base line.
 #                           Optionally also draw a line between data points,
@@ -436,6 +438,21 @@ Series.Type: XY
 Series.New: Name of series
 
 # The following Series specifiers associate to the above newly created series.
+
+# Set the prune distance in points. For very large data sets, graphical details
+# are removed if it is judged that they do not contribute significantly to the
+# final render. While chartgen itself can handle large data sets, the subsequent
+# rendering of the SVG by 3rd party tools may struggle or even crash if the SVG
+# gets too big. Default is 0.3, meaning that if the pruning causes a render
+# inaccuracy of less than 0.3 points, pruning can happen. This attribute applies
+# to the current series and all subsequent series, or until it is redefined.
+# Bar, StackedBar, and Lollipop plots cannot be pruned, but you should not use
+# these types for large data sets anyway.
+# The pruning algorithm is NOT a smoothing operation. Thin spikes are preserved
+# and the overall shape of the series is generally preserved, while at the same
+# time drastically reducing the number of SVG elements in e.g. noisy sensor data
+# etc.
+#Series.Prune: 0.3
 
 # Set the series legend to be global; may be On or Off, default is Off. Global
 # legends are relevant when multiple charts are organized in a grid, in which

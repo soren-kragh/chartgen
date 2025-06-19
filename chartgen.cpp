@@ -37,6 +37,7 @@ struct state_t {
   bool defining_series = false;
   bool series_type_defined = false;
   Chart::SeriesType series_type = Chart::SeriesType::XY;
+  double prune_dist = 0.3;
   int32_t category_idx = 0;
   bool global_legend = false;
   bool legend_outline = true;
@@ -139,7 +140,7 @@ void gen_example( int N )
       std::normal_distribution< double > md{ 0.0, 1.0 };
       std::uniform_real_distribution< double > ad{ 0.0, 2 * M_PI };
       #include <dash_e3.h>
-      std::cout << std::showpos << std::fixed << std::setprecision( 3 );
+      std::cout << std::showpos << std::fixed << std::setprecision( 4 );
       double min = -1.25;
       double max = +1.25;
       int bins = 49;
@@ -797,10 +798,10 @@ void do_New( void )
   Chart::Pos align_hor = Chart::Pos::Auto;
   Chart::Pos align_ver = Chart::Pos::Auto;
 
-  int64_t row1;
-  int64_t col1;
-  int64_t row2;
-  int64_t col2;
+  int64_t row1 = 0;
+  int64_t col1 = 0;
+  int64_t row2 = 0;
+  int64_t col2 = 0;
   bool grid_given = do_GridPos( row1, col1, row2, col2 );
 
   skip_ws();
@@ -826,7 +827,7 @@ void do_New( void )
   if ( non_newed_chart ) {
     restore_line_pos( 1 );
     parse_err(
-      "chart specifies must be preceded by New for multi chart plots"
+      "chart specifiers must be preceded by New for multi chart plots"
     );
   }
 
@@ -929,10 +930,10 @@ void do_GlobalLegendFrame( void )
 
 void do_GlobalLegendPos( void )
 {
-  int64_t row1;
-  int64_t col1;
-  int64_t row2;
-  int64_t col2;
+  int64_t row1 = 0;
+  int64_t col1 = 0;
+  int64_t row2 = 0;
+  int64_t col2 = 0;
   Chart::Pos pos;
   skip_ws();
   if ( do_GridPos( row1, col1, row2, col2 ) ) {
@@ -1707,6 +1708,7 @@ void AddSeries( std::string name = "", bool anonymous_snap = false )
   state.series_list.push_back( CurChart()->AddSeries( state.series_type ) );
   state.series_list.back()->SetName( name );
   state.series_list.back()->SetAnonymousSnap( anonymous_snap );
+  state.series_list.back()->SetPruneDist( state.prune_dist );
   state.series_list.back()->SetGlobalLegend( state.global_legend );
   state.series_list.back()->SetLegendOutline( state.legend_outline );
   state.series_list.back()->SetAxisY( state.axis_y_n );
@@ -1736,11 +1738,44 @@ void AddSeries( std::string name = "", bool anonymous_snap = false )
   state.defining_series = true;
 }
 
+void do_Series_Type( void )
+{
+  skip_ws();
+  std::string id = get_identifier( true );
+  if ( id == "XY"          ) state.series_type = Chart::SeriesType::XY         ; else
+  if ( id == "Scatter"     ) state.series_type = Chart::SeriesType::Scatter    ; else
+  if ( id == "Line"        ) state.series_type = Chart::SeriesType::Line       ; else
+  if ( id == "Point"       ) state.series_type = Chart::SeriesType::Point      ; else
+  if ( id == "Lollipop"    ) state.series_type = Chart::SeriesType::Lollipop   ; else
+  if ( id == "Bar"         ) state.series_type = Chart::SeriesType::Bar        ; else
+  if ( id == "StackedBar"  ) state.series_type = Chart::SeriesType::StackedBar ; else
+  if ( id == "Area"        ) state.series_type = Chart::SeriesType::Area       ; else
+  if ( id == "StackedArea" ) state.series_type = Chart::SeriesType::StackedArea; else
+  if ( id == "" ) parse_err( "series type expected" ); else
+  parse_err( "unknown series type '" + id + "'", true );
+  expect_eol();
+  state.series_type_defined = true;
+}
+
 void do_Series_New( void )
 {
   std::string txt;
   get_text( txt, true );
   AddSeries( txt );
+}
+
+void do_Series_Prune( void )
+{
+  skip_ws();
+  if ( at_eol() ) parse_err( "prune distance expected" );
+  if ( !get_double( state.prune_dist ) ) parse_err( "malformed prune distance" );
+  if ( state.prune_dist < 0 || state.prune_dist > 100 ) {
+    parse_err( "prune distance out of range [0;100]", true );
+  }
+  expect_eol();
+  if ( state.defining_series ) {
+    state.series_list.back()->SetPruneDist( state.prune_dist );
+  }
 }
 
 void do_Series_GlobalLegend( void )
@@ -1759,25 +1794,6 @@ void do_Series_LegendOutline( void )
   if ( state.defining_series ) {
     state.series_list.back()->SetLegendOutline( state.legend_outline );
   }
-}
-
-void do_Series_Type( void )
-{
-  skip_ws();
-  std::string id = get_identifier( true );
-  if ( id == "XY"          ) state.series_type = Chart::SeriesType::XY         ; else
-  if ( id == "Scatter"     ) state.series_type = Chart::SeriesType::Scatter    ; else
-  if ( id == "Line"        ) state.series_type = Chart::SeriesType::Line       ; else
-  if ( id == "Point"       ) state.series_type = Chart::SeriesType::Point      ; else
-  if ( id == "Lollipop"    ) state.series_type = Chart::SeriesType::Lollipop   ; else
-  if ( id == "Bar"         ) state.series_type = Chart::SeriesType::Bar        ; else
-  if ( id == "StackedBar"  ) state.series_type = Chart::SeriesType::StackedBar ; else
-  if ( id == "Area"        ) state.series_type = Chart::SeriesType::Area       ; else
-  if ( id == "StackedArea" ) state.series_type = Chart::SeriesType::StackedArea; else
-  if ( id == "" ) parse_err( "series type expected" ); else
-  parse_err( "unknown series type '" + id + "'", true );
-  expect_eol();
-  state.series_type_defined = true;
 }
 
 void do_Series_AxisY( void )
@@ -2250,10 +2266,11 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "LegendSize"             , do_LegendSize              },
   { "BarWidth"               , do_BarWidth                },
   { "BarMargin"              , do_BarMargin               },
+  { "Series.Type"            , do_Series_Type             },
   { "Series.New"             , do_Series_New              },
+  { "Series.Prune"           , do_Series_Prune            },
   { "Series.GlobalLegend"    , do_Series_GlobalLegend     },
   { "Series.LegendOutline"   , do_Series_LegendOutline    },
-  { "Series.Type"            , do_Series_Type             },
   { "Series.AxisY"           , do_Series_AxisY            },
   { "Series.Base"            , do_Series_Base             },
   { "Series.Style"           , do_Series_Style            },
