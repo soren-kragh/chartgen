@@ -140,7 +140,7 @@ void gen_example( int N )
       std::normal_distribution< double > md{ 0.0, 1.0 };
       std::uniform_real_distribution< double > ad{ 0.0, 2 * M_PI };
       #include <dash_e3.h>
-      std::cout << std::showpos << std::fixed << std::setprecision( 3 );
+      std::cout << std::showpos << std::fixed << std::setprecision( 4 );
       double min = -1.25;
       double max = +1.25;
       int bins = 49;
