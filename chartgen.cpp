@@ -827,7 +827,7 @@ void do_New( void )
   if ( non_newed_chart ) {
     restore_line_pos( 1 );
     parse_err(
-      "chart specifies must be preceded by New for multi chart plots"
+      "chart specifiers must be preceded by New for multi chart plots"
     );
   }
 
