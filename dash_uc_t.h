@@ -446,6 +446,8 @@ Series.New: Name of series
 # gets too big. Default is 0.3, meaning that if the pruning causes a render
 # inaccuracy of less than 0.3 points, pruning can happen. This attribute applies
 # to the current series and all subsequent series, or until it is redefined.
+# Bar, StackedBar, and Lollipop plots cannot be pruned, but you should not use
+# these types for large data sets anyway.
 #Series.Prune: 0.3
 
 # Set the series legend to be global; may be On or Off, default is Off. Global
