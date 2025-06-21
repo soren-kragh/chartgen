@@ -439,7 +439,7 @@ Series.New: Name of series
 
 # The following Series specifiers associate to the above newly created series.
 
-# Set the prune distance in points. For very large data sets, graphical elements
+# Set the prune distance in points. For very large data sets, graphical details
 # are removed if it is judged that they do not contribute significantly to the
 # final render. While chartgen itself can handle large data sets, the subsequent
 # rendering of the SVG by 3rd party tools may struggle or even crash if the SVG
@@ -448,6 +448,10 @@ Series.New: Name of series
 # to the current series and all subsequent series, or until it is redefined.
 # Bar, StackedBar, and Lollipop plots cannot be pruned, but you should not use
 # these types for large data sets anyway.
+# The pruning algorithm is NOT a smoothing operation. Thin spikes are preserved
+# and the overall shape of the series is generally preserved, while at the same
+# time drastically reducing the number of SVG elements in e.g. noisy sensor data
+# etc.
 #Series.Prune: 0.3
 
 # Set the series legend to be global; may be On or Off, default is Off. Global
