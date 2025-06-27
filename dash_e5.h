@@ -7,6 +7,7 @@ TitleFrame: On
 
 LegendPos: Above
 
+# Also try Horizontal
 Axis.X.Orientation: Vertical
 Axis.X.Pos: Base
 Axis.X.Style: Line
