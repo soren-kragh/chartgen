@@ -44,7 +44,7 @@ Series.New:
   Mauna Loa atmospheric CO₂
 Series.LineColor: deepskyblue
 Series.LineWidth: 3
-Series.AxisY: Y2
+Series.Axis: Y2
 
 # Manually control what years are shown (every 5th, staring with the first data
 # point, which is the year 1850).

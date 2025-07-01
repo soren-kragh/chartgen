@@ -373,8 +373,18 @@ Axis.Y2.NumberUnit: Ω
 # Specify the relative width of bars (0.0 to 1.0). The optional second value
 # (0.0 to 1.0) determines the total relative width allocated to all bars at the
 # same X-value before individual widths are applied.
+# For Lollipop plot, a zero for the second value can make sense, as it will
+# cause all lollipops to be shown on top of each other.
 # Defaults shown below.
 #BarWidth: 1.0 0.85
+
+# Defines the relative width (0.0 to 1.0) of the topmost layered bar (default is
+# 0.5); applies to LayeredBar plots only. LayeredBarWidth makes the layered bars
+# progressively narrower thereby making the underlying bars partially visible.
+# Another strategy is to set LayeredBarWidth to 1.0 and instead make the bars
+# semi transparent (see Series.FillTransparency), or a combination of
+# LayeredBarWidth and transparency.
+#LayeredBarWidth: 0.5
 
 # The bar margin specifies the extra margin for the X-axis of bar graphs, and
 # all textual X-axis graphs such as Line or Area. For example, if a bar graph
@@ -392,9 +402,10 @@ Axis.Y2.NumberUnit: Ω
 #   Scatter     Number      Scatter plot. Same as XY but with no lines and
 #                           always with point markers. Using a highly
 #                           transparent LineColor and no FillColor can achieve a
-#                           density effect for large data sets.
+#                           density effect.
 #   Line        Text        Line plot. Regard X-values as text and draw lines
 #                           between data points, possibly with point markers.
+#                           Recommended for very large data sets.
 #   Point       Text        Like Scatter, but regard X-values as text.
 #   Lollipop    Text        Lollipop plot. Regard X-values as text and draw
 #                           lines from data points to Base; default with point
@@ -405,6 +416,9 @@ Axis.Y2.NumberUnit: Ω
 #   StackedBar  Text        Like Bar, but stack on top of (or below if negative
 #                           relative to Base) the previous bar. Do not use for
 #                           very large data sets.
+#   LayeredBar  Text        Like Bar, but place bars from different series on
+#                           top of each other in layers; see LayeredBarWidth.
+#                           Do not use for very large data sets.
 #   Area        Text        Area plot. Regard X-values as text and draw an area
 #                           polygon between data points and the Base line.
 #                           Optionally also draw a line between data points,
@@ -470,10 +484,10 @@ Series.New: Name of series
 # until it is redefined.
 #Series.LegendOutline: Off
 
-# Associated Y-axis may be Primary/Y1 or Secondary/Y2; the default is Primary.
-# This attribute applies to the current series and all subsequent series, or
-# until it is redefined.
-Series.AxisY: Primary
+# The Y-axis to use for the data values, may be Primary/Y1 or Secondary/Y2; the
+# default is Primary. This attribute applies to the current series and all
+# subsequent series, or until it is redefined.
+Series.Axis: Primary
 
 # Select the base for bar and area type plots; default is 0. This attribute
 # applies to the current series and all subsequent series, or until it is
@@ -586,9 +600,9 @@ Series.Data:
 # text string contains spaces. If not enough new series were created beforehand,
 # anonymous ones will be automatically created as needed.
 Series.New  : Series 1
-Series.AxisY: Primary
+Series.Axis : Y1
 Series.New  : Series 2
-Series.AxisY: Secondary
+Series.Axis : Y2
 Series.Style: 50
 Series.LineColor: black
 Series.FillColor: black 0.5

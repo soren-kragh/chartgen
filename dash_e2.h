@@ -52,7 +52,7 @@ Series.New: Traditional biomass
 
 Series.Type: Line
 Series.New: Global population
-Series.AxisY: Y2
+Series.Axis: Y2
 Series.LineWidth: 10
 Series.LineDash: 0
 Series.LineColor: black

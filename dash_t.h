@@ -81,13 +81,14 @@ Series.Data :
 # LegendPos: Below
 # LegendSize: 1.0
 # BarWidth: 0.8 0.7
+# LayeredBarWidth: 1.0
 # BarMargin: 0
 # Series.Type: XY
 # Series.New: Name of series
 # Series.Prune: 0.5
 # Series.GlobalLegend: On
 # Series.LegendOutline: Off
-# Series.AxisY: Y2
+# Series.Axis: Y2
 # Series.Base: 0
 # Series.Style: 32
 # Series.MarkerShape: Circle

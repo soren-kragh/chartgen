@@ -245,6 +245,27 @@ void gen_example( int N )
       }
       break;
     }
+    case 6:
+    {
+      double a[ 4 ] = { 5, 10, 12 };
+      double b[ 4 ] = { 8, 10, 40 };
+      double c[ 4 ] = { 4, 10,  8 };
+      #include <dash_e6.h>
+      std::cout << std::fixed << std::setprecision( 1 );
+      for ( int x = 0; x < 16; x++ ) {
+        std::cout << ' ' << x;
+        for ( int series = 0; series < 3; series++ ) {
+          double y =
+            c[ series ] *
+            std::exp( -std::pow( x - a[ series ], 2 ) / b[ series ] );
+          std::cout << ' ' << y;
+        }
+        std::cout << '\n';
+      }
+      std::cout << "MacroEnd: Series\n";
+      std::cout << '\n';
+      break;
+    }
   }
   return;
 }
@@ -1645,20 +1666,35 @@ void do_BarWidth( void )
   skip_ws();
   if ( at_eol() ) parse_err( "width expected" );
   if ( !get_double( one_width ) ) parse_err( "malformed width" );
-  if ( one_width <= 0.0 || one_width > 1.0 ) parse_err( "invalid width", true );
+  if ( one_width < 0.0 || one_width > 1.0 ) {
+    parse_err( "relative width out of range [0.0;1.0]", true );
+  }
 
   all_width = 1.0;
   if ( !at_eol() ) {
     expect_ws();
     if ( !at_eol() ) {
       if ( !get_double( all_width ) ) parse_err( "malformed width" );
-      if ( all_width <= 0.0 || all_width > 1.0 ) parse_err( "invalid width", true );
+      if ( all_width < 0.0 || all_width > 1.0 ) {
+        parse_err( "relative width out of range [0.0;1.0]", true );
+      }
     }
   }
 
   expect_eol();
 
   CurChart()->SetBarWidth( one_width, all_width );
+}
+
+void do_LayeredBarWidth( void )
+{
+  double width;
+  skip_ws();
+  if ( at_eol() ) parse_err( "width expected" );
+  if ( !get_double( width ) ) parse_err( "malformed width" );
+  if ( width <= 0.0 || width > 1.0 ) parse_err( "invalid width", true );
+  expect_eol();
+  CurChart()->SetLayeredBarWidth( width );
 }
 
 void do_BarMargin( void )
@@ -1749,6 +1785,7 @@ void do_Series_Type( void )
   if ( id == "Lollipop"    ) state.series_type = Chart::SeriesType::Lollipop   ; else
   if ( id == "Bar"         ) state.series_type = Chart::SeriesType::Bar        ; else
   if ( id == "StackedBar"  ) state.series_type = Chart::SeriesType::StackedBar ; else
+  if ( id == "LayeredBar"  ) state.series_type = Chart::SeriesType::LayeredBar ; else
   if ( id == "Area"        ) state.series_type = Chart::SeriesType::Area       ; else
   if ( id == "StackedArea" ) state.series_type = Chart::SeriesType::StackedArea; else
   if ( id == "" ) parse_err( "series type expected" ); else
@@ -1796,7 +1833,7 @@ void do_Series_LegendOutline( void )
   }
 }
 
-void do_Series_AxisY( void )
+void do_Series_Axis( void )
 {
   skip_ws();
   std::string id = get_identifier( true );
@@ -1805,7 +1842,7 @@ void do_Series_AxisY( void )
   if ( id == "Secondary" ) state.axis_y_n = 1; else
   if ( id == "Y2"        ) state.axis_y_n = 1; else
   if ( id == "" ) parse_err( "Primary/Y1 or Secondary/Y2 expected" ); else
-  parse_err( "unknown axis '" + id + "'", true );
+  parse_err( "unknown Y-axis '" + id + "'", true );
   expect_eol();
   if ( state.defining_series ) {
     state.series_list.back()->SetAxisY( state.axis_y_n );
@@ -2265,13 +2302,14 @@ std::unordered_map< std::string, ChartAction > chart_actions = {
   { "LegendPos"              , do_LegendPos               },
   { "LegendSize"             , do_LegendSize              },
   { "BarWidth"               , do_BarWidth                },
+  { "LayeredBarWidth"        , do_LayeredBarWidth         },
   { "BarMargin"              , do_BarMargin               },
   { "Series.Type"            , do_Series_Type             },
   { "Series.New"             , do_Series_New              },
   { "Series.Prune"           , do_Series_Prune            },
   { "Series.GlobalLegend"    , do_Series_GlobalLegend     },
   { "Series.LegendOutline"   , do_Series_LegendOutline    },
-  { "Series.AxisY"           , do_Series_AxisY            },
+  { "Series.Axis"            , do_Series_Axis             },
   { "Series.Base"            , do_Series_Base             },
   { "Series.Style"           , do_Series_Style            },
   { "Series.MarkerShape"     , do_Series_MarkerShape      },
@@ -2532,6 +2570,10 @@ int main( int argc, char* argv[] )
       }
       if ( a == "-e5" ) {
         gen_example( 5 );
+        return 0;
+      }
+      if ( a == "-e6" ) {
+        gen_example( 6 );
         return 0;
       }
       if ( a != "-" && a[ 0 ] == '-' ) {

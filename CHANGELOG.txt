@@ -72,6 +72,9 @@ chartgen-v0.10.0
         Added MacroEnd
         Added Macro
         Added Series.Prune
+        Support LayeredBar
+        Added LayeredBarWidth
+        Series.AxisY => Series.Axis
 
 chartgen-v0.9.0
         Added the following specifiers:
