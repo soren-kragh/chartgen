@@ -683,8 +683,10 @@ void do_Switch(
   std::string id = get_identifier( true );
   if ( id == "On"  ) flag = true ; else
   if ( id == "Off" ) flag = false; else
-  if ( id == "" ) parse_err( "On/Off expected" ); else
-  parse_err( "On/Off expected, saw '" + id + "'", true );
+  if ( id == "Yes" ) flag = true ; else
+  if ( id == "No"  ) flag = false; else
+  if ( id == "" ) parse_err( "On/Off (Yes/No) expected" ); else
+  parse_err( "On/Off (Yes/No) expected, saw '" + id + "'", true );
 }
 
 void do_Color(
