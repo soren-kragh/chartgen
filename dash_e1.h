@@ -10,7 +10,7 @@ Axis.PriY.NumberSign: On
 
 Axis.X.Unit: Year
 
-# StackedArea could also be used below.
+# StackedArea could also be used instead of StackedBar.
 
 # Width of error bars.
 BarWidth: 0.7
@@ -46,8 +46,8 @@ Series.LineColor: deepskyblue
 Series.LineWidth: 3
 Series.Axis: Y2
 
-# Manually control what years are shown (every 5th, staring with the first data
-# point, which is the year 1850).
+# Manually control what years are shown (every 5th, starting
+# with 0 which corresponds to the year 1850).
 Axis.X.TickSpacing: 0 5
 
 # Year  Lower  Conf   Temp   CO₂
